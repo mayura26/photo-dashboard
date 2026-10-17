@@ -9,3 +9,6 @@ bin/
 .env
 services/garmin/.venv/
 services/garmin/.garmin-tokens/
+services/garmin/__pycache__/
+__pycache__/
+*.pyc
