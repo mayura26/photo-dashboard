@@ -1,0 +1,451 @@
+package demo
+
+import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+)
+
+// Snapshot is the full dashboard payload sent to clients.
+type Snapshot struct {
+	People      json.RawMessage `json:"people"`
+	Family      json.RawMessage `json:"family"`
+	ALL         json.RawMessage `json:"ALL"`
+	Events      []map[string]any `json:"events"`
+	BusyExtras  []map[string]any `json:"busyExtras"`
+	Routines    json.RawMessage `json:"routines"`
+	Chores      []map[string]any `json:"chores"`
+	Stars       map[string]float64 `json:"stars"`
+	Week        json.RawMessage `json:"week"`
+	Stores      json.RawMessage `json:"stores"`
+	CatOrder    json.RawMessage `json:"catOrder"`
+	Groceries   []map[string]any `json:"groceries"`
+	Catalog     json.RawMessage `json:"catalog"`
+	Usuals      json.RawMessage `json:"usuals"`
+	Rooms       json.RawMessage `json:"rooms"`
+	Devices     []map[string]any `json:"devices"`
+	Climate     map[string]any `json:"climate"`
+	Media       map[string]any `json:"media"`
+	Cameras     json.RawMessage `json:"cameras"`
+	Scenes      []map[string]any `json:"scenes"`
+	Weather     json.RawMessage `json:"weather"`
+	Photos      []map[string]any `json:"photos"`
+	Agents      json.RawMessage `json:"agents"`
+	TimeOffset  int64          `json:"timeOffset"`
+	CalMode     string         `json:"calMode"`
+}
+
+type Store struct {
+	mu       sync.RWMutex
+	snap     Snapshot
+	nextGID  int
+	nextEID  int
+	nextCID  int
+}
+
+func Load(seedPath string) (*Store, error) {
+	b, err := os.ReadFile(seedPath)
+	if err != nil {
+		return nil, err
+	}
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return nil, err
+	}
+	s := &Store{nextGID: 100, nextEID: 500, nextCID: 100, snap: Snapshot{CalMode: "normal"}}
+	s.snap.People = raw["people"]
+	s.snap.Family = raw["family"]
+	s.snap.ALL = raw["ALL"]
+	s.snap.Routines = raw["routines"]
+	s.snap.Week = raw["week"]
+	s.snap.Stores = raw["stores"]
+	s.snap.CatOrder = raw["catOrder"]
+	s.snap.Catalog = raw["catalog"]
+	s.snap.Usuals = raw["usuals"]
+	s.snap.Rooms = raw["rooms"]
+	s.snap.Cameras = raw["cameras"]
+	s.snap.Weather = raw["weather"]
+	s.snap.Agents = raw["agents"]
+
+	mustUnmarshal(raw["events"], &s.snap.Events)
+	mustUnmarshal(raw["busyExtras"], &s.snap.BusyExtras)
+	mustUnmarshal(raw["chores"], &s.snap.Chores)
+	mustUnmarshal(raw["stars"], &s.snap.Stars)
+	mustUnmarshal(raw["groceries"], &s.snap.Groceries)
+	mustUnmarshal(raw["devices"], &s.snap.Devices)
+	mustUnmarshal(raw["climate"], &s.snap.Climate)
+	mustUnmarshal(raw["media"], &s.snap.Media)
+	mustUnmarshal(raw["scenes"], &s.snap.Scenes)
+	mustUnmarshal(raw["photos"], &s.snap.Photos)
+
+	s.shiftEventsToToday()
+	// Demo default: busy weekday afternoon 15:18
+	s.setTimeLocked(15, 18)
+	return s, nil
+}
+
+func mustUnmarshal(b json.RawMessage, v any) {
+	if len(b) == 0 || string(b) == "null" {
+		return
+	}
+	if err := json.Unmarshal(b, v); err != nil {
+		panic(err)
+	}
+}
+
+func (s *Store) shiftEventsToToday() {
+	if len(s.snap.Events) == 0 {
+		return
+	}
+	// Seed was generated with "today" = local calendar day of generation.
+	// Re-anchor so the first all-day / earliest event day's local date == now's local date.
+	first, ok := parseTime(s.snap.Events[0]["start"])
+	if !ok {
+		return
+	}
+	seedDay := time.Date(first.Year(), first.Month(), first.Day(), 0, 0, 0, 0, time.Local)
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
+	delta := today.Sub(seedDay)
+	if delta == 0 {
+		return
+	}
+	shift := func(list []map[string]any) {
+		for _, e := range list {
+			if t, ok := parseTime(e["start"]); ok {
+				e["start"] = t.Add(delta).Format(time.RFC3339Nano)
+			}
+			if t, ok := parseTime(e["end"]); ok {
+				e["end"] = t.Add(delta).Format(time.RFC3339Nano)
+			}
+		}
+	}
+	shift(s.snap.Events)
+	shift(s.snap.BusyExtras)
+}
+
+func parseTime(v any) (time.Time, bool) {
+	str, ok := v.(string)
+	if !ok {
+		return time.Time{}, false
+	}
+	t, err := time.Parse(time.RFC3339Nano, str)
+	if err != nil {
+		t, err = time.Parse(time.RFC3339, str)
+	}
+	if err != nil {
+		return time.Time{}, false
+	}
+	return t.In(time.Local), true
+}
+
+func (s *Store) Snapshot() Snapshot {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.cloneLocked()
+}
+
+func (s *Store) cloneLocked() Snapshot {
+	b, _ := json.Marshal(s.snap)
+	var out Snapshot
+	_ = json.Unmarshal(b, &out)
+	return out
+}
+
+func (s *Store) setTimeLocked(h, m int) {
+	now := time.Now()
+	target := time.Date(now.Year(), now.Month(), now.Day(), h, m, 0, 0, now.Location())
+	s.snap.TimeOffset = target.UnixMilli() - now.UnixMilli()
+}
+
+// Apply runs a named action and returns the new snapshot.
+func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	eventName := ""
+	switch name {
+	case "setTime":
+		if payload["real"] == true {
+			s.snap.TimeOffset = 0
+		} else {
+			h := intNum(payload["h"])
+			m := intNum(payload["m"])
+			s.setTimeLocked(h, m)
+		}
+	case "setCalMode":
+		if m, ok := payload["mode"].(string); ok {
+			s.snap.CalMode = m
+		}
+	case "setChore":
+		s.setChore(payload)
+	case "setGrocery":
+		s.setGrocery(payload)
+	case "addGrocery":
+		s.addGrocery(payload)
+	case "clearChecked":
+		kept := s.snap.Groceries[:0]
+		for _, g := range s.snap.Groceries {
+			if g["done"] != true {
+				kept = append(kept, g)
+			}
+		}
+		s.snap.Groceries = kept
+	case "setDevice":
+		s.setDevice(payload)
+	case "applyScene":
+		s.applyScene(payload)
+	case "setClimate":
+		for k, v := range payload {
+			if k == "id" {
+				continue
+			}
+			s.snap.Climate[k] = v
+		}
+	case "setMedia":
+		for k, v := range payload {
+			s.snap.Media[k] = v
+		}
+	case "addEvent":
+		s.addEvent(payload)
+	case "removeEvent":
+		id, _ := payload["id"].(string)
+		filtered := s.snap.Events[:0]
+		for _, e := range s.snap.Events {
+			if e["id"] != id {
+				filtered = append(filtered, e)
+			}
+		}
+		s.snap.Events = filtered
+	case "toggleFav":
+		seed, _ := payload["seed"].(string)
+		for _, p := range s.snap.Photos {
+			if p["seed"] == seed {
+				fav, _ := p["fav"].(bool)
+				p["fav"] = !fav
+				break
+			}
+		}
+	case "alert":
+		if n, ok := payload["name"].(string); ok {
+			eventName = n
+			if n == "garage" {
+				s.patchDevice("g-door", map[string]any{"state": "open"})
+			}
+		}
+	default:
+		// unknown — still return snapshot
+	}
+	return s.cloneLocked(), eventName, nil
+}
+
+func (s *Store) setChore(p map[string]any) {
+	id, _ := p["id"].(string)
+	done, _ := p["done"].(bool)
+	doneBy, _ := p["doneBy"].(string)
+	for _, c := range s.snap.Chores {
+		if c["id"] != id {
+			continue
+		}
+		wasDone, _ := c["done"].(bool)
+		stars, _ := c["stars"].(float64)
+		who, _ := c["who"].(string)
+		prevBy, _ := c["doneBy"].(string)
+
+		earner := ""
+		if _, ok := s.snap.Stars[who]; ok {
+			earner = who
+		} else if doneBy != "" {
+			if _, ok := s.snap.Stars[doneBy]; ok {
+				earner = doneBy
+			}
+		} else if prevBy != "" {
+			if _, ok := s.snap.Stars[prevBy]; ok {
+				earner = prevBy
+			}
+		}
+
+		if wasDone && !done {
+			c["done"] = false
+			delete(c, "doneBy")
+			if earner != "" && stars > 0 {
+				s.snap.Stars[earner] -= stars
+			}
+		} else if !wasDone && done {
+			c["done"] = true
+			if doneBy != "" {
+				c["doneBy"] = doneBy
+				if _, ok := s.snap.Stars[doneBy]; ok {
+					earner = doneBy
+				}
+			}
+			if earner != "" && stars > 0 {
+				s.snap.Stars[earner] += stars
+			}
+		}
+		return
+	}
+}
+
+func (s *Store) setGrocery(p map[string]any) {
+	id, _ := p["id"].(string)
+	for _, g := range s.snap.Groceries {
+		if g["id"] != id {
+			continue
+		}
+		if v, ok := p["done"]; ok {
+			g["done"] = v
+		}
+		if v, ok := p["qty"]; ok {
+			g["qty"] = v
+		}
+		return
+	}
+}
+
+func (s *Store) addGrocery(p map[string]any) {
+	name, _ := p["name"].(string)
+	if name == "" {
+		return
+	}
+	// bump qty or revive
+	for _, g := range s.snap.Groceries {
+		n, _ := g["name"].(string)
+		if equalFold(n, name) && g["done"] != true {
+			qty := intNum(g["qty"])
+			g["qty"] = qty + 1
+			return
+		}
+		if equalFold(n, name) && g["done"] == true {
+			g["done"] = false
+			g["qty"] = 1
+			return
+		}
+	}
+	s.nextGID++
+	cat, _ := p["cat"].(string)
+	if cat == "" {
+		cat = "Other"
+	}
+	store, _ := p["store"].(string)
+	if store == "" {
+		store = "grocer"
+	}
+	s.snap.Groceries = append(s.snap.Groceries, map[string]any{
+		"id":    "g" + itoa(s.nextGID),
+		"name":  name,
+		"cat":   cat,
+		"qty":   1,
+		"store": store,
+		"done":  false,
+		"note":  "",
+	})
+}
+
+func (s *Store) setDevice(p map[string]any) {
+	id, _ := p["id"].(string)
+	patch, _ := p["patch"].(map[string]any)
+	if patch == nil {
+		patch = map[string]any{}
+		for k, v := range p {
+			if k != "id" && k != "patch" {
+				patch[k] = v
+			}
+		}
+	}
+	s.patchDevice(id, patch)
+}
+
+func (s *Store) patchDevice(id string, patch map[string]any) {
+	for _, d := range s.snap.Devices {
+		if d["id"] != id {
+			continue
+		}
+		for k, v := range patch {
+			d[k] = v
+		}
+		return
+	}
+}
+
+func (s *Store) applyScene(p map[string]any) {
+	id, _ := p["id"].(string)
+	for _, sc := range s.snap.Scenes {
+		if sc["id"] != id {
+			continue
+		}
+		set, _ := sc["set"].(map[string]any)
+		for devID, level := range set {
+			lvl := intNum(level)
+			for _, d := range s.snap.Devices {
+				if d["id"] != devID {
+					continue
+				}
+				t, _ := d["type"].(string)
+				if t == "light" {
+					if lvl <= 0 {
+						d["on"] = false
+					} else {
+						d["on"] = true
+						d["level"] = lvl
+					}
+				} else if t == "blind" {
+					d["pos"] = lvl
+				}
+			}
+		}
+		return
+	}
+}
+
+func (s *Store) addEvent(p map[string]any) {
+	s.nextEID++
+	e := map[string]any{"id": "e" + itoa(s.nextEID)}
+	for k, v := range p {
+		if k == "id" {
+			continue
+		}
+		e[k] = v
+	}
+	s.snap.Events = append(s.snap.Events, e)
+}
+
+func intNum(v any) int {
+	switch n := v.(type) {
+	case float64:
+		return int(n)
+	case int:
+		return n
+	case json.Number:
+		i, _ := n.Int64()
+		return int(i)
+	default:
+		return 0
+	}
+}
+
+func equalFold(a, b string) bool {
+	return strings.EqualFold(a, b)
+}
+
+func itoa(n int) string {
+	return strconv.Itoa(n)
+}
+
+// SeedPath resolves seed.json next to the binary or from known relative paths.
+func SeedPath() string {
+	candidates := []string{
+		"internal/demo/seed.json",
+		filepath.Join("..", "..", "internal", "demo", "seed.json"),
+	}
+	for _, c := range candidates {
+		if _, err := os.Stat(c); err == nil {
+			return c
+		}
+	}
+	return "internal/demo/seed.json"
+}

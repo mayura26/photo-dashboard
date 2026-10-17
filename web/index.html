@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1280, initial-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#F2EEE6">
+  <title>Home HQ</title>
+  <link rel="manifest" href="/public/manifest.webmanifest">
+  <link rel="icon" href="/public/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/views/home.css">
+  <link rel="stylesheet" href="/css/views/calendar.css">
+  <link rel="stylesheet" href="/css/views/tasks.css">
+  <link rel="stylesheet" href="/css/views/shopping.css">
+  <link rel="stylesheet" href="/css/views/photos.css">
+  <link rel="stylesheet" href="/css/views/control.css">
+  <link rel="stylesheet" href="/css/views/agents.css">
+  <link rel="stylesheet" href="/css/views/ambient.css">
+</head>
+<body>
+  <div class="stage" id="stage" data-mode="day">
+    <hq-rail class="rail" id="rail" aria-label="Sections"></hq-rail>
+
+    <main class="views">
+      <hq-home class="view" id="view-home" data-view="home"></hq-home>
+      <hq-calendar class="view" id="view-calendar" data-view="calendar"></hq-calendar>
+      <hq-tasks class="view" id="view-tasks" data-view="tasks"></hq-tasks>
+      <hq-shopping class="view" id="view-shopping" data-view="shopping"></hq-shopping>
+      <hq-photos class="view view--bleed" id="view-photos" data-view="photos"></hq-photos>
+      <hq-control class="view" id="view-control" data-view="control"></hq-control>
+      <hq-agents class="view" id="view-agents" data-view="agents"></hq-agents>
+      <div class="banners" id="banners"></div>
+    </main>
+
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+    <div class="sheet-layer" id="sheetLayer"></div>
+    <div class="takeover" id="takeover" role="alertdialog"></div>
+    <hq-ambient class="ambient" id="ambient"></hq-ambient>
+    <div class="night" id="night"></div>
+    <div class="demo" id="demo"></div>
+  </div>
+
+  <script>
+    setTimeout(function () { if (!window.App) location.reload(); }, 15000);
+  </script>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

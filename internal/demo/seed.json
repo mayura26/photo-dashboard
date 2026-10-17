@@ -1,0 +1,3013 @@
+{
+  "people": [
+    {
+      "id": "alex",
+      "name": "Wes",
+      "color": "#2D5BFF",
+      "rgb": "45 91 255",
+      "ink": "#FFFFFF",
+      "home": false,
+      "status": "Driving home",
+      "eta": 12
+    },
+    {
+      "id": "jordan",
+      "name": "Claudia",
+      "color": "#E4007C",
+      "rgb": "228 0 124",
+      "ink": "#FFFFFF",
+      "home": false,
+      "status": "At the office"
+    },
+    {
+      "id": "maya",
+      "name": "Buzzsaw",
+      "age": 10,
+      "color": "#00A36C",
+      "rgb": "0 163 108",
+      "ink": "#FFFFFF",
+      "home": true,
+      "status": "Home"
+    },
+    {
+      "id": "otto",
+      "name": "Skidmark",
+      "age": 6,
+      "color": "#FFB000",
+      "rgb": "255 176 0",
+      "ink": "#111111",
+      "home": true,
+      "status": "Home"
+    }
+  ],
+  "family": {
+    "id": "family",
+    "name": "Family",
+    "color": "#111111",
+    "rgb": "17 17 17",
+    "ink": "#FFFFFF"
+  },
+  "ALL": [
+    "alex",
+    "jordan",
+    "maya",
+    "otto"
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "allDay": true,
+      "start": "2026-10-16T13:00:00.000Z",
+      "end": "2026-10-17T13:00:00.000Z",
+      "title": "Pajama Day at school",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e2",
+      "allDay": true,
+      "start": "2026-10-16T13:00:00.000Z",
+      "end": "2026-10-17T13:00:00.000Z",
+      "title": "Garbage + recycling night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e3",
+      "start": "2026-10-16T20:00:00.000Z",
+      "end": "2026-10-16T20:45:00.000Z",
+      "title": "Gym",
+      "people": [
+        "jordan"
+      ],
+      "loc": "Iron Works"
+    },
+    {
+      "id": "e4",
+      "start": "2026-10-16T21:15:00.000Z",
+      "end": "2026-10-16T21:40:00.000Z",
+      "title": "School drop-off",
+      "people": [
+        "alex"
+      ],
+      "travel": 10,
+      "loc": "Parkdale Elementary"
+    },
+    {
+      "id": "e5",
+      "start": "2026-10-16T22:30:00.000Z",
+      "end": "2026-10-16T23:30:00.000Z",
+      "title": "Design review",
+      "people": [
+        "jordan"
+      ],
+      "loc": "Office · Room 4B"
+    },
+    {
+      "id": "e6",
+      "start": "2026-10-17T01:00:00.000Z",
+      "end": "2026-10-17T01:45:00.000Z",
+      "title": "Dentist",
+      "people": [
+        "maya",
+        "jordan"
+      ],
+      "travel": 15,
+      "loc": "Bright Smiles Dental"
+    },
+    {
+      "id": "e7",
+      "start": "2026-10-17T02:00:00.000Z",
+      "end": "2026-10-17T03:00:00.000Z",
+      "title": "Lunch with Sam",
+      "people": [
+        "alex"
+      ],
+      "loc": "Café Rustica"
+    },
+    {
+      "id": "e8",
+      "start": "2026-10-17T04:45:00.000Z",
+      "end": "2026-10-17T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ],
+      "travel": 12,
+      "loc": "Ms. Park's Studio",
+      "notes": "Bring the blue theory book."
+    },
+    {
+      "id": "e9",
+      "start": "2026-10-17T05:05:00.000Z",
+      "end": "2026-10-17T05:30:00.000Z",
+      "title": "Drive Buzzsaw to soccer",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e10",
+      "start": "2026-10-17T05:25:00.000Z",
+      "end": "2026-10-17T05:50:00.000Z",
+      "title": "Pick up Skidmark",
+      "people": [
+        "jordan"
+      ],
+      "loc": "Ms. Park's Studio"
+    },
+    {
+      "id": "e11",
+      "start": "2026-10-17T05:30:00.000Z",
+      "end": "2026-10-17T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ],
+      "travel": 20,
+      "loc": "Lakeshore Fields",
+      "notes": "Shin guards + water bottle. Rain likely — pack a jacket."
+    },
+    {
+      "id": "e12",
+      "start": "2026-10-17T06:00:00.000Z",
+      "end": "2026-10-17T06:30:00.000Z",
+      "title": "Parent–teacher call",
+      "people": [
+        "alex",
+        "jordan"
+      ],
+      "loc": "Zoom"
+    },
+    {
+      "id": "e13",
+      "start": "2026-10-17T07:30:00.000Z",
+      "end": "2026-10-17T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ],
+      "travel": 20,
+      "loc": "Nonna's",
+      "notes": "Bring the lemon cake."
+    },
+    {
+      "id": "e14",
+      "start": "2026-10-17T09:00:00.000Z",
+      "end": "2026-10-17T09:30:00.000Z",
+      "title": "Bath + books",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e15",
+      "allDay": true,
+      "start": "2026-10-17T13:00:00.000Z",
+      "end": "2026-10-20T13:00:00.000Z",
+      "title": "Wes in Montréal",
+      "people": [
+        "alex"
+      ],
+      "loc": "Hotel William Gray"
+    },
+    {
+      "id": "e16",
+      "start": "2026-10-17T20:00:00.000Z",
+      "end": "2026-10-17T20:45:00.000Z",
+      "title": "Gym",
+      "people": [
+        "jordan"
+      ],
+      "loc": "Iron Works"
+    },
+    {
+      "id": "e17",
+      "start": "2026-10-17T21:15:00.000Z",
+      "end": "2026-10-17T21:40:00.000Z",
+      "title": "School drop-off",
+      "people": [
+        "jordan"
+      ],
+      "travel": 10
+    },
+    {
+      "id": "e18",
+      "start": "2026-10-17T23:30:00.000Z",
+      "end": "2026-10-18T00:15:00.000Z",
+      "title": "Vet — Biscuit",
+      "people": [
+        "jordan"
+      ],
+      "travel": 10,
+      "loc": "Riverdale Animal Clinic"
+    },
+    {
+      "id": "e19",
+      "start": "2026-10-18T04:30:00.000Z",
+      "end": "2026-10-18T05:30:00.000Z",
+      "title": "Art club",
+      "people": [
+        "maya"
+      ],
+      "loc": "School"
+    },
+    {
+      "id": "e20",
+      "start": "2026-10-18T05:00:00.000Z",
+      "end": "2026-10-18T07:00:00.000Z",
+      "title": "Playdate with Leo",
+      "people": [
+        "otto"
+      ],
+      "travel": 8,
+      "loc": "Leo's house"
+    },
+    {
+      "id": "e21",
+      "start": "2026-10-18T08:00:00.000Z",
+      "end": "2026-10-18T10:00:00.000Z",
+      "title": "Book club",
+      "people": [
+        "jordan"
+      ],
+      "travel": 10,
+      "loc": "Priya's"
+    },
+    {
+      "id": "e22",
+      "start": "2026-10-18T22:00:00.000Z",
+      "end": "2026-10-19T03:00:00.000Z",
+      "title": "Science Centre trip",
+      "people": [
+        "otto"
+      ],
+      "loc": "Ontario Science Centre"
+    },
+    {
+      "id": "e23",
+      "start": "2026-10-19T02:00:00.000Z",
+      "end": "2026-10-19T02:45:00.000Z",
+      "title": "Haircuts",
+      "people": [
+        "maya",
+        "otto"
+      ],
+      "travel": 10,
+      "loc": "Snip Snip Kids"
+    },
+    {
+      "id": "e24",
+      "start": "2026-10-19T05:30:00.000Z",
+      "end": "2026-10-19T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ],
+      "travel": 20,
+      "loc": "Lakeshore Fields"
+    },
+    {
+      "id": "e25",
+      "start": "2026-10-19T07:00:00.000Z",
+      "end": "2026-10-19T08:30:00.000Z",
+      "title": "Pizza night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e26",
+      "start": "2026-10-19T23:00:00.000Z",
+      "end": "2026-10-19T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ],
+      "travel": 12,
+      "loc": "Wellesley Pool"
+    },
+    {
+      "id": "e27",
+      "start": "2026-10-20T00:00:00.000Z",
+      "end": "2026-10-20T01:00:00.000Z",
+      "title": "Grocery run",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e28",
+      "start": "2026-10-20T02:00:00.000Z",
+      "end": "2026-10-20T04:30:00.000Z",
+      "title": "Zoe's birthday party",
+      "people": [
+        "maya"
+      ],
+      "travel": 15,
+      "loc": "Pottery Place"
+    },
+    {
+      "id": "e29",
+      "start": "2026-10-20T08:00:00.000Z",
+      "end": "2026-10-20T10:00:00.000Z",
+      "title": "Movie night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e30",
+      "start": "2026-10-20T23:30:00.000Z",
+      "end": "2026-10-21T01:00:00.000Z",
+      "title": "Sunday brunch",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ],
+      "travel": 15,
+      "loc": "Lady Marmalade"
+    },
+    {
+      "id": "e31",
+      "start": "2026-10-21T06:05:00.000Z",
+      "end": "2026-10-21T07:20:00.000Z",
+      "title": "Flight home · AC 418",
+      "people": [
+        "alex"
+      ],
+      "loc": "YUL → YYZ"
+    },
+    {
+      "id": "e32",
+      "start": "2026-10-21T20:00:00.000Z",
+      "end": "2026-10-21T20:45:00.000Z",
+      "title": "Gym",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e33",
+      "start": "2026-10-22T04:45:00.000Z",
+      "end": "2026-10-22T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ],
+      "travel": 12
+    },
+    {
+      "id": "e34",
+      "start": "2026-10-22T05:30:00.000Z",
+      "end": "2026-10-22T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ],
+      "travel": 20
+    },
+    {
+      "id": "e35",
+      "start": "2026-10-22T08:00:00.000Z",
+      "end": "2026-10-22T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e36",
+      "allDay": true,
+      "start": "2026-10-22T13:00:00.000Z",
+      "end": "2026-10-24T13:00:00.000Z",
+      "title": "Grandma visits",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e37",
+      "start": "2026-10-22T22:00:00.000Z",
+      "end": "2026-10-22T22:45:00.000Z",
+      "title": "Dentist",
+      "people": [
+        "otto"
+      ],
+      "travel": 15,
+      "loc": "Bright Smiles Dental"
+    },
+    {
+      "id": "e38",
+      "start": "2026-10-23T05:30:00.000Z",
+      "end": "2026-10-23T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ],
+      "travel": 20
+    },
+    {
+      "id": "e39",
+      "start": "2026-09-07T05:45:00.000Z",
+      "end": "2026-09-07T06:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e40",
+      "start": "2026-09-08T06:30:00.000Z",
+      "end": "2026-09-08T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e41",
+      "start": "2026-09-09T09:00:00.000Z",
+      "end": "2026-09-09T10:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e42",
+      "start": "2026-09-10T06:30:00.000Z",
+      "end": "2026-09-10T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e43",
+      "start": "2026-09-11T08:00:00.000Z",
+      "end": "2026-09-11T09:30:00.000Z",
+      "title": "Pizza night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e44",
+      "start": "2026-09-11T02:00:00.000Z",
+      "end": "2026-09-11T03:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e45",
+      "start": "2026-09-12T00:00:00.000Z",
+      "end": "2026-09-12T00:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e46",
+      "start": "2026-09-13T07:30:00.000Z",
+      "end": "2026-09-13T09:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e47",
+      "start": "2026-09-14T05:45:00.000Z",
+      "end": "2026-09-14T06:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e48",
+      "start": "2026-09-13T23:00:00.000Z",
+      "end": "2026-09-14T00:00:00.000Z",
+      "title": "Doctor",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e49",
+      "start": "2026-09-15T06:30:00.000Z",
+      "end": "2026-09-15T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e50",
+      "start": "2026-09-16T09:00:00.000Z",
+      "end": "2026-09-16T10:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e51",
+      "start": "2026-09-17T06:30:00.000Z",
+      "end": "2026-09-17T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e52",
+      "start": "2026-09-19T00:00:00.000Z",
+      "end": "2026-09-19T00:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e53",
+      "start": "2026-09-20T07:30:00.000Z",
+      "end": "2026-09-20T09:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e54",
+      "start": "2026-09-20T02:00:00.000Z",
+      "end": "2026-09-20T03:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e55",
+      "start": "2026-09-21T05:45:00.000Z",
+      "end": "2026-09-21T06:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e56",
+      "start": "2026-09-22T06:30:00.000Z",
+      "end": "2026-09-22T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e57",
+      "start": "2026-09-23T09:00:00.000Z",
+      "end": "2026-09-23T10:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e58",
+      "start": "2026-09-24T06:30:00.000Z",
+      "end": "2026-09-24T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e59",
+      "start": "2026-09-25T08:00:00.000Z",
+      "end": "2026-09-25T09:30:00.000Z",
+      "title": "Pizza night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e60",
+      "start": "2026-09-24T23:00:00.000Z",
+      "end": "2026-09-25T00:00:00.000Z",
+      "title": "Doctor",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e61",
+      "start": "2026-09-26T00:00:00.000Z",
+      "end": "2026-09-26T00:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e62",
+      "start": "2026-09-27T07:30:00.000Z",
+      "end": "2026-09-27T09:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e63",
+      "start": "2026-09-28T05:45:00.000Z",
+      "end": "2026-09-28T06:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e64",
+      "start": "2026-09-29T06:30:00.000Z",
+      "end": "2026-09-29T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e65",
+      "start": "2026-09-29T02:00:00.000Z",
+      "end": "2026-09-29T03:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e66",
+      "start": "2026-09-30T09:00:00.000Z",
+      "end": "2026-09-30T10:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e67",
+      "start": "2026-10-01T06:30:00.000Z",
+      "end": "2026-10-01T08:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e68",
+      "start": "2026-10-03T00:00:00.000Z",
+      "end": "2026-10-03T00:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e69",
+      "start": "2026-10-04T06:30:00.000Z",
+      "end": "2026-10-04T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e70",
+      "start": "2026-10-05T04:45:00.000Z",
+      "end": "2026-10-05T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e71",
+      "start": "2026-10-06T05:30:00.000Z",
+      "end": "2026-10-06T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e72",
+      "start": "2026-10-05T22:00:00.000Z",
+      "end": "2026-10-05T23:00:00.000Z",
+      "title": "Doctor",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e73",
+      "start": "2026-10-07T08:00:00.000Z",
+      "end": "2026-10-07T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e74",
+      "start": "2026-10-08T05:30:00.000Z",
+      "end": "2026-10-08T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e75",
+      "start": "2026-10-08T01:00:00.000Z",
+      "end": "2026-10-08T02:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e76",
+      "start": "2026-10-09T07:00:00.000Z",
+      "end": "2026-10-09T08:30:00.000Z",
+      "title": "Pizza night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e77",
+      "start": "2026-10-09T23:00:00.000Z",
+      "end": "2026-10-09T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e78",
+      "start": "2026-10-11T06:30:00.000Z",
+      "end": "2026-10-11T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e79",
+      "start": "2026-10-12T04:45:00.000Z",
+      "end": "2026-10-12T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e80",
+      "start": "2026-10-13T05:30:00.000Z",
+      "end": "2026-10-13T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e81",
+      "start": "2026-10-14T08:00:00.000Z",
+      "end": "2026-10-14T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e82",
+      "start": "2026-10-15T05:30:00.000Z",
+      "end": "2026-10-15T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e83",
+      "start": "2026-10-23T23:00:00.000Z",
+      "end": "2026-10-23T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e84",
+      "start": "2026-10-25T06:30:00.000Z",
+      "end": "2026-10-25T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e85",
+      "start": "2026-10-26T04:45:00.000Z",
+      "end": "2026-10-26T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e86",
+      "start": "2026-10-26T01:00:00.000Z",
+      "end": "2026-10-26T02:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e87",
+      "start": "2026-10-27T05:30:00.000Z",
+      "end": "2026-10-27T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e88",
+      "start": "2026-10-28T08:00:00.000Z",
+      "end": "2026-10-28T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e89",
+      "start": "2026-10-27T22:00:00.000Z",
+      "end": "2026-10-27T23:00:00.000Z",
+      "title": "Doctor",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e90",
+      "start": "2026-10-29T05:30:00.000Z",
+      "end": "2026-10-29T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e91",
+      "start": "2026-10-30T23:00:00.000Z",
+      "end": "2026-10-30T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e92",
+      "start": "2026-11-01T06:30:00.000Z",
+      "end": "2026-11-01T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e93",
+      "start": "2026-11-02T04:45:00.000Z",
+      "end": "2026-11-02T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e94",
+      "start": "2026-11-03T05:30:00.000Z",
+      "end": "2026-11-03T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e95",
+      "start": "2026-11-04T08:00:00.000Z",
+      "end": "2026-11-04T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e96",
+      "start": "2026-11-04T01:00:00.000Z",
+      "end": "2026-11-04T02:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e97",
+      "start": "2026-11-05T05:30:00.000Z",
+      "end": "2026-11-05T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e98",
+      "start": "2026-11-06T07:00:00.000Z",
+      "end": "2026-11-06T08:30:00.000Z",
+      "title": "Pizza night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e99",
+      "start": "2026-11-06T23:00:00.000Z",
+      "end": "2026-11-06T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e100",
+      "start": "2026-11-08T06:30:00.000Z",
+      "end": "2026-11-08T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e101",
+      "start": "2026-11-07T22:00:00.000Z",
+      "end": "2026-11-07T23:00:00.000Z",
+      "title": "Doctor",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e102",
+      "start": "2026-11-09T04:45:00.000Z",
+      "end": "2026-11-09T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e103",
+      "start": "2026-11-10T05:30:00.000Z",
+      "end": "2026-11-10T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e104",
+      "start": "2026-11-11T08:00:00.000Z",
+      "end": "2026-11-11T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e105",
+      "start": "2026-11-12T05:30:00.000Z",
+      "end": "2026-11-12T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e106",
+      "start": "2026-11-13T01:00:00.000Z",
+      "end": "2026-11-13T02:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e107",
+      "start": "2026-11-13T23:00:00.000Z",
+      "end": "2026-11-13T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e108",
+      "start": "2026-11-15T06:30:00.000Z",
+      "end": "2026-11-15T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e109",
+      "start": "2026-11-16T04:45:00.000Z",
+      "end": "2026-11-16T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e110",
+      "start": "2026-11-17T05:30:00.000Z",
+      "end": "2026-11-17T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e111",
+      "start": "2026-11-18T08:00:00.000Z",
+      "end": "2026-11-18T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e112",
+      "start": "2026-11-19T05:30:00.000Z",
+      "end": "2026-11-19T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e113",
+      "start": "2026-11-18T22:00:00.000Z",
+      "end": "2026-11-18T23:00:00.000Z",
+      "title": "Doctor",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e114",
+      "start": "2026-11-20T07:00:00.000Z",
+      "end": "2026-11-20T08:30:00.000Z",
+      "title": "Pizza night",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e115",
+      "start": "2026-11-20T23:00:00.000Z",
+      "end": "2026-11-20T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e116",
+      "start": "2026-11-22T06:30:00.000Z",
+      "end": "2026-11-22T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e117",
+      "start": "2026-11-22T01:00:00.000Z",
+      "end": "2026-11-22T02:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e118",
+      "start": "2026-11-23T04:45:00.000Z",
+      "end": "2026-11-23T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e119",
+      "start": "2026-11-24T05:30:00.000Z",
+      "end": "2026-11-24T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e120",
+      "start": "2026-11-25T08:00:00.000Z",
+      "end": "2026-11-25T09:00:00.000Z",
+      "title": "Yoga",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e121",
+      "start": "2026-11-26T05:30:00.000Z",
+      "end": "2026-11-26T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e122",
+      "start": "2026-11-27T23:00:00.000Z",
+      "end": "2026-11-27T23:45:00.000Z",
+      "title": "Swim lessons",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e123",
+      "start": "2026-11-29T06:30:00.000Z",
+      "end": "2026-11-29T08:30:00.000Z",
+      "title": "Dinner at Nonna's",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e124",
+      "start": "2026-11-30T04:45:00.000Z",
+      "end": "2026-11-30T05:30:00.000Z",
+      "title": "Piano lesson",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e125",
+      "start": "2026-11-29T22:00:00.000Z",
+      "end": "2026-11-29T23:00:00.000Z",
+      "title": "Doctor",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e126",
+      "start": "2026-12-01T05:30:00.000Z",
+      "end": "2026-12-01T07:00:00.000Z",
+      "title": "Soccer practice",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e127",
+      "start": "2026-12-01T01:00:00.000Z",
+      "end": "2026-12-01T02:00:00.000Z",
+      "title": "Lunch meeting",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e128",
+      "allDay": true,
+      "start": "2026-10-28T13:00:00.000Z",
+      "end": "2026-10-29T13:00:00.000Z",
+      "title": "Buzzsaw's birthday 🎂",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    },
+    {
+      "id": "e129",
+      "allDay": true,
+      "start": "2026-10-08T13:00:00.000Z",
+      "end": "2026-10-11T13:00:00.000Z",
+      "title": "Cottage weekend",
+      "people": [
+        "alex",
+        "jordan",
+        "maya",
+        "otto"
+      ]
+    }
+  ],
+  "busyExtras": [
+    {
+      "id": "e130",
+      "start": "2026-10-16T23:00:00.000Z",
+      "end": "2026-10-17T00:00:00.000Z",
+      "title": "Plumber window",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e131",
+      "start": "2026-10-17T00:00:00.000Z",
+      "end": "2026-10-17T00:30:00.000Z",
+      "title": "Call with bank",
+      "people": [
+        "alex"
+      ]
+    },
+    {
+      "id": "e132",
+      "start": "2026-10-17T03:30:00.000Z",
+      "end": "2026-10-17T04:30:00.000Z",
+      "title": "Library volunteer",
+      "people": [
+        "jordan"
+      ]
+    },
+    {
+      "id": "e133",
+      "start": "2026-10-17T04:30:00.000Z",
+      "end": "2026-10-17T05:00:00.000Z",
+      "title": "Snack prep",
+      "people": [
+        "maya"
+      ]
+    },
+    {
+      "id": "e134",
+      "start": "2026-10-17T05:00:00.000Z",
+      "end": "2026-10-17T05:45:00.000Z",
+      "title": "Math tutor",
+      "people": [
+        "otto"
+      ]
+    },
+    {
+      "id": "e135",
+      "start": "2026-10-17T05:15:00.000Z",
+      "end": "2026-10-17T06:00:00.000Z",
+      "title": "Swim make-up",
+      "people": [
+        "otto"
+      ],
+      "travel": 10
+    },
+    {
+      "id": "e136",
+      "start": "2026-10-17T08:45:00.000Z",
+      "end": "2026-10-17T09:30:00.000Z",
+      "title": "Bake sale prep",
+      "people": [
+        "maya",
+        "jordan"
+      ]
+    },
+    {
+      "id": "e137",
+      "start": "2026-10-17T09:30:00.000Z",
+      "end": "2026-10-17T10:30:00.000Z",
+      "title": "Hockey",
+      "people": [
+        "alex"
+      ],
+      "travel": 15
+    }
+  ],
+  "routines": [
+    {
+      "id": "morning",
+      "name": "Morning",
+      "range": "6 – 11 AM",
+      "from": 0,
+      "to": 11
+    },
+    {
+      "id": "after",
+      "name": "After school",
+      "range": "11 AM – 5 PM",
+      "from": 11,
+      "to": 17
+    },
+    {
+      "id": "evening",
+      "name": "Evening",
+      "range": "5 – 10 PM",
+      "from": 17,
+      "to": 24
+    }
+  ],
+  "chores": [
+    {
+      "id": "c1",
+      "r": "morning",
+      "who": "maya",
+      "title": "Make bed",
+      "emoji": "🛏️",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c2",
+      "r": "morning",
+      "who": "maya",
+      "title": "Brush teeth",
+      "emoji": "🪥",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c3",
+      "r": "morning",
+      "who": "maya",
+      "title": "Pack backpack",
+      "emoji": "🎒",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c4",
+      "r": "morning",
+      "who": "otto",
+      "title": "Make bed",
+      "emoji": "🛏️",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c5",
+      "r": "morning",
+      "who": "otto",
+      "title": "Brush teeth",
+      "emoji": "🪥",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c6",
+      "r": "morning",
+      "who": "otto",
+      "title": "Get dressed",
+      "emoji": "👕",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c7",
+      "r": "morning",
+      "who": "alex",
+      "title": "School drop-off",
+      "emoji": "🚗",
+      "stars": 0,
+      "done": true
+    },
+    {
+      "id": "c8",
+      "r": "morning",
+      "who": "jordan",
+      "title": "Pack lunches",
+      "emoji": "🥪",
+      "stars": 0,
+      "done": true
+    },
+    {
+      "id": "c9",
+      "r": "morning",
+      "who": "any",
+      "title": "Feed Biscuit",
+      "emoji": "🐶",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c10",
+      "r": "after",
+      "who": "maya",
+      "title": "Unpack lunchbox",
+      "emoji": "🥪",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c11",
+      "r": "after",
+      "who": "maya",
+      "title": "Homework",
+      "emoji": "📚",
+      "stars": 2,
+      "done": false
+    },
+    {
+      "id": "c12",
+      "r": "after",
+      "who": "maya",
+      "title": "Pack soccer bag",
+      "emoji": "⚽",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c13",
+      "r": "after",
+      "who": "otto",
+      "title": "Unpack lunchbox",
+      "emoji": "🥪",
+      "stars": 1,
+      "done": true
+    },
+    {
+      "id": "c14",
+      "r": "after",
+      "who": "otto",
+      "title": "Read for 20 min",
+      "emoji": "📖",
+      "stars": 2,
+      "done": false
+    },
+    {
+      "id": "c15",
+      "r": "after",
+      "who": "otto",
+      "title": "Practice piano",
+      "emoji": "🎹",
+      "stars": 2,
+      "done": false
+    },
+    {
+      "id": "c16",
+      "r": "after",
+      "who": "otto",
+      "title": "Tidy the Lego",
+      "emoji": "🧱",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c17",
+      "r": "after",
+      "who": "alex",
+      "title": "Take out recycling",
+      "emoji": "♻️",
+      "stars": 0,
+      "done": false,
+      "overdue": true
+    },
+    {
+      "id": "c18",
+      "r": "after",
+      "who": "alex",
+      "title": "Call the plumber",
+      "emoji": "☎️",
+      "stars": 0,
+      "done": true
+    },
+    {
+      "id": "c19",
+      "r": "after",
+      "who": "jordan",
+      "title": "Fold laundry",
+      "emoji": "🧺",
+      "stars": 0,
+      "done": false
+    },
+    {
+      "id": "c20",
+      "r": "after",
+      "who": "jordan",
+      "title": "Order Zoe’s gift",
+      "emoji": "🎁",
+      "stars": 0,
+      "done": true
+    },
+    {
+      "id": "c21",
+      "r": "after",
+      "who": "any",
+      "title": "Water the plants",
+      "emoji": "🪴",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c22",
+      "r": "after",
+      "who": "any",
+      "title": "Empty dishwasher",
+      "emoji": "🍽️",
+      "stars": 2,
+      "done": false
+    },
+    {
+      "id": "c23",
+      "r": "after",
+      "who": "any",
+      "title": "Walk Biscuit",
+      "emoji": "🐕",
+      "stars": 2,
+      "done": true
+    },
+    {
+      "id": "c24",
+      "r": "evening",
+      "who": "maya",
+      "title": "Set the table",
+      "emoji": "🍴",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c25",
+      "r": "evening",
+      "who": "maya",
+      "title": "Lay out clothes",
+      "emoji": "👕",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c26",
+      "r": "evening",
+      "who": "maya",
+      "title": "Shower",
+      "emoji": "🚿",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c27",
+      "r": "evening",
+      "who": "otto",
+      "title": "Clear plates",
+      "emoji": "🍽️",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c28",
+      "r": "evening",
+      "who": "otto",
+      "title": "Bath",
+      "emoji": "🛁",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c29",
+      "r": "evening",
+      "who": "otto",
+      "title": "Lay out clothes",
+      "emoji": "👕",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c30",
+      "r": "evening",
+      "who": "alex",
+      "title": "Lock up",
+      "emoji": "🔐",
+      "stars": 0,
+      "done": false
+    },
+    {
+      "id": "c31",
+      "r": "evening",
+      "who": "jordan",
+      "title": "Run dishwasher",
+      "emoji": "🫧",
+      "stars": 0,
+      "done": false
+    },
+    {
+      "id": "c32",
+      "r": "evening",
+      "who": "any",
+      "title": "Wipe counters",
+      "emoji": "🧽",
+      "stars": 1,
+      "done": false
+    },
+    {
+      "id": "c33",
+      "r": "evening",
+      "who": "any",
+      "title": "Garbage to curb",
+      "emoji": "🗑️",
+      "stars": 2,
+      "done": false
+    }
+  ],
+  "stars": {
+    "maya": 42,
+    "otto": 57
+  },
+  "week": {
+    "maya": [
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1
+    ],
+    "otto": [
+      1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      0
+    ]
+  },
+  "stores": [
+    {
+      "id": "grocer",
+      "name": "FreshCo"
+    },
+    {
+      "id": "costco",
+      "name": "Costco"
+    }
+  ],
+  "catOrder": {
+    "all": [
+      "Produce",
+      "Bakery",
+      "Meat & Fish",
+      "Dairy & Eggs",
+      "Pantry",
+      "Frozen",
+      "Snacks",
+      "Household"
+    ],
+    "grocer": [
+      "Produce",
+      "Bakery",
+      "Meat & Fish",
+      "Dairy & Eggs",
+      "Pantry",
+      "Frozen",
+      "Snacks",
+      "Household"
+    ],
+    "costco": [
+      "Household",
+      "Pantry",
+      "Snacks",
+      "Dairy & Eggs",
+      "Meat & Fish",
+      "Frozen",
+      "Produce",
+      "Bakery"
+    ]
+  },
+  "groceries": [
+    {
+      "id": "g1",
+      "name": "Bananas",
+      "cat": "Produce",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": "Bunch, not too ripe"
+    },
+    {
+      "id": "g2",
+      "name": "Baby spinach",
+      "cat": "Produce",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g3",
+      "name": "Avocados",
+      "cat": "Produce",
+      "qty": 3,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g4",
+      "name": "Honeycrisp apples",
+      "cat": "Produce",
+      "qty": 6,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g5",
+      "name": "Sourdough loaf",
+      "cat": "Bakery",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g6",
+      "name": "Bagels",
+      "cat": "Bakery",
+      "qty": 2,
+      "store": "costco",
+      "done": false,
+      "note": "Everything"
+    },
+    {
+      "id": "g7",
+      "name": "Chicken thighs",
+      "cat": "Meat & Fish",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": "Boneless"
+    },
+    {
+      "id": "g8",
+      "name": "Salmon fillets",
+      "cat": "Meat & Fish",
+      "qty": 2,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g9",
+      "name": "Milk 2%",
+      "cat": "Dairy & Eggs",
+      "qty": 2,
+      "store": "costco",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g10",
+      "name": "Eggs",
+      "cat": "Dairy & Eggs",
+      "qty": 1,
+      "store": "costco",
+      "done": false,
+      "note": "2 dozen"
+    },
+    {
+      "id": "g11",
+      "name": "Greek yogurt",
+      "cat": "Dairy & Eggs",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g12",
+      "name": "Aged cheddar",
+      "cat": "Dairy & Eggs",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g13",
+      "name": "Rigatoni",
+      "cat": "Pantry",
+      "qty": 2,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g14",
+      "name": "Olive oil",
+      "cat": "Pantry",
+      "qty": 1,
+      "store": "costco",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g15",
+      "name": "Coffee beans",
+      "cat": "Pantry",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": "Dark roast"
+    },
+    {
+      "id": "g16",
+      "name": "Frozen peas",
+      "cat": "Frozen",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g17",
+      "name": "Waffles",
+      "cat": "Frozen",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g18",
+      "name": "Goldfish crackers",
+      "cat": "Snacks",
+      "qty": 1,
+      "store": "costco",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g19",
+      "name": "Granola bars",
+      "cat": "Snacks",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g20",
+      "name": "Paper towels",
+      "cat": "Household",
+      "qty": 1,
+      "store": "costco",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g21",
+      "name": "Dish soap",
+      "cat": "Household",
+      "qty": 1,
+      "store": "grocer",
+      "done": false,
+      "note": ""
+    },
+    {
+      "id": "g22",
+      "name": "Lemons",
+      "cat": "Produce",
+      "qty": 2,
+      "store": "grocer",
+      "done": true,
+      "note": ""
+    },
+    {
+      "id": "g23",
+      "name": "Butter",
+      "cat": "Dairy & Eggs",
+      "qty": 1,
+      "store": "grocer",
+      "done": true,
+      "note": ""
+    },
+    {
+      "id": "g24",
+      "name": "Tortillas",
+      "cat": "Bakery",
+      "qty": 1,
+      "store": "grocer",
+      "done": true,
+      "note": ""
+    }
+  ],
+  "catalog": [
+    [
+      "Apples",
+      "Produce"
+    ],
+    [
+      "Avocados",
+      "Produce"
+    ],
+    [
+      "Bananas",
+      "Produce"
+    ],
+    [
+      "Baby spinach",
+      "Produce"
+    ],
+    [
+      "Blueberries",
+      "Produce"
+    ],
+    [
+      "Broccoli",
+      "Produce"
+    ],
+    [
+      "Carrots",
+      "Produce"
+    ],
+    [
+      "Cucumber",
+      "Produce"
+    ],
+    [
+      "Garlic",
+      "Produce"
+    ],
+    [
+      "Grapes",
+      "Produce"
+    ],
+    [
+      "Lemons",
+      "Produce"
+    ],
+    [
+      "Limes",
+      "Produce"
+    ],
+    [
+      "Onions",
+      "Produce"
+    ],
+    [
+      "Potatoes",
+      "Produce"
+    ],
+    [
+      "Strawberries",
+      "Produce"
+    ],
+    [
+      "Tomatoes",
+      "Produce"
+    ],
+    [
+      "Bread",
+      "Bakery"
+    ],
+    [
+      "Bagels",
+      "Bakery"
+    ],
+    [
+      "Croissants",
+      "Bakery"
+    ],
+    [
+      "Sourdough loaf",
+      "Bakery"
+    ],
+    [
+      "Tortillas",
+      "Bakery"
+    ],
+    [
+      "Hamburger buns",
+      "Bakery"
+    ],
+    [
+      "Bacon",
+      "Meat & Fish"
+    ],
+    [
+      "Chicken breasts",
+      "Meat & Fish"
+    ],
+    [
+      "Chicken thighs",
+      "Meat & Fish"
+    ],
+    [
+      "Ground beef",
+      "Meat & Fish"
+    ],
+    [
+      "Salmon fillets",
+      "Meat & Fish"
+    ],
+    [
+      "Shrimp",
+      "Meat & Fish"
+    ],
+    [
+      "Butter",
+      "Dairy & Eggs"
+    ],
+    [
+      "Cheddar",
+      "Dairy & Eggs"
+    ],
+    [
+      "Cream cheese",
+      "Dairy & Eggs"
+    ],
+    [
+      "Eggs",
+      "Dairy & Eggs"
+    ],
+    [
+      "Greek yogurt",
+      "Dairy & Eggs"
+    ],
+    [
+      "Milk 2%",
+      "Dairy & Eggs"
+    ],
+    [
+      "Oat milk",
+      "Dairy & Eggs"
+    ],
+    [
+      "Parmesan",
+      "Dairy & Eggs"
+    ],
+    [
+      "Black beans",
+      "Pantry"
+    ],
+    [
+      "Cereal",
+      "Pantry"
+    ],
+    [
+      "Coffee beans",
+      "Pantry"
+    ],
+    [
+      "Flour",
+      "Pantry"
+    ],
+    [
+      "Honey",
+      "Pantry"
+    ],
+    [
+      "Maple syrup",
+      "Pantry"
+    ],
+    [
+      "Olive oil",
+      "Pantry"
+    ],
+    [
+      "Pasta sauce",
+      "Pantry"
+    ],
+    [
+      "Peanut butter",
+      "Pantry"
+    ],
+    [
+      "Rice",
+      "Pantry"
+    ],
+    [
+      "Rigatoni",
+      "Pantry"
+    ],
+    [
+      "Spaghetti",
+      "Pantry"
+    ],
+    [
+      "Sugar",
+      "Pantry"
+    ],
+    [
+      "Tea",
+      "Pantry"
+    ],
+    [
+      "Frozen peas",
+      "Frozen"
+    ],
+    [
+      "Frozen berries",
+      "Frozen"
+    ],
+    [
+      "Ice cream",
+      "Frozen"
+    ],
+    [
+      "Pizza",
+      "Frozen"
+    ],
+    [
+      "Waffles",
+      "Frozen"
+    ],
+    [
+      "Chips",
+      "Snacks"
+    ],
+    [
+      "Crackers",
+      "Snacks"
+    ],
+    [
+      "Dark chocolate",
+      "Snacks"
+    ],
+    [
+      "Goldfish crackers",
+      "Snacks"
+    ],
+    [
+      "Granola bars",
+      "Snacks"
+    ],
+    [
+      "Popcorn",
+      "Snacks"
+    ],
+    [
+      "Dish soap",
+      "Household"
+    ],
+    [
+      "Dishwasher pods",
+      "Household"
+    ],
+    [
+      "Garbage bags",
+      "Household"
+    ],
+    [
+      "Laundry detergent",
+      "Household"
+    ],
+    [
+      "Paper towels",
+      "Household"
+    ],
+    [
+      "Toilet paper",
+      "Household"
+    ],
+    [
+      "Toothpaste",
+      "Household"
+    ]
+  ],
+  "usuals": [
+    "Milk 2%",
+    "Eggs",
+    "Bananas",
+    "Bread",
+    "Apples",
+    "Coffee beans",
+    "Greek yogurt",
+    "Cheddar",
+    "Butter",
+    "Baby spinach",
+    "Chicken thighs",
+    "Paper towels"
+  ],
+  "rooms": [
+    {
+      "id": "kitchen",
+      "name": "Kitchen"
+    },
+    {
+      "id": "living",
+      "name": "Living Room"
+    },
+    {
+      "id": "entry",
+      "name": "Entry + Garage"
+    },
+    {
+      "id": "upstairs",
+      "name": "Upstairs"
+    },
+    {
+      "id": "yard",
+      "name": "Backyard"
+    }
+  ],
+  "devices": [
+    {
+      "id": "k-pend",
+      "room": "kitchen",
+      "type": "light",
+      "name": "Pendants",
+      "on": true,
+      "level": 80
+    },
+    {
+      "id": "k-under",
+      "room": "kitchen",
+      "type": "light",
+      "name": "Under Cabinet",
+      "on": true,
+      "level": 55
+    },
+    {
+      "id": "k-island",
+      "room": "kitchen",
+      "type": "light",
+      "name": "Island",
+      "on": false,
+      "level": 100
+    },
+    {
+      "id": "k-speaker",
+      "room": "kitchen",
+      "type": "blind",
+      "name": "Window Shade",
+      "pos": 100
+    },
+    {
+      "id": "l-lamp",
+      "room": "living",
+      "type": "light",
+      "name": "Floor Lamp",
+      "on": true,
+      "level": 45
+    },
+    {
+      "id": "l-ceil",
+      "room": "living",
+      "type": "light",
+      "name": "Ceiling",
+      "on": false,
+      "level": 100
+    },
+    {
+      "id": "l-blinds",
+      "room": "living",
+      "type": "blind",
+      "name": "Blinds",
+      "pos": 60
+    },
+    {
+      "id": "l-fire",
+      "room": "living",
+      "type": "light",
+      "name": "Mantel",
+      "on": false,
+      "level": 70
+    },
+    {
+      "id": "e-door",
+      "room": "entry",
+      "type": "lock",
+      "name": "Front Door",
+      "locked": true
+    },
+    {
+      "id": "e-porch",
+      "room": "entry",
+      "type": "light",
+      "name": "Porch",
+      "on": true,
+      "level": 100
+    },
+    {
+      "id": "g-door",
+      "room": "entry",
+      "type": "garage",
+      "name": "Garage",
+      "state": "closed"
+    },
+    {
+      "id": "g-side",
+      "room": "entry",
+      "type": "lock",
+      "name": "Side Door",
+      "locked": true
+    },
+    {
+      "id": "u-maya",
+      "room": "upstairs",
+      "type": "light",
+      "name": "Buzzsaw's Lamp",
+      "on": true,
+      "level": 30
+    },
+    {
+      "id": "u-otto",
+      "room": "upstairs",
+      "type": "light",
+      "name": "Skidmark's Nightlight",
+      "on": false,
+      "level": 15
+    },
+    {
+      "id": "u-hall",
+      "room": "upstairs",
+      "type": "light",
+      "name": "Hallway",
+      "on": false,
+      "level": 60
+    },
+    {
+      "id": "u-bath",
+      "room": "upstairs",
+      "type": "light",
+      "name": "Bathroom",
+      "on": false,
+      "level": 100
+    },
+    {
+      "id": "y-string",
+      "room": "yard",
+      "type": "light",
+      "name": "String Lights",
+      "on": false,
+      "level": 100,
+      "flaky": true
+    },
+    {
+      "id": "y-back",
+      "room": "yard",
+      "type": "lock",
+      "name": "Back Door",
+      "locked": true
+    },
+    {
+      "id": "y-flood",
+      "room": "yard",
+      "type": "light",
+      "name": "Floodlight",
+      "on": false,
+      "level": 100
+    }
+  ],
+  "climate": {
+    "current": 20.5,
+    "set": 21.5,
+    "mode": "heat",
+    "humidity": 42,
+    "outside": 14
+  },
+  "media": {
+    "room": "Kitchen",
+    "title": "Harvest Moon",
+    "artist": "Neil Young",
+    "playing": true,
+    "volume": 35,
+    "seed": "harvest-vinyl"
+  },
+  "cameras": [
+    {
+      "id": "c-front",
+      "name": "Front Porch",
+      "seed": "porch-steps"
+    },
+    {
+      "id": "c-drive",
+      "name": "Driveway",
+      "seed": "driveway-maple"
+    },
+    {
+      "id": "c-yard",
+      "name": "Backyard",
+      "seed": "garden-yard"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "morning",
+      "name": "Morning",
+      "icon": "sunrise",
+      "set": {
+        "k-pend": 100,
+        "k-under": 80,
+        "l-blinds": 100,
+        "l-lamp": 0,
+        "u-hall": 60
+      }
+    },
+    {
+      "id": "dinner",
+      "name": "Dinner",
+      "icon": "utensils",
+      "set": {
+        "k-pend": 55,
+        "k-under": 30,
+        "k-island": 70,
+        "l-lamp": 40,
+        "l-ceil": 0
+      }
+    },
+    {
+      "id": "movie",
+      "name": "Movie",
+      "icon": "film",
+      "set": {
+        "k-pend": 0,
+        "k-under": 15,
+        "k-island": 0,
+        "l-lamp": 15,
+        "l-ceil": 0,
+        "l-blinds": 0,
+        "l-fire": 30
+      }
+    },
+    {
+      "id": "away",
+      "name": "Away",
+      "icon": "away",
+      "set": {
+        "k-pend": 0,
+        "k-under": 0,
+        "k-island": 0,
+        "l-lamp": 0,
+        "l-ceil": 0,
+        "l-fire": 0,
+        "u-maya": 0,
+        "u-hall": 0,
+        "e-porch": 100
+      }
+    },
+    {
+      "id": "night",
+      "name": "Goodnight",
+      "icon": "moon",
+      "set": {
+        "k-pend": 0,
+        "k-under": 10,
+        "k-island": 0,
+        "l-lamp": 0,
+        "l-ceil": 0,
+        "l-fire": 0,
+        "u-hall": 10,
+        "u-otto": 15,
+        "e-porch": 0
+      }
+    }
+  ],
+  "weather": {
+    "hi": 17,
+    "lo": 8,
+    "feels": -2,
+    "humidity": 71,
+    "wind": 18,
+    "t": [
+      9,
+      9,
+      8,
+      8,
+      8,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      15,
+      16,
+      17,
+      16,
+      15,
+      14,
+      13,
+      12,
+      12,
+      11,
+      10,
+      10,
+      9
+    ],
+    "c": [
+      "moon",
+      "moon",
+      "moon",
+      "moon",
+      "moon",
+      "moon",
+      "partly",
+      "partly",
+      "sun",
+      "sun",
+      "sun",
+      "partly",
+      "partly",
+      "cloud",
+      "cloud",
+      "cloud",
+      "rain",
+      "rain",
+      "rain",
+      "rain",
+      "cloud",
+      "cloud",
+      "moon",
+      "moon"
+    ],
+    "p": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      5,
+      10,
+      20,
+      25,
+      40,
+      80,
+      90,
+      70,
+      55,
+      20,
+      10,
+      0,
+      0
+    ]
+  },
+  "photos": [
+    {
+      "seed": "tofino-surf",
+      "o": "l",
+      "date": "2021-10-17",
+      "place": "Tofino, BC",
+      "from": "jordan",
+      "tag": "tofino"
+    },
+    {
+      "seed": "cottage-dock",
+      "o": "l",
+      "date": "2023-08-12",
+      "place": "Lake of Bays",
+      "from": "alex",
+      "tag": "cottage"
+    },
+    {
+      "seed": "maya-kite",
+      "o": "p",
+      "date": "2024-05-19",
+      "place": "Humber Bay Park",
+      "from": "jordan",
+      "tag": "spring24"
+    },
+    {
+      "seed": "otto-kite",
+      "o": "p",
+      "date": "2024-05-19",
+      "place": "Humber Bay Park",
+      "from": "alex",
+      "tag": "spring24"
+    },
+    {
+      "seed": "autumn-walk",
+      "o": "l",
+      "date": "2022-10-09",
+      "place": "High Park",
+      "from": "alex",
+      "tag": "fall22"
+    },
+    {
+      "seed": "birthday-cake",
+      "o": "p",
+      "date": "2025-10-12",
+      "place": "Home",
+      "from": "jordan",
+      "tag": "bday25"
+    },
+    {
+      "seed": "candles-lit",
+      "o": "p",
+      "date": "2025-10-12",
+      "place": "Home",
+      "from": "alex",
+      "tag": "bday25"
+    },
+    {
+      "seed": "mountain-lake",
+      "o": "l",
+      "date": "2019-10-17",
+      "place": "Banff, AB",
+      "from": "alex",
+      "tag": "banff"
+    },
+    {
+      "seed": "snow-day",
+      "o": "l",
+      "date": "2024-01-21",
+      "place": "Riverdale Hill",
+      "from": "jordan",
+      "tag": "winter24"
+    },
+    {
+      "seed": "beach-dunes",
+      "o": "l",
+      "date": "2023-07-02",
+      "place": "Sandbanks",
+      "from": "maya",
+      "tag": "sandbanks"
+    },
+    {
+      "seed": "city-night",
+      "o": "l",
+      "date": "2022-12-18",
+      "place": "Nathan Phillips Sq.",
+      "from": "jordan",
+      "tag": "xmas22"
+    },
+    {
+      "seed": "garden-bloom",
+      "o": "p",
+      "date": "2025-06-08",
+      "place": "Backyard",
+      "from": "otto",
+      "tag": "garden"
+    },
+    {
+      "seed": "tomato-haul",
+      "o": "p",
+      "date": "2025-06-08",
+      "place": "Backyard",
+      "from": "maya",
+      "tag": "garden"
+    },
+    {
+      "seed": "road-trip",
+      "o": "l",
+      "date": "2024-08-04",
+      "place": "Cabot Trail, NS",
+      "from": "alex",
+      "tag": "ns"
+    },
+    {
+      "seed": "campfire",
+      "o": "l",
+      "date": "2024-08-06",
+      "place": "Cape Breton",
+      "from": "jordan",
+      "tag": "ns"
+    },
+    {
+      "seed": "forest-path",
+      "o": "l",
+      "date": "2020-09-26",
+      "place": "Algonquin",
+      "from": "alex",
+      "tag": "algonquin"
+    },
+    {
+      "seed": "pancakes",
+      "o": "p",
+      "date": "2026-03-14",
+      "place": "Home",
+      "from": "maya",
+      "tag": "pancakes"
+    },
+    {
+      "seed": "sugar-shack",
+      "o": "p",
+      "date": "2026-03-14",
+      "place": "Sugar Shack",
+      "from": "jordan",
+      "tag": "pancakes"
+    },
+    {
+      "seed": "harbour-sail",
+      "o": "l",
+      "date": "2025-07-19",
+      "place": "Toronto Harbour",
+      "from": "otto",
+      "tag": "sail"
+    },
+    {
+      "seed": "pumpkins",
+      "o": "l",
+      "date": "2025-10-25",
+      "place": "Chudleigh's",
+      "from": "maya",
+      "tag": "fall25"
+    }
+  ],
+  "agents": [
+    {
+      "id": "claude",
+      "name": "Claude",
+      "plan": "Max 20×",
+      "color": "#D97757",
+      "rgb": "217 119 87",
+      "status": "ok",
+      "meters": [
+        {
+          "label": "Session",
+          "win": 300,
+          "used": 62,
+          "left": 134
+        },
+        {
+          "label": "Weekly · all models",
+          "win": 10080,
+          "used": 41,
+          "left": 4680
+        }
+      ],
+      "tokens": 3.1,
+      "cost": 21.4,
+      "week": [
+        2.2,
+        3.8,
+        2.9,
+        4.4,
+        1.6,
+        0.8,
+        3.1
+      ]
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "plan": "ChatGPT Pro",
+      "color": "#10A37F",
+      "rgb": "16 163 127",
+      "status": "ok",
+      "meters": [
+        {
+          "label": "Session",
+          "win": 300,
+          "used": 88,
+          "left": 38
+        },
+        {
+          "label": "Weekly",
+          "win": 10080,
+          "used": 57,
+          "left": 7320
+        }
+      ],
+      "tokens": 4.6,
+      "cost": 17.9,
+      "week": [
+        3.1,
+        2.4,
+        5.2,
+        4,
+        2.2,
+        1.1,
+        4.6
+      ]
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "plan": "Pro+",
+      "color": "#111111",
+      "rgb": "17 17 17",
+      "status": "ok",
+      "meters": [
+        {
+          "label": "Included usage",
+          "win": 43200,
+          "used": 76,
+          "left": 17280,
+          "detail": "$45.60 of $60"
+        },
+        {
+          "label": "On-demand",
+          "win": 43200,
+          "used": 16,
+          "left": 17280,
+          "detail": "$8.20 of $50 cap"
+        }
+      ],
+      "tokens": 1.8,
+      "cost": 6.3,
+      "week": [
+        1.2,
+        1.9,
+        0.7,
+        2.3,
+        1.5,
+        0.4,
+        1.8
+      ]
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini",
+      "plan": "AI Ultra",
+      "color": "#3F6FE4",
+      "rgb": "63 111 228",
+      "status": "ok",
+      "meters": [
+        {
+          "label": "Requests · daily",
+          "win": 1440,
+          "used": 16,
+          "left": 522,
+          "detail": "320 of 2,000"
+        },
+        {
+          "label": "Pro model · daily",
+          "win": 1440,
+          "used": 52,
+          "left": 522,
+          "detail": "104 of 200"
+        }
+      ],
+      "tokens": 0.9,
+      "cost": 0,
+      "week": [
+        0.4,
+        1.1,
+        0.6,
+        0.2,
+        0.9,
+        1.3,
+        0.9
+      ]
+    },
+    {
+      "id": "copilot",
+      "name": "Copilot",
+      "plan": "Pro+",
+      "color": "#8957E5",
+      "rgb": "137 87 229",
+      "status": "degraded",
+      "incident": "Elevated errors on coding agent",
+      "meters": [
+        {
+          "label": "Premium requests",
+          "win": 43200,
+          "used": 75,
+          "left": 17280,
+          "detail": "1,124 of 1,500"
+        },
+        {
+          "label": "Coding agent",
+          "win": 43200,
+          "used": 38,
+          "left": 17280,
+          "detail": "19 of 50 sessions"
+        }
+      ],
+      "tokens": 1.2,
+      "cost": 0,
+      "week": [
+        0.9,
+        1.4,
+        1.1,
+        0.8,
+        1.6,
+        0.3,
+        1.2
+      ]
+    }
+  ]
+}

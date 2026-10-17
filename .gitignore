@@ -1,0 +1,8 @@
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+.DS_Store
+*.log
