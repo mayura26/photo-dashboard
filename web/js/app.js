@@ -332,11 +332,31 @@
     fit();
     window.addEventListener('resize', fit);
     // Switch tabs the instant a finger lands (pointerdown), not on release. Keyboard "clicks"
-    // (detail === 0) still work.
+    // (detail === 0) still work. Long-press Home 2s in night/nightdash → day.
+    var homeHoldTimer = null;
+    function clearHomeHold() {
+      if (homeHoldTimer) { clearTimeout(homeHoldTimer); homeHoldTimer = null; }
+    }
     $('#rail').addEventListener('pointerdown', function (e) {
       var b = e.target.closest('[data-go]');
-      if (b && e.button === 0) App.go(b.dataset.go);
+      if (!b || e.button !== 0) return;
+      App.go(b.dataset.go);
+      if (b.dataset.go === 'home' && (App.mode === 'night' || App.mode === 'nightdash')) {
+        clearHomeHold();
+        if (b.setPointerCapture) {
+          try { b.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+        }
+        homeHoldTimer = setTimeout(function () {
+          homeHoldTimer = null;
+          App.setMode('day');
+          App.go('home');
+          App.resetIdle();
+        }, 2000);
+      }
     });
+    $('#rail').addEventListener('pointerup', clearHomeHold);
+    $('#rail').addEventListener('pointercancel', clearHomeHold);
+    $('#rail').addEventListener('pointerleave', clearHomeHold);
     $('#rail').addEventListener('click', function (e) {
       var b = e.target.closest('[data-go]');
       if (b && e.detail === 0) App.go(b.dataset.go);

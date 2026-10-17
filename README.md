@@ -38,3 +38,4 @@ Use the repo `Dockerfile`. Set **Ports Exposes** to `8080` (must match `PORT`). 
 ## Shell shortcuts
 
 - **A** ambient · **N** night · **1–5** switch views · **Esc** close sheet
+- Hold **Today** 2s in night/nightdash → day (idle can return to ambient/night)
