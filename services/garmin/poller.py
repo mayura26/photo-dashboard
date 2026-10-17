@@ -12,12 +12,66 @@ import os
 import sys
 import time
 from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import requests
 from garminconnect import Garmin
 
 log = logging.getLogger("garmin-sidecar")
+
+
+def load_dotenv() -> None:
+    """Load KEY=VALUE pairs from .env without overriding existing env vars.
+
+    Searches (first match wins for each key): process env already set, then
+    GARMIN_ENV_FILE, services/garmin/.env, repo-root .env, cwd .env.
+    """
+    here = Path(__file__).resolve().parent
+    candidates = []
+    if os.getenv("GARMIN_ENV_FILE"):
+        candidates.append(Path(os.environ["GARMIN_ENV_FILE"]))
+    candidates.extend(
+        [
+            here / ".env",
+            here.parent.parent / ".env",  # repo root when at services/garmin/
+            Path.cwd() / ".env",
+        ]
+    )
+    seen: set[Path] = set()
+    for path in candidates:
+        try:
+            path = path.resolve()
+        except OSError:
+            continue
+        if path in seen or not path.is_file():
+            continue
+        seen.add(path)
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as e:
+            log.warning("could not read %s: %s", path, e)
+            continue
+        loaded = 0
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[7:].strip()
+            if "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            key = key.strip()
+            val = val.strip()
+            if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
+                val = val[1:-1]
+            if not key or key in os.environ:
+                continue
+            os.environ[key] = val
+            loaded += 1
+        if loaded:
+            log.info("loaded %d vars from %s", loaded, path)
 
 
 def env(name: str, default: str | None = None) -> str | None:
@@ -296,6 +350,7 @@ def main() -> int:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    load_dotenv()
 
     email = env("GARMIN_EMAIL")
     password = env("GARMIN_PASSWORD")

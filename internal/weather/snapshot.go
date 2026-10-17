@@ -7,28 +7,31 @@ import (
 	"time"
 )
 
+// RealRainMM is the shower amount above which we treat an hour as real rain.
+const RealRainMM = 0.2
+
 // Snapshot is the dashboard weather payload (matches seed.json / DATA.weather).
 type Snapshot struct {
-	Hi       int      `json:"hi"`
-	Lo       int      `json:"lo"`
-	Feels    int      `json:"feels"`
-	Humidity int      `json:"humidity"`
-	Wind     int      `json:"wind"`
-	T        []int    `json:"t"`
-	C        []string `json:"c"`
-	P        []int    `json:"p"`
+	Hi       int       `json:"hi"`
+	Lo       int       `json:"lo"`
+	Feels    int       `json:"feels"`
+	Humidity int       `json:"humidity"`
+	Wind     int       `json:"wind"`
+	T        []int     `json:"t"`
+	C        []string  `json:"c"`
+	P        []float64 `json:"p"` // hourly shower mm
 }
 
 // BuildSnapshot maps an Open-Meteo response into the dashboard weather shape.
 func BuildSnapshot(om openMeteoResponse) (json.RawMessage, error) {
 	n := len(om.Hourly.Time)
 	if n < 24 ||
-		len(om.Hourly.Temperature2m) < 24 ||
+		len(om.Hourly.ApparentTemperature) < 24 ||
 		len(om.Hourly.WeatherCode) < 24 ||
-		len(om.Hourly.PrecipitationProbability) < 24 {
+		len(om.Hourly.Showers) < 24 {
 		return nil, fmt.Errorf("open-meteo: need 24 hourly points, got %d", n)
 	}
-	if len(om.Daily.Temperature2mMax) < 1 || len(om.Daily.Temperature2mMin) < 1 {
+	if len(om.Daily.ApparentTemperatureMax) < 1 || len(om.Daily.ApparentTemperatureMin) < 1 {
 		return nil, fmt.Errorf("open-meteo: missing daily high/low")
 	}
 
@@ -36,18 +39,18 @@ func BuildSnapshot(om openMeteoResponse) (json.RawMessage, error) {
 
 	t := make([]int, 24)
 	c := make([]string, 24)
-	p := make([]int, 24)
+	p := make([]float64, 24)
 	for i := 0; i < 24; i++ {
-		t[i] = int(math.Round(om.Hourly.Temperature2m[i]))
-		p[i] = int(math.Round(om.Hourly.PrecipitationProbability[i]))
+		t[i] = int(math.Round(om.Hourly.ApparentTemperature[i]))
+		p[i] = math.Round(om.Hourly.Showers[i]*10) / 10
 		hour := hourOf(om.Hourly.Time[i])
 		day := isDaylight(hour, sunrise, sunset)
 		c[i] = IconFor(om.Hourly.WeatherCode[i], day)
 	}
 
 	snap := Snapshot{
-		Hi:       int(math.Round(om.Daily.Temperature2mMax[0])),
-		Lo:       int(math.Round(om.Daily.Temperature2mMin[0])),
+		Hi:       int(math.Round(om.Daily.ApparentTemperatureMax[0])),
+		Lo:       int(math.Round(om.Daily.ApparentTemperatureMin[0])),
 		Feels:    int(math.Round(om.Current.ApparentTemperature)),
 		Humidity: om.Current.RelativeHumidity2m,
 		Wind:     int(math.Round(om.Current.WindSpeed10m)),

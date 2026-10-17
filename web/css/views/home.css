@@ -15,7 +15,12 @@
 .h-date b { font-family: var(--sans); font-weight: 800; font-stretch: 75%; text-transform: uppercase; letter-spacing: .06em; font-size: 20px; margin-right: 6px; }
 
 /* ---- weather */
-.h-weather { grid-column: 5 / 10; border-bottom: 3px solid var(--ink); padding: 0 8px 6px; display: flex; flex-direction: column; justify-content: flex-end; }
+.h-weather {
+  grid-column: 5 / 10; border: 0; border-bottom: 3px solid var(--ink); padding: 0 8px 6px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.h-weather:active { opacity: .88; }
 .h-wx-top { display: flex; align-items: center; gap: 12px; }
 .h-wx-icon { color: var(--ink); }
 .h-wx-temp { font-size: 84px; line-height: .8; letter-spacing: -.03em; }
@@ -29,7 +34,42 @@
 .h-hr-l { font-size: var(--fs-min); font-weight: 700; color: var(--mute); text-transform: uppercase; }
 .h-hr-i { height: 26px; display: grid; place-items: center; }
 .h-hr b { font-weight: 800; font-stretch: 70%; }
+.h-hr-mm { font-size: 11px; font-weight: 700; font-stretch: 75%; color: #1F6FEB; min-height: 14px; line-height: 1.1; }
 .h-hr.is-wet .h-hr-i { color: #1F6FEB; }
+.h-hr.is-maybe-wet .h-hr-i { color: #6B9FE8; }
+
+/* ---- weather sheet */
+.sheet--weather { width: 640px; max-height: min(720px, 90%); overflow: hidden; display: flex; flex-direction: column; }
+.wxs { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.wxs-band { padding: 34px 36px 18px; flex: none; }
+.wxs-head { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+.wxs-temp { font-size: 88px; line-height: .8; letter-spacing: -.03em; }
+.wxs-meta { display: flex; flex-direction: column; gap: 2px; }
+.wxs-meta b { font-weight: 800; font-stretch: 80%; text-transform: uppercase; letter-spacing: .06em; font-size: 18px; }
+.wxs-meta span { color: var(--mute); font-variant-numeric: tabular-nums; }
+.wxs-say { font-size: 26px; line-height: 1.2; margin: 16px 0 0; }
+.wxs-say b { font-weight: 400; font-style: italic; }
+.wxs-body { padding: 0 36px 28px; overflow: auto; min-height: 0; }
+.wxs-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  padding: 14px 0 18px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 8px;
+}
+.wxs-stats > div { display: flex; flex-direction: column; gap: 2px; }
+.wxs-stats b { font-size: 22px; font-weight: 800; font-stretch: 75%; font-variant-numeric: tabular-nums; }
+.wxs-stats span { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
+.wxs-hours { display: flex; flex-direction: column; }
+.wxs-hr {
+  display: grid; grid-template-columns: 52px 36px 1fr auto; align-items: center; gap: 10px;
+  min-height: 48px; border-bottom: 1px solid var(--line); font-size: 18px;
+}
+.wxs-hr-l { font-size: 14px; font-weight: 700; color: var(--mute); text-transform: uppercase; }
+.wxs-hr-i { display: grid; place-items: center; }
+.wxs-hr.is-wet .wxs-hr-i { color: #1F6FEB; }
+.wxs-hr.is-maybe-wet .wxs-hr-i { color: #6B9FE8; }
+.wxs-hr b { font-weight: 800; font-stretch: 70%; }
+.wxs-mm { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--mute); min-width: 52px; text-align: right; }
+.wxs-mm.is-real { color: #1F6FEB; }
+.wxs-mm--none { opacity: .35; }
 
 /* ---- presence */
 .h-presence { grid-column: 10 / 13; display: flex; flex-direction: column; justify-content: space-between; border-bottom: 3px solid var(--ink); padding: 2px 0 10px; }

@@ -30,7 +30,6 @@ func NewClient() *Client {
 // openMeteoResponse matches the subset of fields we need from the forecast API.
 type openMeteoResponse struct {
 	Current struct {
-		Temperature2m       float64 `json:"temperature_2m"`
 		ApparentTemperature float64 `json:"apparent_temperature"`
 		RelativeHumidity2m  int     `json:"relative_humidity_2m"`
 		WindSpeed10m        float64 `json:"wind_speed_10m"`
@@ -38,16 +37,16 @@ type openMeteoResponse struct {
 		IsDay               int     `json:"is_day"`
 	} `json:"current"`
 	Hourly struct {
-		Time                     []string  `json:"time"`
-		Temperature2m            []float64 `json:"temperature_2m"`
-		WeatherCode              []int     `json:"weather_code"`
-		PrecipitationProbability []float64 `json:"precipitation_probability"`
+		Time                []string  `json:"time"`
+		ApparentTemperature []float64 `json:"apparent_temperature"`
+		WeatherCode         []int     `json:"weather_code"`
+		Showers             []float64 `json:"showers"`
 	} `json:"hourly"`
 	Daily struct {
-		Temperature2mMax []float64 `json:"temperature_2m_max"`
-		Temperature2mMin []float64 `json:"temperature_2m_min"`
-		Sunrise          []string  `json:"sunrise"`
-		Sunset           []string  `json:"sunset"`
+		ApparentTemperatureMax []float64 `json:"apparent_temperature_max"`
+		ApparentTemperatureMin []float64 `json:"apparent_temperature_min"`
+		Sunrise                []string  `json:"sunrise"`
+		Sunset                 []string  `json:"sunset"`
 	} `json:"daily"`
 }
 
@@ -67,9 +66,9 @@ func (c *Client) Fetch(lat, lon float64) (json.RawMessage, error) {
 	q.Set("longitude", strconv.FormatFloat(lon, 'f', 4, 64))
 	q.Set("timezone", "auto")
 	q.Set("forecast_days", "1")
-	q.Set("current", "temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code,is_day")
-	q.Set("hourly", "temperature_2m,weather_code,precipitation_probability")
-	q.Set("daily", "temperature_2m_max,temperature_2m_min,sunrise,sunset")
+	q.Set("current", "apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code,is_day")
+	q.Set("hourly", "apparent_temperature,weather_code,showers")
+	q.Set("daily", "apparent_temperature_max,apparent_temperature_min,sunrise,sunset")
 
 	reqURL := base + "?" + q.Encode()
 	resp, err := hc.Get(reqURL)

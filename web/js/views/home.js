@@ -9,6 +9,12 @@
       '<div class="h-date"><b>' + App.fmt.day(n) + '</b> ' + App.fmt.month(n) + ' ' + n.getDate() + '</div>';
   }
 
+  function wetClass(p) {
+    if (p > App.REAL_RAIN_MM) return ' is-wet';
+    if (p > 0) return ' is-maybe-wet';
+    return '';
+  }
+
   function weather() {
     var w = App.weatherNow();
     var hours = App.hourly(7);
@@ -22,10 +28,46 @@
       '<div class="h-wx-say"><b>' + w.summary + '.</b> ' + w.advice + '.</div>' +
       '<div class="h-wx-hours">' + hours.map(function (h) {
         var lift = tmax === tmin ? 0 : Math.round((h.t - tmin) / (tmax - tmin) * 8);
-        return '<div class="h-hr' + (h.p >= 50 ? ' is-wet' : '') + '"><span class="h-hr-l">' + h.label + '</span>' +
-          '<span class="h-hr-i" style="transform:translateY(' + -lift + 'px)">' + App.icon(h.c, 22) + '</span><b>' + h.t + '°</b></div>';
+        var mm = h.p > App.REAL_RAIN_MM ? '<span class="h-hr-mm">' + App.fmtMm(h.p) + '</span>' : '<span class="h-hr-mm"></span>';
+        return '<div class="h-hr' + wetClass(h.p) + '"><span class="h-hr-l">' + h.label + '</span>' +
+          '<span class="h-hr-i" style="transform:translateY(' + -lift + 'px)">' + App.icon(h.c, 22) + '</span><b>' + h.t + '°</b>' + mm + '</div>';
       }).join('') + '</div>';
   }
+
+  App.weatherSheet = function () {
+    var w = App.weatherNow();
+    var hours = App.hourlyRest();
+    App.sheet(
+      '<div class="wxs">' +
+      '<div class="wxs-band">' +
+      '  <div class="label">Today</div>' +
+      '  <div class="wxs-head">' +
+      '    <span class="wxs-icon">' + App.icon(w.cond, 56) + '</span>' +
+      '    <span class="wxs-temp num">' + w.temp + '°</span>' +
+      '    <span class="wxs-meta"><b>' + w.label + '</b><span>H ' + w.hi + '°  L ' + w.lo + '°</span></span>' +
+      '  </div>' +
+      '  <p class="wxs-say serif"><b>' + w.summary + '.</b> ' + w.advice + '.</p>' +
+      '</div>' +
+      '<div class="wxs-body">' +
+      '<div class="wxs-stats">' +
+      '  <div><b>' + w.feels + '°</b><span>Feels</span></div>' +
+      '  <div><b>' + w.humidity + '%</b><span>Humidity</span></div>' +
+      '  <div><b>' + w.wind + '</b><span>Wind km/h</span></div>' +
+      '  <div><b>' + w.hi + '° / ' + w.lo + '°</b><span>High / Low</span></div>' +
+      '</div>' +
+      '<div class="wxs-hours">' + hours.map(function (h) {
+        var mm = h.p > 0
+          ? '<span class="wxs-mm' + (h.p > App.REAL_RAIN_MM ? ' is-real' : '') + '">' + App.fmtMm(h.p) + '</span>'
+          : '<span class="wxs-mm wxs-mm--none">—</span>';
+        return '<div class="wxs-hr' + wetClass(h.p) + '">' +
+          '<span class="wxs-hr-l">' + h.label + '</span>' +
+          '<span class="wxs-hr-i">' + App.icon(h.c, 26) + '</span>' +
+          '<b class="num">' + h.t + '°</b>' + mm + '</div>';
+      }).join('') + '</div>' +
+      '</div></div>',
+      { cls: 'sheet--weather' }
+    );
+  };
 
   function presence() {
     return D.people.map(function (p) {
@@ -140,7 +182,7 @@
       if (!el.firstChild) {
         el.innerHTML = '<div class="home">' +
           '<div class="h-clock" data-go="calendar"></div>' +
-          '<div class="h-weather"></div>' +
+          '<button type="button" class="h-weather" data-wx aria-label="Weather details"></button>' +
           '<div class="h-presence"></div>' +
           '<div class="h-main"><div class="h-hero-slot"></div><div class="h-lanes" ></div></div>' +
           '<div class="h-side">' +
@@ -151,6 +193,8 @@
         el.addEventListener('click', function (e) {
           var ev = e.target.closest('[data-ev]');
           if (ev) { App.eventSheet(App.findEvent(ev.dataset.ev)); return; }
+          var wx = e.target.closest('[data-wx]');
+          if (wx) { App.weatherSheet(); return; }
           var g = e.target.closest('[data-go]');
           if (g) App.go(g.dataset.go);
         });

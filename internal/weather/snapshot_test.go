@@ -34,21 +34,23 @@ func TestBuildSnapshot(t *testing.T) {
 	om.Current.ApparentTemperature = -1.4
 	om.Current.RelativeHumidity2m = 70
 	om.Current.WindSpeed10m = 12.6
-	om.Daily.Temperature2mMax = []float64{17.2}
-	om.Daily.Temperature2mMin = []float64{8.1}
+	om.Daily.ApparentTemperatureMax = []float64{17.2}
+	om.Daily.ApparentTemperatureMin = []float64{8.1}
 	om.Daily.Sunrise = []string{"2026-10-17T07:12"}
 	om.Daily.Sunset = []string{"2026-10-17T18:45"}
 
 	om.Hourly.Time = make([]string, 24)
-	om.Hourly.Temperature2m = make([]float64, 24)
+	om.Hourly.ApparentTemperature = make([]float64, 24)
 	om.Hourly.WeatherCode = make([]int, 24)
-	om.Hourly.PrecipitationProbability = make([]float64, 24)
+	om.Hourly.Showers = make([]float64, 24)
 	for i := 0; i < 24; i++ {
 		om.Hourly.Time[i] = "2026-10-17T" + pad2(i) + ":00"
-		om.Hourly.Temperature2m[i] = float64(10 + i%5)
+		om.Hourly.ApparentTemperature[i] = float64(10 + i%5)
 		om.Hourly.WeatherCode[i] = 0
-		om.Hourly.PrecipitationProbability[i] = float64(i * 3)
+		om.Hourly.Showers[i] = 0
 	}
+	om.Hourly.Showers[10] = 0.14
+	om.Hourly.Showers[16] = 1.26
 
 	raw, err := BuildSnapshot(om)
 	if err != nil {
@@ -73,8 +75,14 @@ func TestBuildSnapshot(t *testing.T) {
 	if snap.C[12] != "sun" {
 		t.Errorf("hour 12 clear day = %q, want sun", snap.C[12])
 	}
-	if snap.P[10] != 30 {
-		t.Errorf("p[10] = %d, want 30", snap.P[10])
+	if snap.P[10] != 0.1 {
+		t.Errorf("p[10] = %v, want 0.1", snap.P[10])
+	}
+	if snap.P[16] != 1.3 {
+		t.Errorf("p[16] = %v, want 1.3", snap.P[16])
+	}
+	if snap.T[3] != 13 {
+		t.Errorf("t[3] = %d, want 13 (apparent)", snap.T[3])
 	}
 }
 

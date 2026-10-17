@@ -126,31 +126,69 @@
     for (var i = 0; i < D.routines.length; i++) if (h >= D.routines[i].from && h < D.routines[i].to) return D.routines[i];
     return D.routines[2];
   };
+  // Showers above this (mm) count as real rain; 0 < p ≤ threshold is potential.
+  App.REAL_RAIN_MM = 0.2;
+  App.fmtMm = function (n) {
+    var r = Math.round(Number(n) * 10) / 10;
+    return (r % 1 === 0 ? String(r) : r.toFixed(1)) + 'mm';
+  };
+  App.hourLabel = function (x, isNow) {
+    if (isNow) return 'Now';
+    return (x % 12 || 12) + (x >= 12 ? 'p' : 'a');
+  };
   App.weatherNow = function () {
-    var W = D.weather, h = App.now().getHours();
-    var rainAt = -1;
-    for (var i = h; i < 24; i++) if (W.p[i] >= 50) { rainAt = i; break; }
+    var W = D.weather, h = App.now().getHours(), real = App.REAL_RAIN_MM;
+    var rainAt = -1, maybeAt = -1;
+    for (var i = h; i < 24; i++) {
+      var mm = W.p[i] || 0;
+      if (mm > real && rainAt < 0) rainAt = i;
+      if (mm > 0 && mm <= real && maybeAt < 0) maybeAt = i;
+    }
+    function streakMax(from) {
+      var stop = from, max = 0;
+      while (stop < 24 && (W.p[stop] || 0) > real) {
+        if (W.p[stop] > max) max = W.p[stop];
+        stop++;
+      }
+      return { stop: stop, max: max };
+    }
     var summary, advice;
     if (rainAt === h) {
-      var stop = h; while (stop < 24 && W.p[stop] >= 50) stop++;
-      summary = 'Rain until ' + App.fmt.hour(new Date(2000, 0, 1, stop));
+      var cur = streakMax(h);
+      summary = 'Rain until ' + App.fmt.hour(new Date(2000, 0, 1, cur.stop)) + ' · up to ' + App.fmtMm(cur.max);
       advice = 'Umbrella weather';
     } else if (rainAt > -1) {
-      summary = 'Rain from ' + App.fmt.hour(new Date(2000, 0, 1, rainAt));
+      var later = streakMax(rainAt);
+      summary = 'Rain from ' + App.fmt.hour(new Date(2000, 0, 1, rainAt)) + ' · up to ' + App.fmtMm(later.max);
       var soccer = App.timedOn(App.now()).filter(function (e) { return /soccer/i.test(e.title) && e.start > App.now(); })[0];
       advice = soccer ? 'Pack a rain jacket for soccer' : 'Grab a rain jacket';
+    } else if (maybeAt > -1) {
+      summary = 'Possible rain from ' + App.fmt.hour(new Date(2000, 0, 1, maybeAt));
+      advice = 'Maybe pack a light jacket';
     } else {
       summary = W.t[h] < 12 ? 'Clear and cool' : 'Dry all day';
       advice = W.t[h] < 12 ? 'Jacket weather' : 'Light layers';
     }
     var labels = { sun: 'Sunny', moon: 'Clear', partly: 'Partly cloudy', cloud: 'Overcast', rain: 'Rain' };
-    return { temp: W.t[h], cond: W.c[h], label: labels[W.c[h]], hi: W.hi, lo: W.lo, summary: summary, advice: advice, hour: h };
+    return {
+      temp: W.t[h], cond: W.c[h], label: labels[W.c[h]], hi: W.hi, lo: W.lo,
+      feels: W.feels, humidity: W.humidity, wind: W.wind,
+      summary: summary, advice: advice, hour: h
+    };
   };
   App.hourly = function (count) {
     var W = D.weather, h = App.now().getHours(), out = [];
     for (var i = 0; i < count; i++) {
       var x = (h + i) % 24;
-      out.push({ h: x, t: W.t[x], c: W.c[x], p: W.p[x], label: i === 0 ? 'Now' : ((x % 12 || 12) + (x >= 12 ? 'p' : 'a')) });
+      out.push({ h: x, t: W.t[x], c: W.c[x], p: W.p[x] || 0, label: App.hourLabel(x, i === 0) });
+    }
+    return out;
+  };
+  // Hours from now through end of local day (no wrap) for the weather sheet.
+  App.hourlyRest = function () {
+    var W = D.weather, h = App.now().getHours(), out = [];
+    for (var x = h; x < 24; x++) {
+      out.push({ h: x, t: W.t[x], c: W.c[x], p: W.p[x] || 0, label: App.hourLabel(x, x === h) });
     }
     return out;
   };
