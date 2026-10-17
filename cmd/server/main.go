@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
@@ -35,6 +37,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", hub.ServeWS)
+	mux.HandleFunc("/internal/garmin", garminIngest(store, hub))
 
 	static, err := webfs.FS()
 	if err != nil {
@@ -45,6 +48,33 @@ func main() {
 	log.Printf("Home HQ listening on http://localhost%s", addr)
 	log.Printf("WebSocket at ws://localhost%s/ws", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
+}
+
+func garminIngest(store *demo.Store, hub *demo.Hub) http.HandlerFunc {
+	token := os.Getenv("HQ_INGEST_TOKEN")
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		if token == "" || r.Header.Get("X-HQ-Token") != token {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
+		if err != nil {
+			http.Error(w, "bad body", http.StatusBadRequest)
+			return
+		}
+		if !json.Valid(body) {
+			http.Error(w, "invalid json", http.StatusBadRequest)
+			return
+		}
+		store.SetGarmin(json.RawMessage(body))
+		hub.BroadcastSnapshot()
+		w.WriteHeader(http.StatusNoContent)
+		log.Printf("garmin: snapshot updated (%d bytes)", len(body))
+	}
 }
 
 func startWeatherPoller(store *demo.Store, hub *demo.Hub) {

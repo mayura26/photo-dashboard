@@ -1,0 +1,331 @@
+/* Body — Garmin instrument panel, 1136×752 content box, no scrolling */
+.body {
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: 72px 1fr 1fr;
+  gap: 16px;
+}
+
+.body--empty {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.b-empty {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-size: 42px;
+  line-height: 1.15;
+  color: var(--ink);
+  border-top: 3px solid var(--ink);
+  border-bottom: 3px solid var(--ink);
+}
+.b-empty i { color: var(--mute); }
+
+/* ---- header */
+.b-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 10px;
+}
+.b-head h1 {
+  font-size: 52px;
+  line-height: .9;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.b-updated {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  font-stretch: 80%;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+/* ---- body battery hero */
+.b-battery {
+  grid-column: 1 / 7;
+  grid-row: 2 / 4;
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 20px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  --c: var(--ink);
+  --c-rgb: var(--ink-rgb);
+}
+.b-battery.is-ok { --c: var(--ok); --c-rgb: 0 163 108; }
+.b-battery.is-mid { --c: var(--amber); --c-rgb: var(--amber-rgb); }
+.b-battery.is-hot { --c: var(--alert); --c-rgb: var(--alert-rgb); }
+
+.b-bat-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.b-dial {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+}
+.b-dial .ring { width: 220px; height: 220px; }
+.b-dial .ring-bg { stroke-width: 12; }
+.b-dial .ring-fg { stroke-width: 12; }
+.b-dial-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.b-dial-num b {
+  font-size: 88px;
+  line-height: .85;
+  letter-spacing: -.04em;
+  color: var(--c);
+}
+.b-dial-num small {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  font-stretch: 80%;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.b-bat-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  height: 100%;
+  justify-content: center;
+}
+.b-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.b-stat .label { font-size: 13px; }
+.b-stat b {
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+.b-stat small {
+  font-size: 15px;
+  color: var(--mute);
+  font-weight: 600;
+}
+
+.b-spark-wrap {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+.b-spark {
+  width: 100%;
+  height: 96px;
+  display: block;
+}
+.b-spark--empty {
+  height: 96px;
+  display: grid;
+  place-items: center;
+  color: var(--mute);
+  font-size: 22px;
+  border: 2px dashed var(--line);
+  border-radius: var(--r-s);
+}
+.b-spark-line {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.b-spark-dot { fill: var(--c); }
+.b-spark-cap {
+  font-size: 12px;
+  font-weight: 700;
+  font-stretch: 80%;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+/* ---- side panels */
+.b-panel {
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.b-sleep { grid-column: 7 / 13; grid-row: 2; }
+.b-stress { grid-column: 7 / 10; grid-row: 3; }
+.b-act { grid-column: 10 / 13; grid-row: 3; }
+
+.b-panel-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 12px;
+}
+.b-big {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.b-big b {
+  font-size: 72px;
+  line-height: .85;
+  letter-spacing: -.035em;
+}
+.b-big small {
+  font-size: 15px;
+  font-weight: 700;
+  font-stretch: 80%;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.b-sub {
+  font-size: 28px;
+  line-height: 1;
+  color: var(--ink-2);
+  padding-bottom: 6px;
+}
+.b-sub b { font-size: 32px; }
+
+/* sleep stages */
+.b-stages {
+  display: flex;
+  height: 18px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--paper-2);
+  margin-top: auto;
+}
+.b-stages--empty { height: 18px; background: var(--paper-2); border-radius: 9px; margin-top: auto; }
+.b-stage { display: block; min-width: 4px; }
+.b-stage--deep { background: #1B3A6B; }
+.b-stage--light { background: #5B8DEF; }
+.b-stage--rem { background: #8B6CC9; }
+.b-stage--awake { background: var(--amber); }
+
+.b-stage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 12px;
+}
+.b-leg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--mute);
+  font-weight: 600;
+}
+.b-leg b { color: var(--ink); font-weight: 800; font-stretch: 70%; }
+.b-leg i {
+  width: 10px; height: 10px; border-radius: 2px; display: block;
+}
+.b-leg--deep i { background: #1B3A6B; }
+.b-leg--light i { background: #5B8DEF; }
+.b-leg--rem i { background: #8B6CC9; }
+.b-leg--awake i { background: var(--amber); }
+
+/* stress */
+.b-stress { --tone: var(--ink); }
+.b-stress.is-ok { --tone: var(--ok); }
+.b-stress.is-mid { --tone: var(--amber); }
+.b-stress.is-hot { --tone: var(--alert); }
+.b-stress .b-big b { color: var(--tone); }
+.b-stress-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 2px solid var(--line);
+}
+
+/* activity */
+.b-act { --c: var(--ink); --c-rgb: var(--ink-rgb); }
+.b-act.is-goal { --c: var(--ok); --c-rgb: 0 163 108; }
+.b-act-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 0;
+  margin-top: 4px;
+}
+.b-steps-dial {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex: none;
+}
+.b-steps-dial .ring-bg { stroke-width: 9; }
+.b-steps-dial .ring-fg { stroke-width: 9; }
+.b-steps-num {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.b-steps-num b {
+  font-size: 28px;
+  letter-spacing: -.02em;
+  color: var(--c);
+}
+.b-act-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.b-act-meta .b-stat b { font-size: 28px; }
+
+/* ---- reveal motion */
+.b-reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: bIn .55s var(--ease) forwards;
+  animation-delay: calc(var(--d, 0) * 70ms);
+}
+@keyframes bIn {
+  to { opacity: 1; transform: none; }
+}

@@ -19,6 +19,7 @@ async function boot() {
   await import('./views/tasks.js');
   await import('./views/shopping.js');
   await import('./views/photos.js');
+  await import('./views/body.js');
   await import('./views/ambient.js');
 
   patchMutations();

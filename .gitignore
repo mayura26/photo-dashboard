@@ -7,3 +7,5 @@ bin/
 .DS_Store
 *.log
 .env
+services/garmin/.venv/
+services/garmin/.garmin-tokens/

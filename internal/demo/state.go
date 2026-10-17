@@ -35,6 +35,7 @@ type Snapshot struct {
 	Cameras    json.RawMessage  `json:"cameras"`
 	Scenes     []map[string]any `json:"scenes"`
 	Weather    json.RawMessage  `json:"weather"`
+	Garmin     json.RawMessage  `json:"garmin"`
 	Photos     []map[string]any `json:"photos"`
 	Agents     json.RawMessage  `json:"agents"`
 	TimeOffset int64            `json:"timeOffset"`
@@ -70,6 +71,7 @@ func Load(seedPath string) (*Store, error) {
 	s.snap.Rooms = raw["rooms"]
 	s.snap.Cameras = raw["cameras"]
 	s.snap.Weather = raw["weather"]
+	s.snap.Garmin = raw["garmin"]
 	s.snap.Agents = raw["agents"]
 
 	mustUnmarshal(raw["events"], &s.snap.Events)
@@ -156,6 +158,13 @@ func (s *Store) SetWeather(raw json.RawMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.snap.Weather = append(json.RawMessage(nil), raw...)
+}
+
+// SetGarmin replaces the garmin blob in the snapshot (e.g. from the Python sidecar).
+func (s *Store) SetGarmin(raw json.RawMessage) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.snap.Garmin = append(json.RawMessage(nil), raw...)
 }
 
 func (s *Store) cloneLocked() Snapshot {

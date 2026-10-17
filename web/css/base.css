@@ -1,5 +1,5 @@
 /* Custom elements default to inline — force block so absolute/.rail layouts work */
-hq-rail, hq-home, hq-calendar, hq-tasks, hq-shopping, hq-photos, hq-ambient {
+hq-rail, hq-home, hq-calendar, hq-tasks, hq-shopping, hq-photos, hq-body, hq-ambient {
   display: block;
 }
 
@@ -64,9 +64,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   z-index: 5;
 }
 .rail-item {
-  height: 72px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-  font-size: 12px; font-weight: 700; font-stretch: 70%; letter-spacing: .07em; text-transform: uppercase;
+  height: 64px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font-size: 11px; font-weight: 700; font-stretch: 70%; letter-spacing: .07em; text-transform: uppercase;
   color: var(--ink-2);
   position: relative;
 }
