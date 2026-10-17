@@ -19,45 +19,18 @@ async function boot() {
   await import('./views/tasks.js');
   await import('./views/shopping.js');
   await import('./views/photos.js');
-  await import('./views/control.js');
-  await import('./views/agents.js');
   await import('./views/ambient.js');
 
-  // Wire mutation sync: wrap App helpers that change shared state
   patchMutations();
-
   App.start();
 }
 
 function patchMutations() {
-  let mode = App.calMode || 'normal';
-  let syncing = false;
-  Object.defineProperty(App, 'calMode', {
-    get() { return mode; },
-    set(v) {
-      mode = v;
-      if (!syncing) store.dispatch('setCalMode', { mode: v });
-    },
-    configurable: true
-  });
-  App._setCalModeLocal = (v) => { syncing = true; mode = v; syncing = false; };
-
-  const origSetDevice = App.setDevice;
-  if (origSetDevice) {
-    App.setDevice = function (id, patch, opts) {
-      origSetDevice(id, patch, opts);
-      store.dispatch('setDevice', { id, patch });
-    };
-  }
-
   App.sync = {
     chore(id, done, doneBy) { store.dispatch('setChore', { id, done, doneBy }); },
     grocery(id, patch) { store.dispatch('setGrocery', Object.assign({ id }, patch)); },
     addGrocery(payload) { store.dispatch('addGrocery', payload); },
     clearChecked() { store.dispatch('clearChecked', {}); },
-    climate(patch) { store.dispatch('setClimate', patch); },
-    media(patch) { store.dispatch('setMedia', patch); },
-    scene(id) { store.dispatch('applyScene', { id }); },
     addEvent(ev) {
       const payload = Object.assign({}, ev);
       if (payload.start instanceof Date) payload.start = payload.start.toISOString();

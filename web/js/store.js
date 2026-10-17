@@ -1,4 +1,4 @@
-// Local mirror of server demo state. Revives ISO date strings into Date objects.
+// Local mirror of server state. Revives ISO date strings into Date objects.
 // Mutates window.DATA in place so view modules that closed over DATA stay live.
 import { onMessage, action as wsAction } from './ws-client.js';
 
@@ -38,13 +38,11 @@ function attachCounters(data) {
 
 const store = {
   data: null,
-  calMode: 'normal',
 
   get() { return this.data; },
 
   applySnapshot(raw) {
     const fresh = revive(raw);
-    this.calMode = fresh.calMode || 'normal';
     attachCounters(fresh);
 
     if (!this.data) {
@@ -60,9 +58,6 @@ const store = {
     }
 
     if (window.App) {
-      // update calMode without re-dispatching
-      if (App._setCalModeLocal) App._setCalModeLocal(this.calMode);
-      else App.calMode = this.calMode;
       if (typeof fresh.timeOffset === 'number') App._setOffset(fresh.timeOffset);
       App.emit('data');
     }
@@ -75,6 +70,7 @@ const store = {
 
 onMessage((msg) => {
   if (msg.type === 'snapshot' && msg.data) store.applySnapshot(msg.data);
+  // TEMP: alert event names until real event sources replace seed-driven triggers
   if (msg.type === 'event' && window.App) {
     const map = {
       doorbell: () => App.doorbell && App.doorbell(),

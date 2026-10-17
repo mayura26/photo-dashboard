@@ -96,8 +96,7 @@
 .h-ring.is-done .ring-bg { fill: var(--c); }
 .h-ring.is-done .num { color: var(--c-ink); }
 
-.h-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.h-shop, .h-status { display: flex; flex-direction: column; gap: 4px; }
+.h-shop { display: flex; flex-direction: column; gap: 4px; }
 .h-stat { display: flex; align-items: baseline; gap: 8px; }
 .h-stat .num { font-size: 56px; line-height: .9; }
 .h-stat small { font-size: 16px; color: var(--mute); }

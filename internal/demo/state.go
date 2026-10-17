@@ -16,7 +16,8 @@ type Snapshot struct {
 	Family      json.RawMessage `json:"family"`
 	ALL         json.RawMessage `json:"ALL"`
 	Events      []map[string]any `json:"events"`
-	BusyExtras  []map[string]any `json:"busyExtras"`
+	// TEMP: busyExtras was for calendar density demo; unused by UI
+	BusyExtras  []map[string]any `json:"busyExtras,omitempty"`
 	Routines    json.RawMessage `json:"routines"`
 	Chores      []map[string]any `json:"chores"`
 	Stars       map[string]float64 `json:"stars"`
@@ -26,6 +27,7 @@ type Snapshot struct {
 	Groceries   []map[string]any `json:"groceries"`
 	Catalog     json.RawMessage `json:"catalog"`
 	Usuals      json.RawMessage `json:"usuals"`
+	// TEMP: rooms/devices/climate/media/cameras/scenes/agents left from removed Home/Agents views
 	Rooms       json.RawMessage `json:"rooms"`
 	Devices     []map[string]any `json:"devices"`
 	Climate     map[string]any `json:"climate"`
@@ -36,7 +38,6 @@ type Snapshot struct {
 	Photos      []map[string]any `json:"photos"`
 	Agents      json.RawMessage `json:"agents"`
 	TimeOffset  int64          `json:"timeOffset"`
-	CalMode     string         `json:"calMode"`
 }
 
 type Store struct {
@@ -56,7 +57,7 @@ func Load(seedPath string) (*Store, error) {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return nil, err
 	}
-	s := &Store{nextGID: 100, nextEID: 500, nextCID: 100, snap: Snapshot{CalMode: "normal"}}
+	s := &Store{nextGID: 100, nextEID: 500, nextCID: 100, snap: Snapshot{}}
 	s.snap.People = raw["people"]
 	s.snap.Family = raw["family"]
 	s.snap.ALL = raw["ALL"]
@@ -72,6 +73,7 @@ func Load(seedPath string) (*Store, error) {
 	s.snap.Agents = raw["agents"]
 
 	mustUnmarshal(raw["events"], &s.snap.Events)
+	// TEMP: busyExtras was for calendar density demo; unused by UI now
 	mustUnmarshal(raw["busyExtras"], &s.snap.BusyExtras)
 	mustUnmarshal(raw["chores"], &s.snap.Chores)
 	mustUnmarshal(raw["stars"], &s.snap.Stars)
@@ -83,8 +85,8 @@ func Load(seedPath string) (*Store, error) {
 	mustUnmarshal(raw["photos"], &s.snap.Photos)
 
 	s.shiftEventsToToday()
-	// Demo default: busy weekday afternoon 15:18
-	s.setTimeLocked(15, 18)
+	// Real wall clock (timeOffset stays 0). setTime action kept for compatibility only.
+	s.snap.TimeOffset = 0
 	return s, nil
 }
 
@@ -170,16 +172,13 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 	eventName := ""
 	switch name {
 	case "setTime":
+		// Kept for compatibility; UI no longer uses fake clock presets.
 		if payload["real"] == true {
 			s.snap.TimeOffset = 0
 		} else {
 			h := intNum(payload["h"])
 			m := intNum(payload["m"])
 			s.setTimeLocked(h, m)
-		}
-	case "setCalMode":
-		if m, ok := payload["mode"].(string); ok {
-			s.snap.CalMode = m
 		}
 	case "setChore":
 		s.setChore(payload)

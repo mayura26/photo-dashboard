@@ -1,8 +1,8 @@
-// Core shell: router, demo clock, idle/ambient, toasts, sheets, helpers.
+// Core shell: router, clock, idle/ambient, toasts, sheets, helpers.
 (function () {
   'use strict';
   var D = window.DATA;
-  var App = window.App = { state: D, views: {}, current: null, mode: 'day', calMode: 'normal' };
+  var App = window.App = { state: D, views: {}, current: null, mode: 'day' };
   var $ = App.$ = function (s, r) { return (r || document).querySelector(s); };
   App.$$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
 
@@ -11,7 +11,7 @@
   App.on = function (e, fn) { (handlers[e] = handlers[e] || []).push(fn); };
   App.emit = function (e, a) { (handlers[e] || []).forEach(function (fn) { fn(a); }); };
 
-  // ------------------------------------------------------------ time (demo clock; offset synced from server)
+  // ------------------------------------------------------------ time (wall clock; optional server offset, normally 0)
   var offset = 0;
   App._setOffset = function (ms) {
     offset = ms || 0;
@@ -20,18 +20,6 @@
     App.rerender();
   };
   App.now = function () { return new Date(Date.now() + offset); };
-  App.setTime = function (h, m) {
-    if (h == null) {
-      offset = 0;
-      if (window.__hqAction) window.__hqAction('setTime', { real: true });
-    } else {
-      var d = new Date(); d.setHours(h, m, 0, 0); offset = d - Date.now();
-      if (window.__hqAction) window.__hqAction('setTime', { h: h, m: m });
-    }
-    lastMin = -1;
-    App.emit('time');
-    App.rerender();
-  };
   App.action = function (name, payload) {
     if (window.__hqAction) window.__hqAction(name, payload || {});
   };
@@ -104,11 +92,7 @@
 
   // ------------------------------------------------------------ calendar helpers
   App.events = function () {
-    var list = D.events.slice();
-    var today = App.dayStart(App.now());
-    if (App.calMode === 'busy') list = list.concat(D.busyExtras);
-    if (App.calMode === 'empty') list = list.filter(function (e) { return e.allDay || !App.sameDay(e.start, today); });
-    return list;
+    return D.events.slice();
   };
   App.isFamily = function (e) { return e.people.length >= D.people.length; };
   App.evColor = function (e) { return App.isFamily(e) ? D.family : App.person(e.people[0]); };
@@ -345,7 +329,6 @@
     D = window.DATA;
     App.state = D;
     if (typeof D.timeOffset === 'number') offset = D.timeOffset;
-    if (D.calMode) App.calMode = D.calMode;
     fit();
     window.addEventListener('resize', fit);
     // Switch tabs the instant a finger lands (pointerdown), not on release. Keyboard "clicks"
@@ -365,6 +348,5 @@
     setInterval(tick, 1000);
     App.emit('ready');
     refreshStale(1500);
-    setTimeout(function () { App.toast('Tip: press and hold the <b>clock</b> in the sidebar for demo controls', { ms: 6000, icon: 'bolt' }); }, 1200);
   };
 })();

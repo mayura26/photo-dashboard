@@ -1,4 +1,4 @@
-// WebSocket client with reconnect. Speaks the demo JSON protocol.
+// WebSocket client with reconnect. Speaks the dashboard JSON protocol.
 const listeners = new Set();
 
 let socket = null;
