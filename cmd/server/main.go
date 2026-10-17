@@ -6,9 +6,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"photo-dashboard/internal/demo"
+	"photo-dashboard/internal/weather"
 	"photo-dashboard/internal/webfs"
 )
 
@@ -28,6 +31,8 @@ func main() {
 	}
 	hub := demo.NewHub(store)
 
+	startWeatherPoller(store, hub)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", hub.ServeWS)
 
@@ -40,6 +45,41 @@ func main() {
 	log.Printf("Home HQ listening on http://localhost%s", addr)
 	log.Printf("WebSocket at ws://localhost%s/ws", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
+}
+
+func startWeatherPoller(store *demo.Store, hub *demo.Hub) {
+	latS, lonS := os.Getenv("WEATHER_LAT"), os.Getenv("WEATHER_LON")
+	if latS == "" || lonS == "" {
+		log.Printf("weather: WEATHER_LAT/WEATHER_LON unset; using seed weather")
+		return
+	}
+	lat, err1 := strconv.ParseFloat(latS, 64)
+	lon, err2 := strconv.ParseFloat(lonS, 64)
+	if err1 != nil || err2 != nil {
+		log.Printf("weather: invalid WEATHER_LAT/WEATHER_LON; using seed weather")
+		return
+	}
+
+	interval := 15 * time.Minute
+	if v := os.Getenv("WEATHER_REFRESH"); v != "" {
+		d, err := time.ParseDuration(v)
+		if err != nil {
+			log.Printf("weather: invalid WEATHER_REFRESH %q; using %s", v, interval)
+		} else if d > 0 {
+			interval = d
+		}
+	}
+
+	p := &weather.Poller{
+		Client:   weather.NewClient(),
+		Lat:      lat,
+		Lon:      lon,
+		Interval: interval,
+		Store:    store,
+		Hub:      hub,
+	}
+	p.Start()
+	log.Printf("weather: Open-Meteo poller every %s for %.4f, %.4f", interval, lat, lon)
 }
 
 func spaFileServer(root fs.FS) http.Handler {

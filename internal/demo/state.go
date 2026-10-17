@@ -12,40 +12,40 @@ import (
 
 // Snapshot is the full dashboard payload sent to clients.
 type Snapshot struct {
-	People      json.RawMessage `json:"people"`
-	Family      json.RawMessage `json:"family"`
-	ALL         json.RawMessage `json:"ALL"`
-	Events      []map[string]any `json:"events"`
+	People json.RawMessage  `json:"people"`
+	Family json.RawMessage  `json:"family"`
+	ALL    json.RawMessage  `json:"ALL"`
+	Events []map[string]any `json:"events"`
 	// TEMP: busyExtras was for calendar density demo; unused by UI
-	BusyExtras  []map[string]any `json:"busyExtras,omitempty"`
-	Routines    json.RawMessage `json:"routines"`
-	Chores      []map[string]any `json:"chores"`
-	Stars       map[string]float64 `json:"stars"`
-	Week        json.RawMessage `json:"week"`
-	Stores      json.RawMessage `json:"stores"`
-	CatOrder    json.RawMessage `json:"catOrder"`
-	Groceries   []map[string]any `json:"groceries"`
-	Catalog     json.RawMessage `json:"catalog"`
-	Usuals      json.RawMessage `json:"usuals"`
+	BusyExtras []map[string]any   `json:"busyExtras,omitempty"`
+	Routines   json.RawMessage    `json:"routines"`
+	Chores     []map[string]any   `json:"chores"`
+	Stars      map[string]float64 `json:"stars"`
+	Week       json.RawMessage    `json:"week"`
+	Stores     json.RawMessage    `json:"stores"`
+	CatOrder   json.RawMessage    `json:"catOrder"`
+	Groceries  []map[string]any   `json:"groceries"`
+	Catalog    json.RawMessage    `json:"catalog"`
+	Usuals     json.RawMessage    `json:"usuals"`
 	// TEMP: rooms/devices/climate/media/cameras/scenes/agents left from removed Home/Agents views
-	Rooms       json.RawMessage `json:"rooms"`
-	Devices     []map[string]any `json:"devices"`
-	Climate     map[string]any `json:"climate"`
-	Media       map[string]any `json:"media"`
-	Cameras     json.RawMessage `json:"cameras"`
-	Scenes      []map[string]any `json:"scenes"`
-	Weather     json.RawMessage `json:"weather"`
-	Photos      []map[string]any `json:"photos"`
-	Agents      json.RawMessage `json:"agents"`
-	TimeOffset  int64          `json:"timeOffset"`
+	Rooms      json.RawMessage  `json:"rooms"`
+	Devices    []map[string]any `json:"devices"`
+	Climate    map[string]any   `json:"climate"`
+	Media      map[string]any   `json:"media"`
+	Cameras    json.RawMessage  `json:"cameras"`
+	Scenes     []map[string]any `json:"scenes"`
+	Weather    json.RawMessage  `json:"weather"`
+	Photos     []map[string]any `json:"photos"`
+	Agents     json.RawMessage  `json:"agents"`
+	TimeOffset int64            `json:"timeOffset"`
 }
 
 type Store struct {
-	mu       sync.RWMutex
-	snap     Snapshot
-	nextGID  int
-	nextEID  int
-	nextCID  int
+	mu      sync.RWMutex
+	snap    Snapshot
+	nextGID int
+	nextEID int
+	nextCID int
 }
 
 func Load(seedPath string) (*Store, error) {
@@ -149,6 +149,13 @@ func (s *Store) Snapshot() Snapshot {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.cloneLocked()
+}
+
+// SetWeather replaces the weather blob in the snapshot (e.g. from Open-Meteo).
+func (s *Store) SetWeather(raw json.RawMessage) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.snap.Weather = append(json.RawMessage(nil), raw...)
 }
 
 func (s *Store) cloneLocked() Snapshot {

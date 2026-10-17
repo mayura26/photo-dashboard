@@ -5,6 +5,7 @@ The UI shell is real; most content is still fake until feeds are wired.
 | Surface | Where | Notes |
 |---------|--------|--------|
 | Seed world | `internal/demo/seed.json` | People, calendar, chores/TODO, shopping, weather, photos |
+| Weather | Open-Meteo via `WEATHER_LAT`/`WEATHER_LON` | Live when configured; otherwise seed weather |
 | Photo URLs | `App.img` → picsum.photos | Replace with real album/CDN URLs |
 | Alert helpers | `web/js/system.js` | Doorbell, leak, garage, package — **no trigger UI**; await real events |
 | Home devices | seed `devices` / `climate` / `cameras` / `scenes` | Left over after Home view removal |

@@ -7,12 +7,27 @@ No Node, no Vite, no npm. Content is still placeholder — see [DEMO.md](DEMO.md
 ## Run
 
 ```bash
-go run ./cmd/server
+cp .env.example .env   # optional: set WEATHER_LAT / WEATHER_LON
+make run
 ```
 
 Open [http://localhost:8080](http://localhost:8080).
 
-Optional: `ADDR=:3000 go run ./cmd/server`
+| Target | What it does |
+|--------|----------------|
+| `make run` | `go run` with `.env` loaded if present |
+| `make build` | compile to `bin/server` |
+| `make test` | `go test ./...` |
+| `make clean` | remove `bin/` |
+
+Or without Make: `go run ./cmd/server` (pass env vars yourself). Optional `ADDR=:3000`.
+
+### Live weather
+
+Forecasts from [Open-Meteo](https://open-meteo.com/) (CC BY 4.0; no API key for personal use). See [`.env.example`](.env.example). Without lat/lon, seed weather is used.
+### Coolify
+
+Use the repo `Dockerfile`. Set **Ports Exposes** to `8080` (must match `PORT`). Domain should proxy to container port `8080`. Redeploy after changing ports. Add `WEATHER_LAT` / `WEATHER_LON` (and optional `WEATHER_REFRESH`) as environment variables for live weather.
 
 ## Architecture
 

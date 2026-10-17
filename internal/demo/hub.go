@@ -91,3 +91,8 @@ func (h *Hub) broadcast(msg Envelope) {
 		}
 	}
 }
+
+// BroadcastSnapshot pushes the current store snapshot to all connected clients.
+func (h *Hub) BroadcastSnapshot() {
+	h.broadcast(Envelope{Type: "snapshot", Data: h.store.Snapshot()})
+}
