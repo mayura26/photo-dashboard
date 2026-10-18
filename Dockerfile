@@ -19,7 +19,7 @@ RUN VERSION="${APP_VERSION}" \
 RUN CGO_ENABLED=0 GOOS=linux go build -o /out/server ./cmd/server
 
 FROM alpine:3.21
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=build /out/server /app/server
 COPY --from=build /src/web /app/web
@@ -29,6 +29,8 @@ COPY go.mod /app/go.mod
 
 # Do not bake an empty APP_VERSION into the image ENV — that blocks Coolify's
 # runtime SOURCE_COMMIT from being used. Resolve at container start instead.
+# tzdata + TZ so time.Local / LoadLocation observe AEDT/AEST (not fixed UTC+10).
 ENV PORT=8080
+ENV TZ=Australia/Sydney
 EXPOSE 8080
 CMD ["/bin/sh", "-c", "V=\"${APP_VERSION:-${SOURCE_COMMIT:-$(cat /app/VERSION)}}\"; V=$(printf '%s' \"$V\" | cut -c1-7); export APP_VERSION=\"$V\"; exec /app/server"]

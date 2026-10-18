@@ -23,6 +23,7 @@ type Poller struct {
 	Interval time.Duration
 	Store    Updater
 	Hub      Notifier
+	Loc      *time.Location // display timezone for when labels
 	Now      func() time.Time // optional; defaults to time.Now
 }
 
@@ -36,6 +37,9 @@ func (p *Poller) Start() {
 	}
 	if p.Now == nil {
 		p.Now = time.Now
+	}
+	if p.Loc == nil {
+		p.Loc, _ = DisplayLocation()
 	}
 	go p.loop()
 }
@@ -78,6 +82,6 @@ func (p *Poller) fetch() (json.RawMessage, error) {
 		}
 		eventsByLeague[w.LeagueID] = evs
 	}
-	fixtures := BuildFixtures(p.Watches, eventsByLeague, now)
+	fixtures := BuildFixtures(p.Watches, eventsByLeague, now, p.Loc)
 	return BuildSnapshotJSON(fixtures)
 }

@@ -212,12 +212,14 @@ func startSportsPoller(store *demo.Store, hub *demo.Hub) {
 		}
 	}
 
+	loc, tzName := sports.DisplayLocation()
 	p := &sports.Poller{
 		Client:   client,
 		Watches:  resolved,
 		Interval: interval,
 		Store:    store,
 		Hub:      hub,
+		Loc:      loc,
 	}
 	p.Start()
 	names := make([]string, len(resolved))
@@ -228,6 +230,7 @@ func startSportsPoller(store *demo.Store, hub *demo.Hub) {
 			names[i] = "league:" + r.League
 		}
 	}
+	log.Printf("sports: display timezone %s", tzName)
 	log.Printf("sports: TheSportsDB poller every %s for %s", interval, strings.Join(names, ", "))
 }
 

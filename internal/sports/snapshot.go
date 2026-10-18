@@ -145,18 +145,19 @@ func IsFinalStatus(status string, at time.Time, now time.Time, homeScore, awaySc
 	return false
 }
 
-// FormatWhen builds a compact local day/time label (e.g. "Fri", "Sun 1:20").
-func FormatWhen(at time.Time, now time.Time, final bool) string {
+// FormatWhen builds a compact day/time label in loc (e.g. "Fri", "Sun 1:20").
+func FormatWhen(at time.Time, now time.Time, final bool, loc *time.Location) string {
 	if at.IsZero() {
 		return ""
 	}
-	local := at.In(time.Local)
+	loc = ensureLoc(loc)
+	local := at.In(loc)
 	day := local.Weekday().String()[:3] // Mon, Tue, …
 	if final {
 		// Same calendar week → day only; else include date hint.
 		_, weekAt := local.ISOWeek()
-		_, weekNow := now.In(time.Local).ISOWeek()
-		if local.Year() == now.Year() && weekAt == weekNow {
+		_, weekNow := now.In(loc).ISOWeek()
+		if local.Year() == now.In(loc).Year() && weekAt == weekNow {
 			return day
 		}
 		return day + " " + local.Format("2 Jan")
@@ -169,7 +170,7 @@ func FormatWhen(at time.Time, now time.Time, final bool) string {
 	return day + " " + local.Format("3:04")
 }
 
-func parseEventTime(ev Event) time.Time {
+func parseEventTime(ev Event, loc *time.Location) time.Time {
 	if ts := strings.TrimSpace(ev.StrTimestamp); ts != "" {
 		// TheSportsDB uses "2006-01-02T15:04:05" without zone (UTC-ish).
 		if t, err := time.ParseInLocation("2006-01-02T15:04:05", ts, time.UTC); err == nil {
@@ -185,7 +186,8 @@ func parseEventTime(ev Event) time.Time {
 	}
 	tm := strings.TrimSpace(ev.StrTime)
 	if tm == "" || tm == "00:00:00" {
-		if t, err := time.ParseInLocation("2006-01-02", date, time.Local); err == nil {
+		loc = ensureLoc(loc)
+		if t, err := time.ParseInLocation("2006-01-02", date, loc); err == nil {
 			return t
 		}
 		return time.Time{}
@@ -208,11 +210,12 @@ func parseScore(s string) (int, bool) {
 	return n, true
 }
 
-func eventToFixture(ev Event, followedTeamID, followedTeamName string, now time.Time) (rankedFixture, bool) {
+func eventToFixture(ev Event, followedTeamID, followedTeamName string, now time.Time, loc *time.Location) (rankedFixture, bool) {
 	if strings.EqualFold(ev.StrPostponed, "yes") {
 		return rankedFixture{}, false
 	}
-	at := parseEventTime(ev)
+	loc = ensureLoc(loc)
+	at := parseEventTime(ev, loc)
 	final := IsFinalStatus(ev.StrStatus, at, now, ev.IntHomeScore, ev.IntAwayScore)
 
 	homeID := strings.TrimSpace(ev.IDHomeTeam)
@@ -250,7 +253,7 @@ func eventToFixture(ev Event, followedTeamID, followedTeamName string, now time.
 		Team:   team,
 		League: ShortLeague(ev.StrLeague),
 		Opp:    opp,
-		When:   FormatWhen(at, now, final),
+		When:   FormatWhen(at, now, final, loc),
 		Status: "upcoming",
 		Home:   home,
 	}
@@ -273,7 +276,9 @@ func displayTeam(preferred, fallback string) string {
 }
 
 // BuildFixtures selects up to maxFixtures from season events for the resolved watches.
-func BuildFixtures(watches []Resolved, eventsByLeague map[string][]Event, now time.Time) []Fixture {
+// loc is the display timezone for when labels (typically Australia/Sydney).
+func BuildFixtures(watches []Resolved, eventsByLeague map[string][]Event, now time.Time, loc *time.Location) []Fixture {
+	loc = ensureLoc(loc)
 	seen := map[string]bool{}
 	var ranked []rankedFixture
 
@@ -281,7 +286,7 @@ func BuildFixtures(watches []Resolved, eventsByLeague map[string][]Event, now ti
 		evs := eventsByLeague[w.LeagueID]
 		if w.Kind == KindTeam {
 			for _, ev := range evs {
-				rf, ok := eventToFixture(ev, w.TeamID, w.TeamName, now)
+				rf, ok := eventToFixture(ev, w.TeamID, w.TeamName, now, loc)
 				if !ok {
 					continue
 				}
@@ -294,7 +299,7 @@ func BuildFixtures(watches []Resolved, eventsByLeague map[string][]Event, now ti
 			}
 		} else {
 			for _, ev := range evs {
-				rf, ok := eventToFixture(ev, "", "", now)
+				rf, ok := eventToFixture(ev, "", "", now, loc)
 				if !ok {
 					continue
 				}

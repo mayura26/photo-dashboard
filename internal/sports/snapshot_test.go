@@ -56,20 +56,37 @@ func TestIsFinalStatus(t *testing.T) {
 }
 
 func TestFormatWhen(t *testing.T) {
-	loc := time.Local
-	now := time.Date(2026, 10, 18, 12, 0, 0, 0, loc) // Sunday
+	loc, err := time.LoadLocation("Australia/Sydney")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 18, 12, 0, 0, 0, loc) // Sunday AEDT
 	fri := time.Date(2026, 10, 16, 19, 5, 0, 0, loc)  // Friday same week
-	if got := FormatWhen(fri, now, true); got != "Fri" {
+	if got := FormatWhen(fri, now, true, loc); got != "Fri" {
 		t.Fatalf("final same week = %q, want Fri", got)
 	}
 	upcoming := time.Date(2026, 10, 25, 13, 20, 0, 0, loc)
-	got := FormatWhen(upcoming, now, false)
+	got := FormatWhen(upcoming, now, false, loc)
 	if got != "Sun 1:20" {
 		t.Fatalf("upcoming = %q, want Sun 1:20", got)
+	}
+
+	// UTC kickoff during AEDT (UTC+11): fixed +10 would show "Sun 12:20".
+	utcKick := time.Date(2026, 10, 25, 2, 20, 0, 0, time.UTC)
+	if got := FormatWhen(utcKick, now, false, loc); got != "Sun 1:20" {
+		t.Fatalf("AEDT upcoming = %q, want Sun 1:20", got)
+	}
+	fixed10 := time.FixedZone("AEST", 10*3600)
+	if got := FormatWhen(utcKick, now, false, fixed10); got != "Sun 12:20" {
+		t.Fatalf("fixed+10 control = %q, want Sun 12:20", got)
 	}
 }
 
 func TestBuildFixturesTeamAndLeague(t *testing.T) {
+	loc, err := time.LoadLocation("Australia/Sydney")
+	if err != nil {
+		t.Fatal(err)
+	}
 	now := time.Date(2026, 10, 18, 12, 0, 0, 0, time.UTC)
 	watches := []Resolved{
 		{Kind: KindTeam, TeamID: "135193", TeamName: "New Zealand Warriors", LeagueID: "4416", League: "Australian National Rugby League", Season: "2026"},
@@ -115,7 +132,7 @@ func TestBuildFixturesTeamAndLeague(t *testing.T) {
 		},
 	}
 
-	fixtures := BuildFixtures(watches, events, now)
+	fixtures := BuildFixtures(watches, events, now, loc)
 	if len(fixtures) == 0 {
 		t.Fatal("expected fixtures")
 	}
@@ -161,8 +178,8 @@ func TestBuildSnapshotJSONNullScore(t *testing.T) {
 	}
 	var payload struct {
 		Fixtures []struct {
-			Score json.RawMessage `json:"score"`
-			Status string         `json:"status"`
+			Score  json.RawMessage `json:"score"`
+			Status string          `json:"status"`
 		} `json:"fixtures"`
 	}
 	if err := json.Unmarshal(raw, &payload); err != nil {
@@ -177,14 +194,18 @@ func TestBuildSnapshotJSONNullScore(t *testing.T) {
 }
 
 func TestEventToFixtureAwayTeam(t *testing.T) {
+	loc, err := time.LoadLocation("Australia/Sydney")
+	if err != nil {
+		t.Fatal(err)
+	}
 	now := time.Date(2026, 10, 18, 12, 0, 0, 0, time.UTC)
 	ev := Event{
-		StrLeague: "Australian National Rugby League",
+		StrLeague:   "Australian National Rugby League",
 		StrHomeTeam: "Penrith Panthers", StrAwayTeam: "New Zealand Warriors",
 		IDHomeTeam: "135197", IDAwayTeam: "135193",
 		StrTimestamp: "2027-03-01T05:00:00", StrStatus: "NS",
 	}
-	rf, ok := eventToFixture(ev, "135193", "New Zealand Warriors", now)
+	rf, ok := eventToFixture(ev, "135193", "New Zealand Warriors", now, loc)
 	if !ok {
 		t.Fatal("expected ok")
 	}
