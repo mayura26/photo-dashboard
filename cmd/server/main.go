@@ -19,6 +19,7 @@ import (
 	"photo-dashboard/internal/demo"
 	"photo-dashboard/internal/gcal"
 	"photo-dashboard/internal/persist"
+	"photo-dashboard/internal/sports"
 	"photo-dashboard/internal/weather"
 	"photo-dashboard/internal/webfs"
 )
@@ -61,6 +62,7 @@ func main() {
 
 	startWeatherPoller(store, hub)
 	startGCalPoller(store, hub)
+	startSportsPoller(store, hub)
 
 	gate := auth.FromEnv()
 	if gate.Enabled() {
@@ -160,6 +162,55 @@ func garminIngest(store *demo.Store, hub *demo.Hub) http.HandlerFunc {
 		w.WriteHeader(http.StatusNoContent)
 		log.Printf("garmin: snapshot updated (%d bytes)", len(body))
 	}
+}
+
+func startSportsPoller(store *demo.Store, hub *demo.Hub) {
+	watchRaw := strings.TrimSpace(os.Getenv("SPORTS_WATCH"))
+	if watchRaw == "" {
+		log.Printf("sports: SPORTS_WATCH unset; using placeholder fixtures")
+		return
+	}
+	items, err := sports.ParseWatchlist(watchRaw)
+	if err != nil {
+		log.Printf("sports: invalid SPORTS_WATCH %q: %v; using placeholders", watchRaw, err)
+		return
+	}
+
+	apiKey := strings.TrimSpace(os.Getenv("SPORTS_API_KEY"))
+	client := sports.NewClient(apiKey)
+	resolved, err := sports.Resolve(client, items)
+	if err != nil {
+		log.Printf("sports: resolve failed: %v; using placeholders", err)
+		return
+	}
+
+	interval := 30 * time.Minute
+	if v := os.Getenv("SPORTS_REFRESH"); v != "" {
+		d, err := time.ParseDuration(v)
+		if err != nil {
+			log.Printf("sports: invalid SPORTS_REFRESH %q; using %s", v, interval)
+		} else if d > 0 {
+			interval = d
+		}
+	}
+
+	p := &sports.Poller{
+		Client:   client,
+		Watches:  resolved,
+		Interval: interval,
+		Store:    store,
+		Hub:      hub,
+	}
+	p.Start()
+	names := make([]string, len(resolved))
+	for i, r := range resolved {
+		if r.Kind == sports.KindTeam {
+			names[i] = "team:" + r.TeamName
+		} else {
+			names[i] = "league:" + r.League
+		}
+	}
+	log.Printf("sports: TheSportsDB poller every %s for %s", interval, strings.Join(names, ", "))
 }
 
 func startWeatherPoller(store *demo.Store, hub *demo.Hub) {

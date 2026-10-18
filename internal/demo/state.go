@@ -39,6 +39,7 @@ type Snapshot struct {
 	Scenes     []map[string]any `json:"scenes"`
 	Weather      json.RawMessage  `json:"weather"`
 	Garmin       json.RawMessage  `json:"garmin"`
+	Sports       json.RawMessage  `json:"sports,omitempty"`
 	Photos       []map[string]any `json:"photos"`
 	Agents       json.RawMessage  `json:"agents"`
 	TimeOffset   int64            `json:"timeOffset"`
@@ -77,6 +78,7 @@ func Load(seedPath string) (*Store, error) {
 	s.snap.Cameras = raw["cameras"]
 	s.snap.Weather = raw["weather"]
 	s.snap.Garmin = raw["garmin"]
+	s.snap.Sports = raw["sports"]
 	s.snap.Agents = raw["agents"]
 
 	mustUnmarshal(raw["events"], &s.snap.Events)
@@ -263,6 +265,13 @@ func (s *Store) SetGarmin(raw json.RawMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.snap.Garmin = append(json.RawMessage(nil), raw...)
+}
+
+// SetSports replaces the sports fixtures blob (e.g. from TheSportsDB poller).
+func (s *Store) SetSports(raw json.RawMessage) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.snap.Sports = append(json.RawMessage(nil), raw...)
 }
 
 // SetEvents replaces calendar events and marks the snapshot as live Google Calendar sync.

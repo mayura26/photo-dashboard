@@ -112,34 +112,51 @@
 .wxs-mm.is-real { color: #1F6FEB; }
 .wxs-mm--none { opacity: .35; }
 
-/* ---- sports */
+/* ---- sports: compact matchup strip (short names + inline serif vs) */
 .h-sports {
   grid-column: 10 / 13;
   display: flex; flex-direction: column; justify-content: flex-end;
   border-bottom: 3px solid var(--ink); padding: 2px 0 8px; min-width: 0;
 }
 .h-sports > .label { margin-bottom: 6px; }
-.h-sports-list { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.h-sports-list { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .h-sp {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  min-width: 0; padding: 4px 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-width: 0; padding: 5px 0;
 }
-.h-sp + .h-sp { border-top: 1px solid var(--line); padding-top: 6px; }
-.h-sp-main { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.h-sp + .h-sp { border-top: 1px solid var(--line); }
+.h-sp-main { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .h-sp-league {
-  font-size: 11px; font-weight: 800; font-stretch: 80%;
-  letter-spacing: .08em; text-transform: uppercase; color: var(--mute);
+  font-size: 10px; font-weight: 800; font-stretch: 80%;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--mute);
 }
 .h-sp-match {
-  font-size: 15px; font-weight: 700; line-height: 1.15;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 5px;
+  min-width: 0; max-width: 100%;
+  font-size: 15px; font-weight: 700; line-height: 1.2;
+}
+.h-sp-side {
+  min-width: 0; max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.h-sp-vs {
+  flex: none;
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 14px; color: var(--mute); letter-spacing: 0;
+  text-transform: none;
 }
 .h-sp-score {
-  flex: none; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  flex: none; min-width: 3.4em; text-align: right;
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 1px;
 }
-.h-sp-score b { font-size: 20px; font-weight: 800; font-stretch: 70%; font-variant-numeric: tabular-nums; line-height: 1; }
-.h-sp-score small { font-size: 11px; font-weight: 700; color: var(--mute); text-transform: uppercase; letter-spacing: .04em; }
-.h-sp-vs { font-family: var(--serif); font-style: italic; font-weight: 400 !important; font-size: 18px !important; color: var(--mute); }
+.h-sp-score b { font-size: 18px; font-weight: 800; font-stretch: 70%; font-variant-numeric: tabular-nums; line-height: 1; }
+.h-sp-score small,
+.h-sp-when {
+  font-size: 11px; font-weight: 700; color: var(--mute);
+  text-transform: uppercase; letter-spacing: .04em; line-height: 1.2;
+  white-space: nowrap;
+}
+.h-sp-when { font-size: 12px; font-weight: 800; color: var(--ink-2); }
 .h-sp.is-win .h-sp-score b { color: var(--ok); }
 .h-sp.is-loss .h-sp-score b { color: var(--mute); }
 .h-sp.is-draw .h-sp-score b { color: var(--ink-2); }

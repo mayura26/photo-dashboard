@@ -88,9 +88,8 @@
     var list = fixtures().slice(0, 3);
     return '<div class="label">Sports</div>' +
       '<div class="h-sports-list">' + list.map(function (g, i) {
-        var followed = App.esc(g.team);
-        var opp = App.esc(g.opp);
-        var matchup = g.home ? followed + ' vs ' + opp : opp + ' vs ' + followed;
+        var a = App.esc(g.home ? g.team : g.opp);
+        var b = App.esc(g.home ? g.opp : g.team);
         var right;
         var tone = '';
         if (g.status === 'final' && g.score) {
@@ -101,12 +100,16 @@
           else tone = ' is-draw';
           right = '<b class="num">' + g.score[0] + '–' + g.score[1] + '</b><small>' + App.esc(g.when) + '</small>';
         } else {
-          right = '<b class="h-sp-vs">vs</b><small>' + App.esc(g.when) + '</small>';
+          right = '<small class="h-sp-when">' + App.esc(g.when) + '</small>';
         }
         return '<div class="h-sp h-reveal' + tone + '" style="--d:' + i + '">' +
           '<div class="h-sp-main">' +
           '  <span class="h-sp-league">' + App.esc(g.league) + '</span>' +
-          '  <span class="h-sp-match">' + matchup + '</span>' +
+          '  <span class="h-sp-match" title="' + a + ' vs ' + b + '">' +
+          '    <span class="h-sp-side">' + a + '</span>' +
+          '    <span class="h-sp-vs" aria-hidden="true">vs</span>' +
+          '    <span class="h-sp-side">' + b + '</span>' +
+          '  </span>' +
           '</div>' +
           '<div class="h-sp-score">' + right + '</div>' +
           '</div>';
