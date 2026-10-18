@@ -92,7 +92,7 @@
 .wxs-say b { font-weight: 400; font-style: italic; }
 .wxs-body { padding: 0 36px 28px; overflow: auto; min-height: 0; }
 .wxs-stats {
-  display: grid; grid-template-columns: repeat(var(--chore-lanes, 3), 1fr); gap: 10px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;
   padding: 14px 0 18px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 8px;
 }
 .wxs-stats > div { display: flex; flex-direction: column; gap: 2px; }

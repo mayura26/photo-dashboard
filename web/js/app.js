@@ -196,10 +196,13 @@
       summary = W.t[h] < 12 ? 'Clear and cool' : 'Dry all day';
       advice = W.t[h] < 12 ? 'Jacket weather' : 'Light layers';
     }
+    var rain = 0;
+    for (var r = 0; r < 24; r++) rain += W.p[r] || 0;
+    rain = Math.round(rain * 10) / 10;
     var labels = { sun: 'Sunny', moon: 'Clear', partly: 'Partly cloudy', cloud: 'Overcast', rain: 'Rain' };
     return {
       temp: W.t[h], cond: W.c[h], label: labels[W.c[h]], hi: W.hi, lo: W.lo,
-      feels: W.feels, humidity: W.humidity, wind: W.wind,
+      feels: W.feels, humidity: W.humidity, wind: W.wind, rain: rain,
       summary: summary, advice: advice, hour: h
     };
   };

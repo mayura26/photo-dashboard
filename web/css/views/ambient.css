@@ -9,7 +9,18 @@
 .amb-right { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
 .amb-wx { display: flex; align-items: center; gap: 12px; }
 .amb-wx .num { font-size: 72px; line-height: .8; }
-.amb-wx small { font-family: var(--serif); font-size: 26px; font-style: italic; max-width: 220px; line-height: 1.05; }
+.amb-wx-meta {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  max-width: 280px; min-width: 0;
+}
+.amb-wx small {
+  font-family: var(--serif); font-size: 26px; font-style: italic; line-height: 1.05;
+}
+.amb-wx-day {
+  font-size: 18px; font-weight: 700; letter-spacing: .02em;
+  font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, .72);
+  white-space: nowrap;
+}
 
 /* Upcoming sports — top-left glance chip */
 .amb-sports {

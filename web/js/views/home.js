@@ -34,6 +34,7 @@
       '<span class="h-wx-side">' +
       '  <span><b class="num">' + w.humidity + '%</b><small>Humidity</small></span>' +
       '  <span><b class="num">' + w.wind + '</b><small>Wind</small></span>' +
+      '  <span><b class="num">' + App.fmtMm(w.rain) + '</b><small>Rain</small></span>' +
       '</span>' +
       '</div>' +
       '<div class="h-wx-say h-reveal" style="--d:1"><b>' + w.summary + '.</b> ' + w.advice + '.</div>' +
@@ -64,6 +65,7 @@
       '  <div><b>' + w.feels + '°</b><span>Feels</span></div>' +
       '  <div><b>' + w.humidity + '%</b><span>Humidity</span></div>' +
       '  <div><b>' + w.wind + '</b><span>Wind km/h</span></div>' +
+      '  <div><b>' + App.fmtMm(w.rain) + '</b><span>Rain today</span></div>' +
       '  <div><b>' + w.hi + '° / ' + w.lo + '°</b><span>High / Low</span></div>' +
       '</div>' +
       '<div class="wxs-hours">' + hours.map(function (h) {

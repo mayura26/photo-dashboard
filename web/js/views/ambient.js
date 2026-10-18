@@ -189,7 +189,9 @@
     return '<div class="amb-clock"><div class="amb-time num">' + App.fmt.time(n, false) + '</div>' +
       '<div class="amb-date">' + App.fmt.day(n) + ', ' + App.fmt.month(n) + ' ' + n.getDate() + '</div></div>' +
       '<div class="amb-right">' +
-      '<div class="amb-wx">' + App.icon(w.cond, 44) + '<span class="num">' + w.temp + '°</span><small>' + w.summary + '</small></div>' +
+      '<div class="amb-wx">' + App.icon(w.cond, 44) + '<span class="num">' + w.temp + '°</span>' +
+      '<div class="amb-wx-meta"><small>' + w.summary + '</small>' +
+      '<span class="amb-wx-day">H ' + w.hi + '° · L ' + w.lo + '° · ' + App.fmtMm(w.rain) + '</span></div></div>' +
       ambientSchedule() +
       ambientGarmin() +
       '</div>';
