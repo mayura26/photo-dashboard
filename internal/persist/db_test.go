@@ -1,6 +1,7 @@
 package persist
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 )
@@ -91,5 +92,65 @@ func TestSaveNilSlices(t *testing.T) {
 	}
 	if out.NextGID != 100 {
 		t.Fatalf("default nextGID: %d", out.NextGID)
+	}
+}
+
+func TestGarminSaveLoadRoundTrip(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "hq.db")
+
+	db, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, ok, err := db.LoadGarmin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("expected no garmin before save")
+	}
+
+	in := json.RawMessage(`{"displayName":"Mayura","steps":1234}`)
+	if err := db.SaveGarmin(in); err != nil {
+		t.Fatal(err)
+	}
+
+	out, ok, err := db.LoadGarmin()
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if string(out) != string(in) {
+		t.Fatalf("garmin: got %s want %s", out, in)
+	}
+
+	_ = db.Close()
+	db2, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db2.Close()
+	out2, ok, err := db2.LoadGarmin()
+	if err != nil || !ok {
+		t.Fatalf("reload: ok=%v err=%v", ok, err)
+	}
+	if string(out2) != string(in) {
+		t.Fatalf("reload mismatch: %s", out2)
+	}
+}
+
+func TestSaveGarminRejectsInvalid(t *testing.T) {
+	db, err := Open(filepath.Join(t.TempDir(), "hq.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if err := db.SaveGarmin(json.RawMessage(`not-json`)); err == nil {
+		t.Fatal("expected error for invalid json")
+	}
+	if err := db.SaveGarmin(nil); err == nil {
+		t.Fatal("expected error for empty")
 	}
 }

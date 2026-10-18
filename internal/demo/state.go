@@ -121,7 +121,8 @@ func maxGroceryID(groceries []map[string]any) int {
 	return max
 }
 
-// AttachPersist binds a SQLite store and hydrates groceries/chores/stars.
+// AttachPersist binds a SQLite store and hydrates groceries/chores/stars
+// and the last ingested Garmin blob (when present).
 // Missing DB rows bootstrap to empty lists (no seed demo data).
 func (s *Store) AttachPersist(db *persist.DB) error {
 	if db == nil {
@@ -140,17 +141,28 @@ func (s *Store) AttachPersist(db *persist.DB) error {
 		s.snap.Chores = []map[string]any{}
 		s.snap.Stars = map[string]float64{}
 		s.nextGID = 100
-		return s.saveMutableLocked()
+		if err := s.saveMutableLocked(); err != nil {
+			return err
+		}
+	} else {
+		s.snap.Groceries = m.Groceries
+		s.snap.Chores = m.Chores
+		s.snap.Stars = m.Stars
+		s.nextGID = m.NextGID
+		if s.nextGID < maxGroceryID(s.snap.Groceries) {
+			s.nextGID = maxGroceryID(s.snap.Groceries)
+		}
+		if max := maxChoreID(s.snap.Chores); s.nextCID < max {
+			s.nextCID = max
+		}
 	}
-	s.snap.Groceries = m.Groceries
-	s.snap.Chores = m.Chores
-	s.snap.Stars = m.Stars
-	s.nextGID = m.NextGID
-	if s.nextGID < maxGroceryID(s.snap.Groceries) {
-		s.nextGID = maxGroceryID(s.snap.Groceries)
+
+	garmin, found, err := db.LoadGarmin()
+	if err != nil {
+		return err
 	}
-	if max := maxChoreID(s.snap.Chores); s.nextCID < max {
-		s.nextCID = max
+	if found {
+		s.snap.Garmin = append(json.RawMessage(nil), garmin...)
 	}
 	return nil
 }
@@ -262,11 +274,18 @@ func (s *Store) SetWeather(raw json.RawMessage) {
 	s.snap.Weather = append(json.RawMessage(nil), raw...)
 }
 
-// SetGarmin replaces the garmin blob in the snapshot (e.g. from the Python sidecar).
+// SetGarmin replaces the garmin blob in the snapshot (e.g. from the Python sidecar)
+// and persists it to SQLite when attached so redeploys keep the last live data.
 func (s *Store) SetGarmin(raw json.RawMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.snap.Garmin = append(json.RawMessage(nil), raw...)
+	if s.db == nil {
+		return
+	}
+	if err := s.db.SaveGarmin(s.snap.Garmin); err != nil {
+		log.Printf("persist: save garmin: %v", err)
+	}
 }
 
 // SetSports replaces the sports fixtures blob (e.g. from TheSportsDB poller).

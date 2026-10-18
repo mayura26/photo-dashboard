@@ -15,6 +15,7 @@ const (
 	keyChores    = "chores"
 	keyStars     = "stars"
 	keyNextGID   = "next_gid"
+	keyGarmin    = "garmin"
 )
 
 // DB is a thin SQLite store for shopping/TODO mutable state.
@@ -169,6 +170,34 @@ func (d *DB) SaveMutable(m Mutable) error {
 	}
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("persist: commit: %w", err)
+	}
+	return nil
+}
+
+// LoadGarmin returns the last ingested Garmin JSON blob.
+// ok is false when no garmin key has been saved yet.
+func (d *DB) LoadGarmin() (raw json.RawMessage, ok bool, err error) {
+	b, found, err := d.get(keyGarmin)
+	if err != nil || !found {
+		return nil, found, err
+	}
+	if len(b) == 0 || !json.Valid(b) {
+		return nil, false, fmt.Errorf("persist: garmin: invalid json")
+	}
+	return json.RawMessage(b), true, nil
+}
+
+// SaveGarmin replaces the persisted Garmin JSON blob.
+func (d *DB) SaveGarmin(raw json.RawMessage) error {
+	if len(raw) == 0 || !json.Valid(raw) {
+		return fmt.Errorf("persist: garmin: invalid json")
+	}
+	if _, err := d.sql.Exec(
+		`INSERT INTO kv(key, value) VALUES(?, ?)
+		 ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
+		keyGarmin, string(raw),
+	); err != nil {
+		return fmt.Errorf("persist: upsert garmin: %w", err)
 	}
 	return nil
 }

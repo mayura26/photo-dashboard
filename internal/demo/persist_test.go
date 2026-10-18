@@ -1,6 +1,7 @@
 package demo
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 
@@ -71,5 +72,40 @@ func TestAttachPersistRoundTrip(t *testing.T) {
 	}
 	if len(snap.Chores) != 0 {
 		t.Fatalf("expected no chores, got %d", len(snap.Chores))
+	}
+}
+
+func TestGarminSurvivesRedeploy(t *testing.T) {
+	seed := filepath.Join("seed.json")
+	store, err := Load(seed)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := persist.Open(filepath.Join(t.TempDir(), "hq.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	if err := store.AttachPersist(db); err != nil {
+		t.Fatal(err)
+	}
+
+	live := json.RawMessage(`{"displayName":"Live Mayura","steps":9876,"bodyBattery":72}`)
+	store.SetGarmin(live)
+
+	// Simulate Go redeploy: new Store from seed, same SQLite file.
+	store2, err := Load(seed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seedGarmin := string(store2.Snapshot().Garmin)
+	if err := store2.AttachPersist(db); err != nil {
+		t.Fatal(err)
+	}
+	snap := store2.Snapshot()
+	if string(snap.Garmin) != string(live) {
+		t.Fatalf("expected live garmin after AttachPersist, got %s (seed was %s)", snap.Garmin, seedGarmin)
 	}
 }
