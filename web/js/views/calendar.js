@@ -83,17 +83,25 @@
     return '<div class="now-line" style="top:' + y(now) + 'px"><span class="num">' + App.fmt.time(now, false) + '</span></div>';
   }
 
-  // ------------------------------------------------------------ Today (lanes per person)
+  // Today: one lane per person + Family (shared calendar).
+  function dayLanes() {
+    return D.people.concat([D.family]);
+  }
+
   function dayView() {
     var day = V.date;
-    var fam = App.timedOn(day).filter(App.isFamily);
+    var lanes = dayLanes();
+    var famIdx = lanes.length; // 1-based grid column for Family
+    var head = '<div class="lanes-head"><div class="gutter"></div>' + lanes.map(function (p) {
+      return '<div class="lane-head" style="' + App.pstyle(p) + '">' + App.avatar(p, 28) + '<b>' + App.esc(p.name) + '</b></div>';
+    }).join('') + '</div>';
     var allDay = App.allDayOn(day);
     var ad = allDay.length ? '<div class="allday"><div class="gutter label">All day</div><div class="allday-grid">' + allDay.map(function (e) {
       var fam2 = App.isFamily(e);
       var idx = D.people.map(function (p) { return p.id; }).indexOf(e.people[0]);
-      var col = fam2 ? '1 / -1' : (idx + 1) + ' / span 1';
+      var col = fam2 ? famIdx : Math.max(1, idx + 1);
       var s = App.dayStart(day), spanDays = Math.round((e.end - e.start) / 864e5), dayN = Math.round((s - e.start) / 864e5) + 1;
-      return '<button class="ad' + (e.start < s ? ' ad--cont' : '') + '" data-ev="' + e.id + '" style="grid-column:' + col + ';' + App.pstyle(App.evColor(e)) + '">' +
+      return '<button class="ad' + (e.start < s ? ' ad--cont' : '') + '" data-ev="' + e.id + '" style="grid-column:' + col + ' / span 1;' + App.pstyle(App.evColor(e)) + '">' +
         (e.start < s ? App.icon('left', 16) : '') + App.esc(e.title) + (spanDays > 1 ? ' <small>Day ' + dayN + ' of ' + spanDays + '</small>' : '') + '</button>';
     }).join('') + '</div></div>' : '';
     var grid = '<div class="grid-scroll"><div class="grid" style="height:' + (END - START) * PX + 'px">' +
@@ -102,14 +110,11 @@
         var list = App.timedOn(day, p.id).filter(function (e) { return !App.isFamily(e); });
         return '<div class="lane" style="' + App.pstyle(p) + '">' + placeBlocks(list, null, p.id) + '</div>';
       }).join('') +
-      '<div class="lane-fam">' + fam.map(function (e) {
-        var b = clampTop(e, day);
-        return evBlock(e, 'top:' + b.top + 'px;height:' + b.h + 'px;left:2px;right:2px');
-      }).join('') + '</div>' +
+      '<div class="lane" style="' + App.pstyle(D.family) + '">' + placeBlocks(App.timedOn(day).filter(App.isFamily), null, 'family') + '</div>' +
       nowLine([day]) + '</div>' +
       '</div></div>';
-    var empty = !App.timedOn(day).length ? '<div class="cal-empty serif">Nothing on the calendar.<br><i>A rare, quiet day.</i></div>' : '';
-    return '<div class="cal-day">' + ad + grid + empty + '</div>';
+    var empty = !App.timedOn(day).length && !allDay.length ? '<div class="cal-empty serif">Nothing on the calendar.<br><i>A rare, quiet day.</i></div>' : '';
+    return '<div class="cal-day">' + head + ad + grid + empty + '</div>';
   }
 
   // ------------------------------------------------------------ 3 day

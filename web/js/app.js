@@ -83,6 +83,7 @@
     var n = D.people.length || 2;
     var root = document.documentElement;
     root.style.setProperty('--people-count', String(n));
+    root.style.setProperty('--cal-lanes', String(n + 1)); // people + Family
     root.style.setProperty('--chore-lanes', String(n + 1)); // people + "any"
   };
   App.pstyle = function (p) {
