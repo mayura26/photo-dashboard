@@ -83,13 +83,22 @@
     for (var i = 0; i < D.people.length; i++) if (D.people[i].id === id) return D.people[i];
     return D.family;
   };
+  // People who get a personal calendar lane (plus Family). Falls back to all people.
+  App.calendarPeople = function () {
+    var ids = D.calendarPeople;
+    if (ids && ids.length) {
+      return ids.map(function (id) { return App.person(id); }).filter(Boolean);
+    }
+    return D.people.slice();
+  };
   // Layout grids keyed off household size (calendar lanes, home lanes, chore columns).
   App.syncPeopleLayout = function () {
     if (!D || !D.people) return;
     var n = D.people.length || 2;
+    var calN = (D.calendarPeople && D.calendarPeople.length) ? D.calendarPeople.length : n;
     var root = document.documentElement;
     root.style.setProperty('--people-count', String(n));
-    root.style.setProperty('--cal-lanes', String(n + 1)); // people + Family
+    root.style.setProperty('--cal-lanes', String(calN + 1)); // calendar people + Family
     root.style.setProperty('--chore-lanes', String(n + 1)); // people + "any"
   };
   App.pstyle = function (p) {

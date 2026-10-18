@@ -42,7 +42,9 @@ function patchMutations() {
       store.dispatch('addEvent', payload);
     },
     removeEvent(id) { store.dispatch('removeEvent', { id }); },
-    fav(seed) { store.dispatch('toggleFav', { seed }); }
+    fav(seed) { store.dispatch('toggleFav', { seed }); },
+    completePmdTask(id) { store.dispatch('completePmdTask', { id }); },
+    schedulePmdTask(id, mode) { store.dispatch('schedulePmdTask', { id, mode }); }
   };
 }
 

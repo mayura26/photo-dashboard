@@ -71,6 +71,9 @@
 .ev.is-half .ev-with { display: none; }
 .ev.is-half .ev-title { padding-right: 0; }
 .ev.is-past { opacity: .38; }
+.ev.is-done { opacity: .45; }
+.ev.is-done .ev-title { text-decoration: line-through; text-decoration-thickness: 2px; }
+.ad.is-done { opacity: .45; text-decoration: line-through; }
 .ev.is-now { box-shadow: 0 0 0 3px var(--paper), 0 0 0 6px var(--c); z-index: 2; }
 .ev.is-family { background: var(--ink); color: #fff; }
 .ev-with { position: absolute; right: 8px; top: 9px; }
@@ -157,6 +160,13 @@
 .evs-leave b { font-weight: 800; }
 .evs-people { flex-direction: row !important; flex-wrap: wrap; gap: 8px; padding: 10px 0; }
 .evs-notes { font-size: 28px; line-height: 1.2; padding-top: 22px; font-style: italic; }
+.evs-band h2.is-done { text-decoration: line-through; text-decoration-thickness: 3px; opacity: .7; }
+.evs-actions { margin-top: 22px; padding-top: 8px; }
+.evs-done-badge {
+  margin-top: 22px; font-size: 15px; font-weight: 800; font-stretch: 80%;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--mute);
+}
+.chips--wrap { flex-wrap: wrap; gap: 10px; }
 
 /* ---- add sheet + shared "who" pickers */
 .big-input {

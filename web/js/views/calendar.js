@@ -46,7 +46,8 @@
     var now = App.now();
     var p = opts.color || App.evColor(e);
     var mins = (e.end - e.start) / 60000;
-    var cls = 'ev' + (e.end <= now ? ' is-past' : '') + (e.start <= now && e.end > now ? ' is-now' : '') + (mins < 45 ? ' is-short' : '') + (App.isFamily(e) ? ' is-family' : '') + (opts.half ? ' is-half' : '');
+    var done = e.status === 'completed';
+    var cls = 'ev' + (e.end <= now || done ? ' is-past' : '') + (e.start <= now && e.end > now && !done ? ' is-now' : '') + (mins < 45 ? ' is-short' : '') + (App.isFamily(e) ? ' is-family' : '') + (opts.half ? ' is-half' : '') + (done ? ' is-done' : '');
     var others = opts.lane ? e.people.filter(function (id) { return id !== opts.lane; }) : (e.people.length > 1 && !App.isFamily(e) ? e.people : []);
     var travel = e.travel ? '<span class="ev-travel" style="height:' + (e.travel * PX / 60) + 'px"></span>' : '';
     return '<button class="' + cls + '" data-ev="' + e.id + '" style="' + App.pstyle(p) + ';' + style + '">' + travel +
@@ -83,13 +84,14 @@
     return '<div class="now-line" style="top:' + y(now) + 'px"><span class="num">' + App.fmt.time(now, false) + '</span></div>';
   }
 
-  // Today: one lane per person + Family (shared calendar).
+  // Today: personal calendar people + Family (shared calendar).
   function dayLanes() {
-    return D.people.concat([D.family]);
+    return App.calendarPeople().concat([D.family]);
   }
 
   function dayView() {
     var day = V.date;
+    var people = App.calendarPeople();
     var lanes = dayLanes();
     var famIdx = lanes.length; // 1-based grid column for Family
     var head = '<div class="lanes-head"><div class="gutter"></div>' + lanes.map(function (p) {
@@ -98,15 +100,15 @@
     var allDay = App.allDayOn(day);
     var ad = allDay.length ? '<div class="allday"><div class="gutter label">All day</div><div class="allday-grid">' + allDay.map(function (e) {
       var fam2 = App.isFamily(e);
-      var idx = D.people.map(function (p) { return p.id; }).indexOf(e.people[0]);
+      var idx = people.map(function (p) { return p.id; }).indexOf(e.people[0]);
       var col = fam2 ? famIdx : Math.max(1, idx + 1);
       var s = App.dayStart(day), spanDays = Math.round((e.end - e.start) / 864e5), dayN = Math.round((s - e.start) / 864e5) + 1;
-      return '<button class="ad' + (e.start < s ? ' ad--cont' : '') + '" data-ev="' + e.id + '" style="grid-column:' + col + ' / span 1;' + App.pstyle(App.evColor(e)) + '">' +
+      return '<button class="ad' + (e.start < s ? ' ad--cont' : '') + (e.status === 'completed' ? ' is-done' : '') + '" data-ev="' + e.id + '" style="grid-column:' + col + ' / span 1;' + App.pstyle(App.evColor(e)) + '">' +
         (e.start < s ? App.icon('left', 16) : '') + App.esc(e.title) + (spanDays > 1 ? ' <small>Day ' + dayN + ' of ' + spanDays + '</small>' : '') + '</button>';
     }).join('') + '</div></div>' : '';
     var grid = '<div class="grid-scroll"><div class="grid" style="height:' + (END - START) * PX + 'px">' +
       '<div class="hours">' + hoursCol() + '</div>' +
-      '<div class="lanes">' + D.people.map(function (p) {
+      '<div class="lanes">' + people.map(function (p) {
         var list = App.timedOn(day, p.id).filter(function (e) { return !App.isFamily(e); });
         return '<div class="lane" style="' + App.pstyle(p) + '">' + placeBlocks(list, null, p.id) + '</div>';
       }).join('') +
@@ -256,13 +258,36 @@
   }
 
   // ------------------------------------------------------------ sheets
+  var SCHEDULE_MODES = [
+    ['now', 'Now'],
+    ['today', 'Today'],
+    ['tomorrow', 'Tomorrow'],
+    ['next-week', 'Next week'],
+    ['this-weekend', 'This weekend'],
+    ['next-weekend', 'Next weekend'],
+    ['next-month', 'Next month'],
+    ['asap', 'ASAP']
+  ];
+
   App.eventSheet = function (e) {
     if (!e) return;
     var p = App.evColor(e), fam = App.isFamily(e);
+    var pmd = e.source === 'pmday';
+    var done = e.status === 'completed';
+    var actions = '';
+    if (pmd && !done) {
+      actions = '<div class="sheet-actions evs-actions">' +
+        '<button class="btn btn--ghost" data-pmd-reschedule>Reschedule</button>' +
+        '<button class="btn btn--solid" data-pmd-complete>Complete</button>' +
+        '</div>';
+    } else if (pmd && done) {
+      actions = '<div class="evs-done-badge">Completed</div>';
+    }
     App.sheet(
       '<div class="evs" style="' + App.pstyle(p) + '">' +
-      '<div class="evs-band"><div class="label label--on">' + App.fmt.rel(e.start) + ' · ' + App.fmt.month(e.start) + ' ' + e.start.getDate() + '</div>' +
-      '<h2 class="serif">' + App.esc(e.title) + '</h2>' +
+      '<div class="evs-band"><div class="label label--on">' + App.fmt.rel(e.start) + ' · ' + App.fmt.month(e.start) + ' ' + e.start.getDate() +
+      (pmd ? ' · Plan My Day' : '') + '</div>' +
+      '<h2 class="serif' + (done ? ' is-done' : '') + '">' + App.esc(e.title) + '</h2>' +
       '<div class="evs-time num">' + (e.allDay ? 'All day' : App.fmt.range(e.start, e.end)) + '</div></div>' +
       '<div class="evs-body">' +
       (e.travel ? '<div class="evs-row evs-leave">' + App.icon('car', 28) + '<div><b>Leave by ' + App.fmt.time(App.leaveBy(e)) + '</b><span>' + e.travel + ' min drive in current traffic</span></div></div>' : '') +
@@ -271,8 +296,55 @@
         return '<span class="chip" style="' + App.pstyle(x) + '">' + App.avatar(x, 32) + x.name + '</span>';
       }).join('') + '</div></div>' +
       (e.notes ? '<div class="evs-notes serif">“' + App.esc(e.notes) + '”</div>' : '') +
-      '</div></div>', { cls: 'sheet--event' });
+      actions +
+      '</div></div>', {
+        cls: 'sheet--event',
+        onMount: function (s, close) {
+          if (!pmd || done) return;
+          s.addEventListener('click', function (ev) {
+            var t = ev.target.closest('button');
+            if (!t) return;
+            if (t.hasAttribute('data-pmd-complete')) {
+              if (App.sync) App.sync.completePmdTask(e.id);
+              close();
+              App.toast('Completed <b>' + App.esc(e.title) + '</b>', { icon: 'check' });
+              return;
+            }
+            if (t.hasAttribute('data-pmd-reschedule')) {
+              close();
+              rescheduleSheet(e);
+            }
+          });
+        }
+      });
   };
+
+  function rescheduleSheet(e) {
+    var modes = SCHEDULE_MODES.slice();
+    if (e.dueDate) {
+      modes.push(['due-date', 'Due date'], ['smart', 'Smart']);
+    }
+    App.sheet(
+      '<div class="sheet-pad">' +
+      '<div class="label">Reschedule</div>' +
+      '<h2 class="serif sheet-h">' + App.esc(e.title) + '</h2>' +
+      '<div class="chips chips--wrap">' + modes.map(function (m) {
+        return '<button class="chip chip--ghost" data-mode="' + m[0] + '">' + m[1] + '</button>';
+      }).join('') + '</div>' +
+      '<div class="sheet-actions"><button class="btn btn--ghost" data-close>Cancel</button></div>' +
+      '</div>', {
+        onMount: function (s, close) {
+          s.addEventListener('click', function (ev) {
+            var t = ev.target.closest('[data-mode]');
+            if (!t) return;
+            var mode = t.dataset.mode;
+            if (App.sync) App.sync.schedulePmdTask(e.id, mode);
+            close();
+            App.toast('Rescheduling <b>' + App.esc(e.title) + '</b>…', { icon: 'calendar' });
+          });
+        }
+      });
+  }
 
   function moreSheet(ids) {
     var list = ids.map(App.findEvent).filter(Boolean);

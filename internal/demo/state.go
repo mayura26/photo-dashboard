@@ -42,17 +42,19 @@ type Snapshot struct {
 	Sports       json.RawMessage  `json:"sports,omitempty"`
 	Photos       []map[string]any `json:"photos"`
 	Agents       json.RawMessage  `json:"agents"`
-	TimeOffset   int64            `json:"timeOffset"`
-	CalendarLive bool             `json:"calendarLive"`
+	TimeOffset      int64            `json:"timeOffset"`
+	CalendarLive    bool             `json:"calendarLive"`
+	CalendarPeople  []string         `json:"calendarPeople,omitempty"`
 }
 
 type Store struct {
-	mu      sync.RWMutex
-	snap    Snapshot
-	nextGID int
-	nextEID int
-	nextCID int
-	db      *persist.DB
+	mu             sync.RWMutex
+	snap           Snapshot
+	eventsBySource map[string][]map[string]any
+	nextGID        int
+	nextEID        int
+	nextCID        int
+	db             *persist.DB
 }
 
 func Load(seedPath string) (*Store, error) {
@@ -274,10 +276,22 @@ func (s *Store) SetSports(raw json.RawMessage) {
 	s.snap.Sports = append(json.RawMessage(nil), raw...)
 }
 
-// SetEvents replaces calendar events and marks the snapshot as live Google Calendar sync.
+// SetEvents replaces the gcal source events (compat wrapper for SetSourceEvents).
 func (s *Store) SetEvents(events []map[string]any) {
+	s.SetSourceEvents("gcal", events)
+}
+
+// SetSourceEvents replaces events for one live calendar source and rebuilds the merged list.
+// Seed events are discarded once any live source is set.
+func (s *Store) SetSourceEvents(source string, events []map[string]any) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if source == "" {
+		return
+	}
+	if s.eventsBySource == nil {
+		s.eventsBySource = map[string][]map[string]any{}
+	}
 	cp := make([]map[string]any, len(events))
 	for i, e := range events {
 		m := make(map[string]any, len(e))
@@ -286,11 +300,59 @@ func (s *Store) SetEvents(events []map[string]any) {
 		}
 		cp[i] = m
 	}
-	s.snap.Events = cp
+	s.eventsBySource[source] = cp
+	s.rebuildEventsLocked()
 	s.snap.CalendarLive = true
 }
 
-// CalendarLive reports whether events are driven by Google Calendar sync.
+func (s *Store) rebuildEventsLocked() {
+	order := []string{"gcal", "pmday"}
+	seen := map[string]bool{}
+	var out []map[string]any
+	for _, src := range order {
+		if evs, ok := s.eventsBySource[src]; ok {
+			out = append(out, evs...)
+			seen[src] = true
+		}
+	}
+	for src, evs := range s.eventsBySource {
+		if seen[src] {
+			continue
+		}
+		out = append(out, evs...)
+	}
+	s.snap.Events = out
+}
+
+// SetCalendarPeople sets which person ids get personal calendar lanes (plus Family in the UI).
+func (s *Store) SetCalendarPeople(ids []string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.snap.CalendarPeople = append([]string(nil), ids...)
+}
+
+// PatchSourceEvent updates fields on a single event within a source by dashboard id.
+func (s *Store) PatchSourceEvent(source, id string, patch map[string]any) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.eventsBySource == nil {
+		return false
+	}
+	evs := s.eventsBySource[source]
+	for _, e := range evs {
+		if e["id"] != id {
+			continue
+		}
+		for k, v := range patch {
+			e[k] = v
+		}
+		s.rebuildEventsLocked()
+		return true
+	}
+	return false
+}
+
+// CalendarLive reports whether events are driven by a live calendar sync.
 func (s *Store) CalendarLive() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

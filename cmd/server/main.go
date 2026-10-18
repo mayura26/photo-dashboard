@@ -19,6 +19,7 @@ import (
 	"photo-dashboard/internal/demo"
 	"photo-dashboard/internal/gcal"
 	"photo-dashboard/internal/persist"
+	"photo-dashboard/internal/pmday"
 	"photo-dashboard/internal/sports"
 	"photo-dashboard/internal/weather"
 	"photo-dashboard/internal/webfs"
@@ -62,6 +63,7 @@ func main() {
 
 	startWeatherPoller(store, hub)
 	startGCalPoller(store, hub)
+	startPmdayPoller(store, hub)
 	startSportsPoller(store, hub)
 
 	gate := auth.FromEnv()
@@ -258,29 +260,25 @@ func startGCalPoller(store *demo.Store, hub *demo.Hub) {
 	}
 
 	mayuraID := os.Getenv("GCAL_MAYURA")
-	deniseID := os.Getenv("GCAL_DENISE")
 	familyID := os.Getenv("GCAL_FAMILY")
-	if mayuraID == "" && deniseID == "" && familyID == "" {
-		log.Printf("gcal: no GCAL_MAYURA/GCAL_DENISE/GCAL_FAMILY; using seed calendar")
+	// GCAL_DENISE is intentionally unused: calendar lanes are Mayura + Family only.
+	if mayuraID == "" && familyID == "" {
+		log.Printf("gcal: no GCAL_MAYURA/GCAL_FAMILY; using seed calendar")
 		return
 	}
 
-	var people []string
+	var calPeople []string
 	var cals []gcal.CalendarRef
 	if mayuraID != "" {
-		people = append(people, "mayura")
+		calPeople = append(calPeople, "mayura")
 		cals = append(cals, gcal.CalendarRef{ID: mayuraID, Source: "personal", People: []string{"mayura"}})
 	}
-	if deniseID != "" {
-		people = append(people, "denise")
-		cals = append(cals, gcal.CalendarRef{ID: deniseID, Source: "personal", People: []string{"denise"}})
-	}
 	if familyID != "" {
-		famPeople := people
-		if len(famPeople) == 0 {
-			famPeople = []string{"mayura", "denise"}
-		}
-		cals = append(cals, gcal.CalendarRef{ID: familyID, Source: "family", People: append([]string(nil), famPeople...)})
+		famPeople := []string{"mayura", "denise"}
+		cals = append(cals, gcal.CalendarRef{ID: familyID, Source: "family", People: famPeople})
+	}
+	if len(calPeople) > 0 {
+		store.SetCalendarPeople(calPeople)
 	}
 
 	ctx := context.Background()
@@ -326,6 +324,66 @@ func startGCalPoller(store *demo.Store, hub *demo.Hub) {
 	}
 	p.Start()
 	log.Printf("gcal: poller every %s (%d calendar(s), window -%s / +%s)", interval, len(cals), past, future)
+}
+
+func startPmdayPoller(store *demo.Store, hub *demo.Hub) {
+	baseURL := strings.TrimSpace(os.Getenv("PLAN_MY_DAY_URL"))
+	if baseURL == "" {
+		baseURL = "https://plan-my-day.edgeanalytics.app"
+	}
+	apiKey := strings.TrimSpace(os.Getenv("PLAN_MY_DAY_API_KEY"))
+	if apiKey == "" {
+		log.Printf("pmday: PLAN_MY_DAY_API_KEY unset; Plan My Day sync disabled")
+		return
+	}
+
+	client, err := pmday.NewClient(baseURL, apiKey)
+	if err != nil {
+		log.Printf("pmday: client init failed: %v", err)
+		return
+	}
+
+	interval := 15 * time.Minute
+	if v := os.Getenv("PLAN_MY_DAY_REFRESH"); v != "" {
+		if d, err := parseFlexDuration(v); err != nil {
+			log.Printf("pmday: invalid PLAN_MY_DAY_REFRESH %q; using %s", v, interval)
+		} else if d > 0 {
+			interval = d
+		}
+	}
+	past := 7 * 24 * time.Hour
+	if v := os.Getenv("GCAL_WINDOW_PAST"); v != "" {
+		if d, err := parseFlexDuration(v); err == nil && d > 0 {
+			past = d
+		}
+	}
+	future := 60 * 24 * time.Hour
+	if v := os.Getenv("GCAL_WINDOW_FUTURE"); v != "" {
+		if d, err := parseFlexDuration(v); err == nil && d > 0 {
+			future = d
+		}
+	}
+
+	store.SetCalendarPeople([]string{"mayura"})
+
+	actions := &pmday.Actions{
+		Client: client,
+		Store:  store,
+		Past:   past,
+		Future: future,
+	}
+	hub.SetPmdActions(actions)
+
+	p := &pmday.Poller{
+		Client:   client,
+		Interval: interval,
+		Past:     past,
+		Future:   future,
+		Store:    store,
+		Hub:      hub,
+	}
+	p.Start()
+	log.Printf("pmday: poller every %s (%s, window -%s / +%s)", interval, baseURL, past, future)
 }
 
 // parseFlexDuration accepts Go durations plus a trailing "d" for days (e.g. 7d, 15m).

@@ -8,7 +8,7 @@ import (
 
 // Updater applies calendar events into the dashboard store.
 type Updater interface {
-	SetEvents(events []map[string]any)
+	SetSourceEvents(source string, events []map[string]any)
 }
 
 // Notifier pushes an updated snapshot to connected clients.
@@ -63,7 +63,7 @@ func (p *Poller) tick() {
 		log.Printf("gcal: fetch failed: %v", err)
 		return
 	}
-	p.Store.SetEvents(events)
+	p.Store.SetSourceEvents("gcal", events)
 	if p.Hub != nil {
 		p.Hub.BroadcastSnapshot()
 	}

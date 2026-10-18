@@ -21,9 +21,15 @@ type Envelope struct {
 	Version string         `json:"version,omitempty"`
 }
 
+// PmdActions handles Plan My Day complete/schedule actions (network I/O outside Apply).
+type PmdActions interface {
+	Handle(name string, payload map[string]any) error
+}
+
 type Hub struct {
 	store   *Store
 	version string
+	pmd     PmdActions
 	mu      sync.Mutex
 	conns   map[*websocket.Conn]struct{}
 }
@@ -33,6 +39,11 @@ func NewHub(store *Store, version string) *Hub {
 		version = "dev"
 	}
 	return &Hub{store: store, version: version, conns: make(map[*websocket.Conn]struct{})}
+}
+
+// SetPmdActions wires Plan My Day mutation handling.
+func (h *Hub) SetPmdActions(a PmdActions) {
+	h.pmd = a
 }
 
 func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +78,27 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 		}
 		if msg.Payload == nil {
 			msg.Payload = map[string]any{}
+		}
+		if msg.Name == "completePmdTask" || msg.Name == "schedulePmdTask" {
+			if h.pmd == nil {
+				_ = conn.WriteJSON(h.envelope(Envelope{
+					Type:    "actionError",
+					Name:    msg.Name,
+					Payload: map[string]any{"error": "Plan My Day is not configured"},
+				}))
+				continue
+			}
+			if err := h.pmd.Handle(msg.Name, msg.Payload); err != nil {
+				log.Printf("pmday action %s: %v", msg.Name, err)
+				_ = conn.WriteJSON(h.envelope(Envelope{
+					Type:    "actionError",
+					Name:    msg.Name,
+					Payload: map[string]any{"error": err.Error()},
+				}))
+				continue
+			}
+			h.BroadcastSnapshot()
+			continue
 		}
 		snap, eventName, err := h.store.Apply(msg.Name, msg.Payload)
 		if err != nil {

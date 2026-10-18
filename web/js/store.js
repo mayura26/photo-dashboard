@@ -71,6 +71,10 @@ const store = {
 
 onMessage((msg) => {
   if (msg.type === 'snapshot' && msg.data) store.applySnapshot(msg.data);
+  if (msg.type === 'actionError' && window.App && App.toast) {
+    const err = (msg.payload && msg.payload.error) || 'Action failed';
+    App.toast(App.esc ? App.esc(String(err)) : String(err), { tone: 'warn' });
+  }
   // TEMP: alert event names until real event sources replace seed-driven triggers
   if (msg.type === 'event' && window.App) {
     const map = {
