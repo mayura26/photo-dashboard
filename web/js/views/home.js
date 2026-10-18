@@ -337,7 +337,14 @@
       return;
     }
     var m = App.photoMeta(s.photos[0]);
-    cap.innerHTML = '<b>' + (m.onThisDay ? 'On this day · ' : '') + m.kicker + '</b><span>' + App.esc(m.place || '') + '</span>';
+    var kick = m.kicker
+      ? ((m.onThisDay && m.kicker !== 'Today' ? 'On this day · ' : '') + m.kicker)
+      : '';
+    if (!kick && !m.place) {
+      cap.innerHTML = '<b>Photos</b><span></span>';
+      return;
+    }
+    cap.innerHTML = '<b>' + App.esc(kick || 'Photos') + '</b><span>' + App.esc(m.place || '') + '</span>';
   }
 
   App.register('home', {

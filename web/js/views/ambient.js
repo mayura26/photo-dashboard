@@ -172,7 +172,7 @@
     }
     var m = App.photoMeta(p);
     var kicker = m.kicker
-      ? (m.onThisDay ? 'On this day · ' : '') + m.kicker
+      ? ((m.onThisDay && m.kicker !== 'Today' ? 'On this day · ' : '') + m.kicker)
       : '';
     if (!kicker && !m.place) {
       el.innerHTML = '';
@@ -222,7 +222,7 @@
     $('#ambient').innerHTML = '<div class="amb-stage"></div><div class="amb-scrim"></div><div class="amb-sports"></div><div class="amb-photo"></div><div class="amb-info"></div>';
     $('#night').innerHTML = '<div class="nt-inner"></div>';
     amb.show = new App.Slideshow($('#ambient .amb-stage'), {
-      layout: 'cover',
+      layout: 'ambient',
       captions: false,
       interval: 14000,
       onChange: ambientPhoto

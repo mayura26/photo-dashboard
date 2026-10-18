@@ -18,7 +18,9 @@
     var d = parseDate(p), now = App.now();
     var years = now.getFullYear() - d.getFullYear();
     var onThisDay = d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-    var kicker = onThisDay ? years + (years === 1 ? ' year' : ' years') + ' ago today' : (years > 0 ? years + (years === 1 ? ' year ago' : ' years ago') : 'This year');
+    var kicker;
+    if (onThisDay) kicker = years > 0 ? years + (years === 1 ? ' year' : ' years') + ' ago today' : 'Today';
+    else kicker = years > 0 ? years + (years === 1 ? ' year ago' : ' years ago') : 'This year';
     return {
       date: App.fmt.month(d) + ' ' + d.getDate() + ', ' + d.getFullYear(),
       monthYear: App.fmt.month(d) + ' ' + d.getFullYear(),
@@ -33,9 +35,11 @@
 
   function caption(ps, size) {
     var m = App.photoMeta(ps[0]);
+    var kick = m.kicker ? ((m.onThisDay && m.kicker !== 'Today' ? '<b>On this day</b> · ' : '') + m.kicker) : '';
+    if (m.place) kick += (kick ? ' · ' : '') + App.esc(m.place);
     return '<div class="cap cap--' + (size || 'l') + '">' +
-      '<div class="cap-kicker">' + (m.onThisDay ? '<b>On this day</b> · ' : '') + m.kicker + (m.place ? ' · ' + App.esc(m.place) : '') + '</div>' +
-      '<div class="cap-date serif">' + (ps.length > 1 ? m.monthYear : m.date) + '</div>' +
+      (kick ? '<div class="cap-kicker">' + kick + '</div>' : '') +
+      (m.date || m.monthYear ? '<div class="cap-date serif">' + (ps.length > 1 ? m.monthYear : m.date) + '</div>' : '') +
       '</div>';
   }
   function kb(p, still) {
@@ -108,7 +112,7 @@
     return null;
   };
   S.pick = function () {
-    var layout = this.o.layout, n = this.count++;
+    var mode = this.o.layout, layout = mode, n = this.count++;
     var first = this.take();
     if (!first) return null;
     var self = this;
@@ -119,12 +123,22 @@
       if (first.o === 'p') layout = (D.photos || []).some(function (x) { return x !== first && x.tag === first.tag; }) ? 'pair' : 'polaroid';
       else layout = n % 5 === 3 ? 'collage' : n % 5 === 4 ? 'polaroid' : 'cover';
     }
+    if (layout === 'ambient') {
+      if (first.o === 'p') {
+        layout = (D.photos || []).some(function (x) { return x !== first && x.o === 'p'; }) ? 'pair' : 'collage';
+      } else {
+        layout = n % 4 === 3 ? 'collage' : 'cover';
+      }
+    }
     var ps = [first];
     if (layout === 'pair') {
       if (first.o !== 'p') { first = sibling(function (x) { return x.o === 'p'; }); ps = [first]; }
       if (!first) return null;
       ps.push(sibling(function (x) { return x !== first && x.o === 'p' && x.tag === first.tag; }) || sibling(function (x) { return x !== first && x.o === 'p'; }));
-      if (!ps[1]) return { layout: 'polaroid', photos: [ps[0]] };
+      if (!ps[1]) {
+        if (mode === 'ambient') { layout = 'collage'; ps = [first]; }
+        else return { layout: 'polaroid', photos: [ps[0]] };
+      }
     }
     if (layout === 'collage') {
       ps.push(sibling(function (x) { return x !== first; }));

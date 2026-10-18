@@ -32,6 +32,9 @@ func TestEncodeLandscape(t *testing.T) {
 	if len(res.JPEG) == 0 {
 		t.Fatal("empty jpeg")
 	}
+	if res.Date != "" {
+		t.Fatalf("expected empty date without EXIF, got %q", res.Date)
+	}
 }
 
 func TestEncodePortrait(t *testing.T) {
@@ -60,6 +63,9 @@ func TestEncodePortrait(t *testing.T) {
 func TestTagFromDate(t *testing.T) {
 	if got := TagFromDate("2024-05-19"); got != "2024-05" {
 		t.Fatalf("got %s", got)
+	}
+	if got := TagFromDate(""); got != "" {
+		t.Fatalf("empty date tag: %q", got)
 	}
 }
 

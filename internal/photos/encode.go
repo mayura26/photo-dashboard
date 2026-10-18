@@ -12,7 +12,6 @@ import (
 	_ "image/png"
 	"io"
 	"strings"
-	"time"
 
 	"github.com/rwcarlsen/goexif/exif"
 	"golang.org/x/image/draw"
@@ -59,7 +58,7 @@ func Encode(r io.Reader, filename string) (Result, error) {
 		return Result{}, fmt.Errorf("photos: file too large (max %d bytes)", MaxBytes)
 	}
 
-	date := time.Now().Format("2006-01-02")
+	date := ""
 	place := ""
 	orientTag := 1
 	var xif *exif.Exif
@@ -226,10 +225,11 @@ func rotate90CCW(src image.Image) image.Image {
 }
 
 // TagFromDate returns YYYY-MM used as the default pairing tag.
+// Empty or short dates yield "" so undated photos are not forced into the current month.
 func TagFromDate(date string) string {
 	date = strings.TrimSpace(date)
 	if len(date) >= 7 {
 		return date[:7]
 	}
-	return time.Now().Format("2006-01")
+	return ""
 }
