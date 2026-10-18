@@ -145,7 +145,28 @@ func (s *Store) AttachPersist(db *persist.DB) error {
 	if s.nextGID < maxGroceryID(s.snap.Groceries) {
 		s.nextGID = maxGroceryID(s.snap.Groceries)
 	}
+	if max := maxChoreID(s.snap.Chores); s.nextCID < max {
+		s.nextCID = max
+	}
 	return nil
+}
+
+func maxChoreID(chores []map[string]any) int {
+	max := 100
+	for _, c := range chores {
+		id, _ := c["id"].(string)
+		if !strings.HasPrefix(id, "c") {
+			continue
+		}
+		n, err := strconv.Atoi(id[1:])
+		if err != nil {
+			continue
+		}
+		if n > max {
+			max = n
+		}
+	}
+	return max
 }
 
 func (s *Store) saveMutableLocked() error {
@@ -162,7 +183,7 @@ func (s *Store) saveMutableLocked() error {
 
 func (s *Store) persistAfterMutation(name string) {
 	switch name {
-	case "setChore", "setGrocery", "addGrocery", "clearChecked":
+	case "setChore", "addChore", "setGrocery", "addGrocery", "clearChecked":
 		if err := s.saveMutableLocked(); err != nil {
 			log.Printf("persist: save after %s: %v", name, err)
 		}
@@ -298,6 +319,8 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 		}
 	case "setChore":
 		s.setChore(payload)
+	case "addChore":
+		s.addChore(payload)
 	case "setGrocery":
 		s.setGrocery(payload)
 	case "addGrocery":
@@ -412,6 +435,43 @@ func (s *Store) setChore(p map[string]any) {
 		}
 		return
 	}
+}
+
+func (s *Store) addChore(p map[string]any) {
+	title, _ := p["title"].(string)
+	title = strings.TrimSpace(title)
+	if title == "" {
+		return
+	}
+	who, _ := p["who"].(string)
+	if who == "" {
+		who = "any"
+	}
+	r, _ := p["r"].(string)
+	if r == "" {
+		r = "morning"
+	}
+	emoji, _ := p["emoji"].(string)
+	if emoji == "" {
+		emoji = "✓"
+	}
+	stars := float64(intNum(p["stars"]))
+	if stars < 0 {
+		stars = 0
+	}
+	if max := maxChoreID(s.snap.Chores); s.nextCID < max {
+		s.nextCID = max
+	}
+	s.nextCID++
+	s.snap.Chores = append(s.snap.Chores, map[string]any{
+		"id":    "c" + itoa(s.nextCID),
+		"title": title,
+		"who":   who,
+		"r":     r,
+		"emoji": emoji,
+		"stars": stars,
+		"done":  false,
+	})
 }
 
 func (s *Store) setGrocery(p map[string]any) {

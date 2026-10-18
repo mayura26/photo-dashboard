@@ -1359,7 +1359,7 @@
     },
     {
       "id": "after",
-      "name": "After school",
+      "name": "Day",
       "range": "11 AM – 5 PM",
       "from": 11,
       "to": 17

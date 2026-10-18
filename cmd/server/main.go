@@ -89,9 +89,13 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
 
-// resolveAppVersion prefers APP_VERSION, then web/version.json, then "dev".
+// resolveAppVersion prefers APP_VERSION, then SOURCE_COMMIT (Coolify),
+// then web/version.json, then "dev". Long SHAs are shortened to 7 chars.
 func resolveAppVersion(webRoot fs.FS) string {
-	if v := strings.TrimSpace(os.Getenv("APP_VERSION")); v != "" {
+	if v := shortVersion(os.Getenv("APP_VERSION")); v != "" {
+		return v
+	}
+	if v := shortVersion(os.Getenv("SOURCE_COMMIT")); v != "" {
 		return v
 	}
 	raw, err := fs.ReadFile(webRoot, "version.json")
@@ -101,10 +105,34 @@ func resolveAppVersion(webRoot fs.FS) string {
 	var meta struct {
 		Version string `json:"version"`
 	}
-	if err := json.Unmarshal(raw, &meta); err != nil || strings.TrimSpace(meta.Version) == "" {
+	if err := json.Unmarshal(raw, &meta); err != nil {
 		return "dev"
 	}
-	return strings.TrimSpace(meta.Version)
+	if v := shortVersion(meta.Version); v != "" {
+		return v
+	}
+	return "dev"
+}
+
+func shortVersion(v string) string {
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return ""
+	}
+	// Git SHA (hex) → short form; leave tags/other labels alone if short.
+	if len(v) > 7 && isHex(v) {
+		return v[:7]
+	}
+	return v
+}
+
+func isHex(s string) bool {
+	for _, r := range s {
+		if (r < '0' || r > '9') && (r < 'a' || r > 'f') && (r < 'A' || r > 'F') {
+			return false
+		}
+	}
+	return true
 }
 
 func garminIngest(store *demo.Store, hub *demo.Hub) http.HandlerFunc {
