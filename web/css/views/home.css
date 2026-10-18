@@ -239,54 +239,73 @@
 .h-photo-cap b { font-size: var(--fs-min); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .h-photo-cap span { font-family: var(--serif); font-size: 20px; font-style: italic; }
 
-/* ---- garmin health — deep navy so it reads apart from ink schedule cards */
+/* ---- garmin health — airy sky panel, framed metric tiles */
 .h-health {
   display: flex; flex-direction: column; gap: 10px; width: 100%;
-  background: #1A2B45;
-  color: #E8EEF7;
-  border-radius: var(--r); padding: 16px 18px 14px;
+  background: linear-gradient(155deg, #B9DCF2 0%, #8CC8EB 55%, #7EBFE8 100%);
+  color: #123048;
+  border-radius: var(--r); padding: 14px 14px 12px;
   border: 0; font: inherit; text-align: left; cursor: pointer;
   min-height: 0; overflow: hidden;
-  --c: #E8EEF7;
-  --c-rgb: 232 238 247;
-  --c-ink: #1A2B45;
+  --c: #123048;
+  --c-rgb: 18 48 72;
+  --c-ink: #E8F4FC;
+  --hm-mute: rgba(18, 48, 72, .52);
+  --hm-frost: rgba(255, 255, 255, .55);
+  --hm-line: rgba(18, 48, 72, .12);
 }
 .h-health:active { opacity: .92; }
-.h-health > .label { color: rgba(232, 238, 247, .55); }
+.h-health > .label { color: var(--hm-mute); }
 .h-health-empty {
   flex: 1; display: grid; place-items: center;
-  font-size: 22px; color: rgba(232, 238, 247, .55); text-align: center;
+  font-size: 22px; color: var(--hm-mute); text-align: center;
 }
 .h-health-grid {
   flex: 1; min-height: 0;
-  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px 14px;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
 }
 .h-hm {
-  display: flex; align-items: center; gap: 10px; min-width: 0;
-  --tone: #E8EEF7;
+  display: flex; flex-direction: column; gap: 4px; min-width: 0; min-height: 0;
+  background: var(--hm-frost);
+  border: 1px solid var(--hm-line);
+  border-radius: calc(var(--r) - 6px);
+  padding: 8px 10px 8px;
+  --tone: #123048;
 }
-.h-hm.is-ok { --tone: #3DCF9A; }
-.h-hm.is-mid { --tone: #FFB020; }
-.h-hm.is-hot { --tone: #FF7A72; }
+.h-hm.is-ok { --tone: #0F9F6E; }
+.h-hm.is-mid { --tone: #D4890A; }
+.h-hm.is-hot { --tone: #E25A52; }
+.h-hm-head {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 800; font-stretch: 80%;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--hm-mute);
+  line-height: 1;
+}
+.h-hm-ico {
+  display: grid; place-items: center; flex: none;
+  color: #3A8FC4; opacity: .9;
+}
+.h-hm-ico svg { display: block; }
+.h-hm-body {
+  flex: 1; min-height: 0; min-width: 0;
+  display: flex; align-items: center; gap: 8px;
+}
 .h-hm-dial {
-  position: relative; width: 56px; height: 56px; flex: none;
+  position: relative; width: 52px; height: 52px; flex: none;
 }
-.h-hm-dial .ring { width: 56px; height: 56px; }
-.h-hm-dial .ring-bg { stroke: rgba(232, 238, 247, .18); fill: none; stroke-width: 5; }
+.h-hm-dial .ring { width: 52px; height: 52px; }
+.h-hm-dial .ring-bg { stroke: rgba(18, 48, 72, .14); fill: none; stroke-width: 5; }
 .h-hm-dial .ring-fg { stroke: var(--tone); fill: none; stroke-width: 5; stroke-linecap: butt; }
 .h-hm-dial b {
   position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 14px; font-weight: 800; font-stretch: 70%; pointer-events: none;
+  font-size: 13px; font-weight: 800; font-stretch: 70%; pointer-events: none;
+  color: var(--tone);
 }
 .h-hm-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.h-hm-meta span {
-  font-size: 11px; font-weight: 800; font-stretch: 80%;
-  letter-spacing: .08em; text-transform: uppercase; color: rgba(232, 238, 247, .5);
-}
 .h-hm-meta b {
-  font-size: 28px; font-weight: 800; font-stretch: 70%;
+  font-size: 26px; font-weight: 800; font-stretch: 70%;
   line-height: .95; color: var(--tone); font-variant-numeric: tabular-nums;
 }
 .h-hm-meta small {
-  font-size: 13px; font-weight: 600; color: rgba(232, 238, 247, .65);
+  font-size: 12px; font-weight: 600; color: var(--hm-mute);
 }

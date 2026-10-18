@@ -286,21 +286,32 @@
     return '<div class="label label--light">Body · ' + App.esc(data.displayName || 'Garmin') + '</div>' +
       '<div class="h-health-grid">' +
       '<div class="h-hm h-reveal' + batteryTone(bb.current) + '" style="--d:0">' +
-      '  <div class="h-hm-dial">' + ring(bb.current || 0, 100, 56) +
-      '    <b class="num">' + dash(bb.current) + '</b></div>' +
-      '  <div class="h-hm-meta"><span>Battery</span><b class="num">' + dash(bb.current) + '</b></div>' +
+      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('bolt', 16) + '</span><span>Battery</span></div>' +
+      '  <div class="h-hm-body">' +
+      '    <div class="h-hm-dial">' + ring(bb.current || 0, 100, 52) +
+      '      <b class="num">' + dash(bb.current) + '</b></div>' +
+      '  </div>' +
       '</div>' +
       '<div class="h-hm h-reveal" style="--d:1">' +
-      '  <div class="h-hm-meta"><span>Sleep</span><b class="num">' + sleepHero + '</b>' +
+      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('moon', 16) + '</span><span>Sleep</span></div>' +
+      '  <div class="h-hm-body">' +
+      '    <div class="h-hm-meta"><b class="num">' + sleepHero + '</b>' +
       (sleepSub ? '<small>' + sleepSub + '</small>' : '') + '</div>' +
+      '  </div>' +
       '</div>' +
       '<div class="h-hm h-reveal' + stressTone(stress.current) + '" style="--d:2">' +
-      '  <div class="h-hm-meta"><span>Stress</span><b class="num">' + dash(stress.current) + '</b></div>' +
+      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('heart', 16) + '</span><span>Stress</span></div>' +
+      '  <div class="h-hm-body">' +
+      '    <div class="h-hm-meta"><b class="num">' + dash(stress.current) + '</b></div>' +
+      '  </div>' +
       '</div>' +
       '<div class="h-hm h-reveal" style="--d:3">' +
-      '  <div class="h-hm-dial">' + ring(steps || 0, goal, 56) +
-      '    <b class="num">' + stepsLabel + '</b></div>' +
-      '  <div class="h-hm-meta"><span>Steps</span><b class="num">' + (steps != null ? steps.toLocaleString() : '—') + '</b></div>' +
+      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('steps', 16) + '</span><span>Steps</span></div>' +
+      '  <div class="h-hm-body">' +
+      '    <div class="h-hm-dial">' + ring(steps || 0, goal, 52) +
+      '      <b class="num">' + stepsLabel + '</b></div>' +
+      '    <div class="h-hm-meta"><b class="num">' + (steps != null ? steps.toLocaleString() : '—') + '</b></div>' +
+      '  </div>' +
       '</div>' +
       '</div>';
   }
