@@ -69,8 +69,15 @@
 .ph-empty .btn { color: var(--ink); }
 
 .sheet--photos { width: 980px; max-height: 740px; }
-.ph-manage-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-.ph-manage-count { font-size: 17px; font-weight: 700; color: var(--ink-2); }
+.ph-manage-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+.ph-manage-count { font-size: 17px; font-weight: 700; color: var(--ink-2); margin-left: auto; }
+.ph-ignore-dupes {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 14px;
+  font-size: 17px; font-weight: 700; color: var(--ink-2); cursor: pointer; user-select: none;
+}
+.ph-ignore-dupes input {
+  width: 22px; height: 22px; accent-color: var(--ink); cursor: pointer; flex-shrink: 0;
+}
 .ph-upload-status {
   margin: 0 0 14px; padding: 12px 16px; border-radius: 12px;
   background: var(--paper-2); color: var(--ink); font-size: 17px; font-weight: 700; line-height: 1.3;

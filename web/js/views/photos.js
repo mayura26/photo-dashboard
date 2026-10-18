@@ -52,11 +52,29 @@
     }
   }
 
-  function uploadFiles(fileList) {
+  var IGNORE_DUPES_KEY = 'ph-ignore-duplicates';
+
+  function ignoreDuplicatesEnabled() {
+    try {
+      var v = localStorage.getItem(IGNORE_DUPES_KEY);
+      if (v === null) return true;
+      return v !== '0' && v !== 'false';
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function setIgnoreDuplicates(on) {
+    try { localStorage.setItem(IGNORE_DUPES_KEY, on ? '1' : '0'); } catch (e) { /* ignore */ }
+  }
+
+  function uploadFiles(fileList, opts) {
     // Must copy FileList before the input is cleared — it is a live reference.
     var files = Array.prototype.slice.call(fileList || []);
     if (!files.length) return Promise.resolve(0);
+    var ignoreDupes = !!(opts && opts.ignoreDuplicates);
     var ok = 0;
+    var skipped = 0;
     var fail = 0;
     var i = 0;
     var total = files.length;
@@ -64,9 +82,13 @@
       if (i >= total) {
         if (V.show) { V.show.reset(); V.show.start(); }
         syncChrome();
-        var done = ok ? ('Uploaded ' + ok + ' of ' + total + (fail ? ' (' + fail + ' failed)' : '')) : (fail ? total + ' uploads failed' : '');
+        var parts = [];
+        if (ok) parts.push(ok + ' uploaded');
+        if (skipped) parts.push(skipped + ' skipped');
+        if (fail) parts.push(fail + ' failed');
+        var done = parts.length ? parts.join(' · ') : '';
         setUploadStatus(done);
-        if (ok) App.toast(done, { icon: 'photo', ms: 3500 });
+        if (ok || skipped) App.toast(done || 'Done', { icon: 'photo', ms: 3500 });
         setTimeout(function () { setUploadStatus(''); }, 4000);
         return Promise.resolve(ok);
       }
@@ -77,11 +99,15 @@
       App.toast(progress, { icon: 'photo', ms: 120000 });
       var fd = new FormData();
       fd.append('file', file, file.name || 'photo.jpg');
+      if (ignoreDupes) fd.append('ignoreDuplicates', '1');
       return fetch('/api/photos', { method: 'POST', body: fd, credentials: 'same-origin' })
         .then(function (r) {
           if (!r.ok) return r.text().then(function (t) { throw new Error(t || r.statusText); });
-          ok++;
-          return r.json();
+          return r.json().then(function (body) {
+            if (body && body.duplicate) skipped++;
+            else ok++;
+            return body;
+          });
         })
         .then(next)
         .catch(function (err) {
@@ -93,6 +119,14 @@
         });
     }
     return next();
+  }
+
+  function purgeDuplicates() {
+    return fetch('/api/photos/purge-duplicates', { method: 'POST', credentials: 'same-origin' })
+      .then(function (r) {
+        if (!r.ok) return r.text().then(function (t) { throw new Error(t || r.statusText); });
+        return r.json();
+      });
   }
 
   function patchPhoto(id, patch) {
@@ -118,6 +152,7 @@
     var photos = (D.photos || []).slice().sort(function (a, b) {
       return String(b.date || '').localeCompare(String(a.date || ''));
     });
+    var ignoreOn = ignoreDuplicatesEnabled();
     App.sheet(
       '<div class="sheet-pad ph-manage">' +
       '<div class="label">Photo library</div>' +
@@ -127,8 +162,13 @@
       '  <label class="btn btn--solid ph-upload-btn">' + App.icon('plus', 22) + ' Upload' +
       '    <input type="file" accept="image/*,.heic,.heif" multiple data-upload>' +
       '  </label>' +
+      '  <button type="button" class="btn btn--ghost" data-purge>Purge duplicates</button>' +
       '  <span class="ph-manage-count">' + photos.length + ' photo' + (photos.length === 1 ? '' : 's') + '</span>' +
       '</div>' +
+      '<label class="ph-ignore-dupes">' +
+      '  <input type="checkbox" data-ignore-dupes' + (ignoreOn ? ' checked' : '') + '>' +
+      '  <span>Ignore duplicates when uploading</span>' +
+      '</label>' +
       '<div class="ph-upload-status" hidden></div>' +
       '<div class="ph-grid" data-grid>' +
       (photos.length ? photos.map(function (p) {
@@ -147,12 +187,16 @@
       {
         cls: 'sheet--wide sheet--photos',
         onMount: function (sheet) {
+          var ignoreEl = sheet.querySelector('[data-ignore-dupes]');
+          ignoreEl.addEventListener('change', function () {
+            setIgnoreDuplicates(!!ignoreEl.checked);
+          });
           var input = sheet.querySelector('[data-upload]');
           input.addEventListener('change', function () {
             var list = Array.prototype.slice.call(input.files || []);
             input.value = '';
             if (!list.length) return;
-            uploadFiles(list).then(function () {
+            uploadFiles(list, { ignoreDuplicates: !!ignoreEl.checked }).then(function () {
               App.closeSheet();
               openManage();
             });
@@ -160,6 +204,22 @@
           sheet.addEventListener('click', function (e) {
             var t = e.target.closest('button');
             if (!t) return;
+            if (t.hasAttribute('data-purge')) {
+              if (!confirm('Remove exact duplicate photos? Favourites are kept when possible; otherwise the oldest copy stays.')) return;
+              t.disabled = true;
+              purgeDuplicates().then(function (res) {
+                var n = (res && res.removed) || 0;
+                App.closeSheet();
+                openManage();
+                if (V.show) { V.show.reset(); V.show.start(); }
+                syncChrome();
+                App.toast(n ? ('Removed ' + n + ' duplicate' + (n === 1 ? '' : 's')) : 'No duplicates found', { icon: 'photo', ms: 3500 });
+              }).catch(function (err) {
+                t.disabled = false;
+                App.toast('Purge failed · ' + err.message, { tone: 'error' });
+              });
+              return;
+            }
             if (t.dataset.favId) {
               if (App.sync) App.sync.fav(t.dataset.favId);
               t.classList.toggle('is-on');

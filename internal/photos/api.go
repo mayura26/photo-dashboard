@@ -15,6 +15,9 @@ type Library interface {
 	AddPhoto(p map[string]any) (map[string]any, error)
 	UpdatePhoto(id string, patch map[string]any) (map[string]any, bool, error)
 	DeletePhoto(id string) bool
+	PhotoList() []map[string]any
+	FindPhotoByHash(hash string) (map[string]any, bool)
+	SetPhotoHashes(hashes map[string]string) error
 }
 
 // Broadcaster pushes a fresh snapshot after mutations.
@@ -24,9 +27,9 @@ type Broadcaster interface {
 
 // API serves upload / patch / delete / media routes.
 type API struct {
-	Dir   Dir
-	Lib   Library
-	Hub   Broadcaster
+	Dir Dir
+	Lib Library
+	Hub Broadcaster
 }
 
 // HandleCollection serves POST /api/photos (multipart upload).
@@ -36,6 +39,22 @@ func (a *API) HandleCollection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.handleUpload(w, r)
+}
+
+// HandlePurgeDuplicates serves POST /api/photos/purge-duplicates.
+func (a *API) HandlePurgeDuplicates(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	removed, err := a.purgeDuplicates()
+	if err != nil {
+		log.Printf("photos: purge duplicates: %v", err)
+		http.Error(w, "purge failed", http.StatusInternalServerError)
+		return
+	}
+	a.Hub.BroadcastSnapshot()
+	writeJSON(w, http.StatusOK, map[string]any{"removed": removed})
 }
 
 // HandleItem serves PATCH/DELETE /api/photos/{id}.
@@ -85,6 +104,11 @@ func (a *API) HandleMedia(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, id+Ext, stat.ModTime(), f)
 }
 
+func ignoreDuplicatesForm(r *http.Request) bool {
+	v := strings.ToLower(strings.TrimSpace(r.FormValue("ignoreDuplicates")))
+	return v == "1" || v == "true" || v == "yes" || v == "on"
+}
+
 func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, MaxBytes+1024)
 	if err := r.ParseMultipartForm(MaxBytes); err != nil {
@@ -108,6 +132,16 @@ func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	hash := HashJPEG(enc.JPEG)
+	if ignoreDuplicatesForm(r) {
+		if existing, ok := a.Lib.FindPhotoByHash(hash); ok {
+			out := cloneRec(existing)
+			out["duplicate"] = true
+			writeJSON(w, http.StatusOK, out)
+			return
+		}
+	}
+
 	id, err := NewID()
 	if err != nil {
 		http.Error(w, "id", http.StatusInternalServerError)
@@ -127,6 +161,7 @@ func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 		"from":  a.Lib.DefaultPhotoFrom(),
 		"tag":   TagFromDate(enc.Date),
 		"fav":   false,
+		"hash":  hash,
 	}
 	saved, err := a.Lib.AddPhoto(rec)
 	if err != nil {
@@ -137,6 +172,46 @@ func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	a.Hub.BroadcastSnapshot()
 	writeJSON(w, http.StatusCreated, saved)
+}
+
+func (a *API) purgeDuplicates() (int, error) {
+	photos := a.Lib.PhotoList()
+	backfill := map[string]string{}
+	for _, p := range photos {
+		id := photoID(p)
+		if id == "" || photoHash(p) != "" {
+			continue
+		}
+		if !ValidID(id) {
+			continue
+		}
+		raw, err := os.ReadFile(a.Dir.FilePath(id))
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return 0, err
+		}
+		h := HashJPEG(raw)
+		backfill[id] = h
+		p["hash"] = h
+	}
+	if err := a.Lib.SetPhotoHashes(backfill); err != nil {
+		return 0, err
+	}
+
+	toRemove := DuplicateIDs(photos)
+	removed := 0
+	for _, id := range toRemove {
+		if !a.Lib.DeletePhoto(id) {
+			continue
+		}
+		if err := a.Dir.Remove(id); err != nil {
+			log.Printf("photos: remove file %s: %v", id, err)
+		}
+		removed++
+	}
+	return removed, nil
 }
 
 func (a *API) handlePatch(w http.ResponseWriter, r *http.Request, id string) {
@@ -173,6 +248,14 @@ func (a *API) handleDelete(w http.ResponseWriter, r *http.Request, id string) {
 	}
 	a.Hub.BroadcastSnapshot()
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func cloneRec(m map[string]any) map[string]any {
+	out := make(map[string]any, len(m)+1)
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

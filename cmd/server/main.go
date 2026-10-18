@@ -93,6 +93,7 @@ func main() {
 	mux.HandleFunc("/api/logout", gate.HandleLogout)
 	mux.HandleFunc("/internal/garmin", garminIngest(store, hub))
 	mux.HandleFunc("/api/photos", gate.RequireFunc(photoAPI.HandleCollection))
+	mux.HandleFunc("/api/photos/purge-duplicates", gate.RequireFunc(photoAPI.HandlePurgeDuplicates))
 	mux.HandleFunc("/api/photos/", gate.RequireFunc(photoAPI.HandleItem))
 	mux.HandleFunc("/media/photos/", gate.RequireFunc(photoAPI.HandleMedia))
 	mux.HandleFunc("/version.json", func(w http.ResponseWriter, r *http.Request) {

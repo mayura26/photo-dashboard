@@ -260,6 +260,56 @@ func (s *Store) AddPhoto(p map[string]any) (map[string]any, error) {
 	return cloneMap(p), nil
 }
 
+// PhotoList returns a shallow clone of photo metadata maps.
+func (s *Store) PhotoList() []map[string]any {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make([]map[string]any, len(s.snap.Photos))
+	for i, p := range s.snap.Photos {
+		out[i] = cloneMap(p)
+	}
+	return out
+}
+
+// FindPhotoByHash returns the first photo with the given content hash.
+func (s *Store) FindPhotoByHash(hash string) (map[string]any, bool) {
+	if hash == "" {
+		return nil, false
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, p := range s.snap.Photos {
+		h, _ := p["hash"].(string)
+		if h == hash {
+			return cloneMap(p), true
+		}
+	}
+	return nil, false
+}
+
+// SetPhotoHashes sets hash fields for the given photo ids and persists once.
+func (s *Store) SetPhotoHashes(hashes map[string]string) error {
+	if len(hashes) == 0 {
+		return nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	changed := false
+	for _, p := range s.snap.Photos {
+		id, _ := p["id"].(string)
+		h, ok := hashes[id]
+		if !ok || h == "" {
+			continue
+		}
+		p["hash"] = h
+		changed = true
+	}
+	if !changed {
+		return nil
+	}
+	return s.savePhotosLocked()
+}
+
 // UpdatePhoto patches metadata fields on an existing photo.
 func (s *Store) UpdatePhoto(id string, patch map[string]any) (map[string]any, bool, error) {
 	s.mu.Lock()
