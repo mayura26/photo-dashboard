@@ -2744,13 +2744,77 @@
       "current": 28,
       "avg": 32,
       "restMin": 120,
-      "highMin": 45
+      "highMin": 45,
+      "series": [
+        { "t": 0, "v": 18 }, { "t": 1, "v": 22 }, { "t": 2, "v": 20 }, { "t": 3, "v": 25 },
+        { "t": 4, "v": 30 }, { "t": 5, "v": 28 }, { "t": 6, "v": 35 }, { "t": 7, "v": 42 },
+        { "t": 8, "v": 48 }, { "t": 9, "v": 40 }, { "t": 10, "v": 36 }, { "t": 11, "v": 32 },
+        { "t": 12, "v": 38 }, { "t": 13, "v": 45 }, { "t": 14, "v": 50 }, { "t": 15, "v": 44 },
+        { "t": 16, "v": 38 }, { "t": 17, "v": 34 }, { "t": 18, "v": 30 }, { "t": 19, "v": 28 },
+        { "t": 20, "v": 26 }, { "t": 21, "v": 24 }, { "t": 22, "v": 22 }, { "t": 23, "v": 28 }
+      ]
     },
     "activity": {
       "steps": 6842,
       "stepsGoal": 10000,
       "activeMin": 42,
       "calories": 1850
+    },
+    "history": {
+      "bodyBattery": {
+        "day": [],
+        "week": [
+          { "d": "Mon", "v": 48 },
+          { "d": "Tue", "v": 55 },
+          { "d": "Wed", "v": 42 },
+          { "d": "Thu", "v": 61 },
+          { "d": "Fri", "v": 58 },
+          { "d": "Sat", "v": 70 },
+          { "d": "Sun", "v": 62 }
+        ]
+      },
+      "sleep": {
+        "week": [
+          { "d": "Mon", "score": 72, "durationMin": 410 },
+          { "d": "Tue", "score": 80, "durationMin": 445 },
+          { "d": "Wed", "score": 68, "durationMin": 390 },
+          { "d": "Thu", "score": 85, "durationMin": 460 },
+          { "d": "Fri", "score": 74, "durationMin": 420 },
+          { "d": "Sat", "score": 88, "durationMin": 480 },
+          { "d": "Sun", "score": 78, "durationMin": 432 }
+        ]
+      },
+      "stress": {
+        "day": [],
+        "week": [
+          { "d": "Mon", "v": 34 },
+          { "d": "Tue", "v": 28 },
+          { "d": "Wed", "v": 41 },
+          { "d": "Thu", "v": 30 },
+          { "d": "Fri", "v": 36 },
+          { "d": "Sat", "v": 22 },
+          { "d": "Sun", "v": 32 }
+        ]
+      },
+      "activity": {
+        "day": [
+          { "t": 0, "v": 0 }, { "t": 1, "v": 0 }, { "t": 2, "v": 0 }, { "t": 3, "v": 12 },
+          { "t": 4, "v": 40 }, { "t": 5, "v": 180 }, { "t": 6, "v": 620 }, { "t": 7, "v": 890 },
+          { "t": 8, "v": 420 }, { "t": 9, "v": 310 }, { "t": 10, "v": 280 }, { "t": 11, "v": 550 },
+          { "t": 12, "v": 640 }, { "t": 13, "v": 380 }, { "t": 14, "v": 290 }, { "t": 15, "v": 410 },
+          { "t": 16, "v": 720 }, { "t": 17, "v": 580 }, { "t": 18, "v": 320 }, { "t": 19, "v": 180 },
+          { "t": 20, "v": 90 }, { "t": 21, "v": 40 }, { "t": 22, "v": 20 }, { "t": 23, "v": 0 }
+        ],
+        "week": [
+          { "d": "Mon", "steps": 9200, "activeMin": 48, "calories": 2100 },
+          { "d": "Tue", "steps": 11040, "activeMin": 62, "calories": 2350 },
+          { "d": "Wed", "steps": 5400, "activeMin": 28, "calories": 1750 },
+          { "d": "Thu", "steps": 9800, "activeMin": 55, "calories": 2200 },
+          { "d": "Fri", "steps": 8700, "activeMin": 44, "calories": 2050 },
+          { "d": "Sat", "steps": 12400, "activeMin": 78, "calories": 2600 },
+          { "d": "Sun", "steps": 6842, "activeMin": 42, "calories": 1850 }
+        ]
+      }
     }
   },
   "photos": [

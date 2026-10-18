@@ -11,7 +11,7 @@ import logging
 import os
 import sys
 import time
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -223,6 +223,20 @@ def parse_body_battery(raw: Any) -> dict[str, Any]:
     }
 
 
+def _series_from_values(values: Any) -> list[dict[str, int]]:
+    pts: list[dict[str, int]] = []
+    for item in values or []:
+        if isinstance(item, (list, tuple)) and len(item) >= 2:
+            v = as_int(item[1])
+            if v is not None and v >= 0:
+                pts.append({"t": len(pts), "v": v})
+        elif isinstance(item, dict):
+            v = as_int(item.get("value") or item.get("stressLevel"))
+            if v is not None and v >= 0:
+                pts.append({"t": len(pts), "v": v})
+    return downsample(pts)
+
+
 def parse_stress(raw: Any, stats: dict[str, Any]) -> dict[str, Any]:
     current = as_int(
         dig(raw, "overallStressLevel")
@@ -243,8 +257,8 @@ def parse_stress(raw: Any, stats: dict[str, Any]) -> dict[str, Any]:
         dig(raw, "highStressDuration")
         or dig(stats, "highStressDuration")
     )
-    # Prefer live/current from values array when present
     values = dig(raw, "stressValuesArray", default=[]) or []
+    series = _series_from_values(values)
     for item in reversed(values):
         if isinstance(item, (list, tuple)) and len(item) >= 2:
             v = as_int(item[1])
@@ -256,6 +270,163 @@ def parse_stress(raw: Any, stats: dict[str, Any]) -> dict[str, Any]:
         "avg": avg,
         "restMin": rest,
         "highMin": high,
+        "series": series,
+    }
+
+
+def _weekday_label(d: date) -> str:
+    return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][d.weekday()]
+
+
+def parse_steps_day(raw: Any) -> list[dict[str, int]]:
+    """Hourly (or finer) step samples → downsampled {t,v} series."""
+    pts: list[dict[str, int]] = []
+    rows = raw if isinstance(raw, list) else dig(raw, "values", default=[]) or []
+    for item in rows:
+        if isinstance(item, dict):
+            v = as_int(item.get("steps") or item.get("value"))
+            if v is not None:
+                pts.append({"t": len(pts), "v": v})
+        elif isinstance(item, (list, tuple)) and len(item) >= 2:
+            v = as_int(item[1])
+            if v is not None:
+                pts.append({"t": len(pts), "v": v})
+    return downsample(pts, 24)
+
+
+def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[str, Any]) -> dict[str, Any]:
+    start = today - timedelta(days=6)
+    start_s, end_s = start.isoformat(), today.isoformat()
+    week_days = [start + timedelta(days=i) for i in range(7)]
+
+    # ---- body battery week (end-of-day / most recent per day)
+    bb_week: list[dict[str, Any]] = []
+    try:
+        bb_range = client.get_body_battery(start_s, end_s) or []
+        by_date: dict[str, int] = {}
+        for day in bb_range if isinstance(bb_range, list) else []:
+            if not isinstance(day, dict):
+                continue
+            dkey = str(day.get("date") or day.get("calendarDate") or "")[:10]
+            v = as_int(
+                day.get("bodyBatteryMostRecentValue")
+                or day.get("mostRecentValue")
+                or day.get("charged")
+            )
+            vals = day.get("bodyBatteryValuesArray") or []
+            if v is None and vals:
+                last = vals[-1]
+                if isinstance(last, (list, tuple)) and len(last) >= 2:
+                    v = as_int(last[1])
+            if dkey and v is not None:
+                by_date[dkey] = v
+        for d in week_days:
+            bb_week.append({"d": _weekday_label(d), "v": by_date.get(d.isoformat())})
+    except Exception as e:  # noqa: BLE001
+        log.warning("body battery week failed: %s", e)
+
+    # ---- sleep week
+    sleep_week: list[dict[str, Any]] = []
+    try:
+        sleep_range = client.get_sleep_daily(start_s, end_s) or []
+        by_date = {}
+        rows = sleep_range if isinstance(sleep_range, list) else []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            parsed = parse_sleep(row)
+            dkey = str(
+                row.get("calendarDate")
+                or dig(row, "dailySleepDTO", "calendarDate")
+                or ""
+            )[:10]
+            if dkey:
+                by_date[dkey] = parsed
+        for d in week_days:
+            p = by_date.get(d.isoformat(), {})
+            sleep_week.append(
+                {
+                    "d": _weekday_label(d),
+                    "score": p.get("score"),
+                    "durationMin": p.get("durationMin"),
+                }
+            )
+    except Exception as e:  # noqa: BLE001
+        log.warning("sleep week failed: %s", e)
+        # Fallback: one call per day is heavy; leave empty on failure
+
+    # ---- stress week
+    stress_week: list[dict[str, Any]] = []
+    try:
+        stress_range = client.get_daily_stress_stats(start_s, end_s) or []
+        by_date = {}
+        rows = stress_range if isinstance(stress_range, list) else []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            dkey = str(row.get("calendarDate") or row.get("date") or "")[:10]
+            v = as_int(
+                row.get("overallStressLevel")
+                or row.get("averageStressLevel")
+                or row.get("avgStressLevel")
+            )
+            if dkey and v is not None:
+                by_date[dkey] = v
+        for d in week_days:
+            stress_week.append({"d": _weekday_label(d), "v": by_date.get(d.isoformat())})
+    except Exception as e:  # noqa: BLE001
+        log.warning("stress week failed: %s", e)
+
+    # ---- activity week + today hourly steps
+    act_week: list[dict[str, Any]] = []
+    try:
+        steps_range = client.get_daily_steps(start_s, end_s) or []
+        by_date = {}
+        rows = steps_range if isinstance(steps_range, list) else []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            dkey = str(row.get("calendarDate") or row.get("date") or "")[:10]
+            steps = as_int(row.get("totalSteps") or row.get("steps"))
+            if dkey:
+                by_date[dkey] = {
+                    "steps": steps,
+                    "activeMin": as_int(row.get("activeTime") or row.get("activeMinutes")),
+                    "calories": as_int(row.get("totalKilocalories") or row.get("calories")),
+                }
+        for d in week_days:
+            p = by_date.get(d.isoformat(), {})
+            act_week.append(
+                {
+                    "d": _weekday_label(d),
+                    "steps": p.get("steps"),
+                    "activeMin": p.get("activeMin"),
+                    "calories": p.get("calories"),
+                }
+            )
+    except Exception as e:  # noqa: BLE001
+        log.warning("steps week failed: %s", e)
+
+    steps_day: list[dict[str, int]] = []
+    try:
+        steps_day = parse_steps_day(client.get_steps_data(end_s) or [])
+    except Exception as e:  # noqa: BLE001
+        log.warning("steps day failed: %s", e)
+
+    return {
+        "bodyBattery": {
+            "day": bb.get("series") or [],
+            "week": bb_week,
+        },
+        "sleep": {"week": sleep_week},
+        "stress": {
+            "day": stress.get("series") or [],
+            "week": stress_week,
+        },
+        "activity": {
+            "day": steps_day,
+            "week": act_week,
+        },
     }
 
 
@@ -314,13 +485,21 @@ def build_payload(client: Garmin, today: str) -> dict[str, Any]:
     except Exception as e:  # noqa: BLE001
         log.warning("stats fetch failed: %s", e)
 
+    sleep = parse_sleep(sleep_raw)
+    body_battery = parse_body_battery(bb_raw)
+    stress = parse_stress(stress_raw, stats)
+    activity = parse_activity(stats)
+    today_d = date.fromisoformat(today)
+    history = build_history(client, today_d, stress, body_battery)
+
     return {
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "displayName": display or env("GARMIN_DISPLAY_NAME") or "Garmin",
-        "sleep": parse_sleep(sleep_raw),
-        "bodyBattery": parse_body_battery(bb_raw),
-        "stress": parse_stress(stress_raw, stats),
-        "activity": parse_activity(stats),
+        "sleep": sleep,
+        "bodyBattery": body_battery,
+        "stress": stress,
+        "activity": activity,
+        "history": history,
     }
 
 

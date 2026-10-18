@@ -2,10 +2,15 @@
 (function () {
   'use strict';
   var D = window.DATA;
-  var V = { el: null };
+  var V = { el: null, bound: false };
 
   function g() {
     return D.garmin || null;
+  }
+
+  function hist() {
+    var data = g();
+    return (data && data.history) || {};
   }
 
   function dash(v) {
@@ -60,7 +65,7 @@
       return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
     }).join(' ');
     var last = pts[pts.length - 1];
-    var lx = pad + ((pts.length - 1) / (pts.length - 1)) * (w - pad * 2);
+    var lx = pad + (w - pad * 2);
     var ly = pad + (1 - (last.v - min) / (max - min)) * (h - pad * 2);
     return '<svg class="b-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
       '<path class="b-spark-line" d="' + path + '"/>' +
@@ -94,6 +99,196 @@
       '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" class="ring-fg" stroke-dasharray="' + (c * f) + ' ' + c + '" transform="rotate(-90 ' + size / 2 + ' ' + size / 2 + ')"/></svg>';
   }
 
+  // ---- charts (SVG) --------------------------------------------------------
+  function lineChart(series, opts) {
+    opts = opts || {};
+    var pts = (series || []).filter(function (p) { return p && p.v != null; });
+    var w = opts.w || 560, h = opts.h || 220, padX = 8, padY = 16;
+    if (pts.length < 2) {
+      return '<div class="bxs-empty serif"><i>No day data yet</i></div>';
+    }
+    var min = opts.min != null ? opts.min : Math.min.apply(null, pts.map(function (p) { return p.v; }));
+    var max = opts.max != null ? opts.max : Math.max.apply(null, pts.map(function (p) { return p.v; }));
+    if (max === min) { max = min + 1; }
+    var path = pts.map(function (p, i) {
+      var x = padX + (i / (pts.length - 1)) * (w - padX * 2);
+      var y = padY + (1 - (p.v - min) / (max - min)) * (h - padY * 2);
+      return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+    }).join(' ');
+    var area = path + ' L' + (w - padX).toFixed(1) + ' ' + (h - padY) + ' L' + padX + ' ' + (h - padY) + ' Z';
+    var last = pts[pts.length - 1];
+    var lx = padX + (w - padX * 2);
+    var ly = padY + (1 - (last.v - min) / (max - min)) * (h - padY * 2);
+    return '<svg class="bxs-line" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path class="bxs-area" d="' + area + '"/>' +
+      '<path class="bxs-path" d="' + path + '"/>' +
+      '<circle class="bxs-dot" cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="6"/>' +
+      '</svg>' +
+      '<div class="bxs-axis"><span>' + dash(min) + '</span><span>' + dash(max) + '</span></div>';
+  }
+
+  function barChart(rows, opts) {
+    opts = opts || {};
+    var key = opts.key || 'v';
+    var list = (rows || []).map(function (r) {
+      return { d: r.d || '', v: r[key] != null ? r[key] : r.v };
+    });
+    var vals = list.filter(function (r) { return r.v != null; }).map(function (r) { return r.v; });
+    if (!vals.length) {
+      return '<div class="bxs-empty serif"><i>No week data yet</i></div>';
+    }
+    var max = opts.max != null ? opts.max : Math.max.apply(null, vals);
+    if (!max) max = 1;
+    return '<div class="bxs-bars">' + list.map(function (r) {
+      var pct = r.v == null ? 0 : Math.max(4, Math.round((r.v / max) * 100));
+      var cls = 'bxs-bar' + (r.v == null ? ' is-empty' : '');
+      return '<div class="' + cls + '">' +
+        '<div class="bxs-bar-col"><i style="height:' + pct + '%"></i></div>' +
+        '<b class="num">' + dash(r.v) + '</b>' +
+        '<span>' + App.esc(r.d) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function rangeTabs(metric, range) {
+    return '<div class="bxs-tabs" role="tablist">' +
+      '<button type="button" class="bxs-tab' + (range === 'day' ? ' is-on' : '') + '" data-bxs-range="day" data-bxs-metric="' + metric + '">Day</button>' +
+      '<button type="button" class="bxs-tab' + (range === 'week' ? ' is-on' : '') + '" data-bxs-range="week" data-bxs-metric="' + metric + '">Week</button>' +
+      '</div>';
+  }
+
+  function sheetShell(title, heroHtml, statsHtml, chartHtml, metric, range) {
+    return '<div class="bxs" data-bxs-metric="' + metric + '" data-bxs-range="' + range + '">' +
+      '<div class="bxs-band">' +
+      '  <div class="label">' + App.esc(title) + '</div>' +
+      heroHtml +
+      statsHtml +
+      rangeTabs(metric, range) +
+      '</div>' +
+      '<div class="bxs-body" data-bxs-chart>' + chartHtml + '</div>' +
+      '</div>';
+  }
+
+  function daySeries(metric) {
+    var data = g() || {};
+    var h = hist();
+    if (metric === 'battery') {
+      return (h.bodyBattery && h.bodyBattery.day && h.bodyBattery.day.length)
+        ? h.bodyBattery.day
+        : ((data.bodyBattery && data.bodyBattery.series) || []);
+    }
+    if (metric === 'stress') {
+      return (h.stress && h.stress.day && h.stress.day.length)
+        ? h.stress.day
+        : ((data.stress && data.stress.series) || []);
+    }
+    if (metric === 'activity') {
+      return (h.activity && h.activity.day) || [];
+    }
+    return [];
+  }
+
+  function weekRows(metric) {
+    var h = hist();
+    if (metric === 'battery') return (h.bodyBattery && h.bodyBattery.week) || [];
+    if (metric === 'sleep') return (h.sleep && h.sleep.week) || [];
+    if (metric === 'stress') return (h.stress && h.stress.week) || [];
+    if (metric === 'activity') return (h.activity && h.activity.week) || [];
+    return [];
+  }
+
+  function chartFor(metric, range) {
+    if (metric === 'battery') {
+      if (range === 'day') return lineChart(daySeries('battery'), { min: 0, max: 100 });
+      return barChart(weekRows('battery'), { max: 100 });
+    }
+    if (metric === 'sleep') {
+      if (range === 'day') {
+        var sleep = (g() && g().sleep) || {};
+        return '<div class="bxs-sleep-day">' +
+          '<div class="bxs-sleep-dur serif">' + fmtDur(sleep.durationMin) + '</div>' +
+          stageBar(sleep) +
+          '</div>';
+      }
+      return barChart(weekRows('sleep'), { key: 'score', max: 100 });
+    }
+    if (metric === 'stress') {
+      if (range === 'day') return lineChart(daySeries('stress'), { min: 0, max: 100 });
+      return barChart(weekRows('stress'), { max: 100 });
+    }
+    if (metric === 'activity') {
+      if (range === 'day') return lineChart(daySeries('activity'), { min: 0 });
+      return barChart(weekRows('activity'), { key: 'steps' });
+    }
+    return '<div class="bxs-empty serif"><i>Nothing to show</i></div>';
+  }
+
+  function openMetricSheet(metric, range) {
+    range = range || 'day';
+    var data = g();
+    if (!data) return;
+
+    var title = { battery: 'Body battery', sleep: 'Sleep', stress: 'Stress', activity: 'Activity' }[metric] || 'Body';
+    var hero = '';
+    var stats = '';
+
+    if (metric === 'battery') {
+      var bb = data.bodyBattery || {};
+      hero = '<div class="bxs-head"><b class="num bxs-hero">' + dash(bb.current) + '</b><span class="bxs-unit">/ 100</span></div>';
+      stats = '<div class="bxs-stats">' +
+        '<div><b class="num">+' + dash(bb.charged) + '</b><span>Charged</span></div>' +
+        '<div><b class="num">−' + dash(bb.drained) + '</b><span>Drained</span></div>' +
+        '</div>';
+    } else if (metric === 'sleep') {
+      var sleep = data.sleep || {};
+      hero = '<div class="bxs-head"><b class="num bxs-hero">' + dash(sleep.score) + '</b><span class="bxs-unit">score</span></div>';
+      stats = '<div class="bxs-stats">' +
+        '<div><b class="num">' + fmtDur(sleep.durationMin) + '</b><span>Duration</span></div>' +
+        '<div><b class="num">' + dash(sleep.deepMin) + 'm</b><span>Deep</span></div>' +
+        '<div><b class="num">' + dash(sleep.remMin) + 'm</b><span>REM</span></div>' +
+        '</div>';
+    } else if (metric === 'stress') {
+      var stress = data.stress || {};
+      hero = '<div class="bxs-head"><b class="num bxs-hero">' + dash(stress.current) + '</b><span class="bxs-unit">now</span></div>';
+      stats = '<div class="bxs-stats">' +
+        '<div><b class="num">' + dash(stress.avg) + '</b><span>Avg</span></div>' +
+        '<div><b class="num">' + dash(stress.restMin) + 'm</b><span>Rest</span></div>' +
+        '<div><b class="num">' + dash(stress.highMin) + 'm</b><span>High</span></div>' +
+        '</div>';
+    } else if (metric === 'activity') {
+      var act = data.activity || {};
+      hero = '<div class="bxs-head"><b class="num bxs-hero">' + (act.steps != null ? act.steps.toLocaleString() : '—') + '</b><span class="bxs-unit">steps</span></div>';
+      stats = '<div class="bxs-stats">' +
+        '<div><b class="num">' + (act.stepsGoal != null ? act.stepsGoal.toLocaleString() : '—') + '</b><span>Goal</span></div>' +
+        '<div><b class="num">' + dash(act.activeMin) + 'm</b><span>Active</span></div>' +
+        '<div><b class="num">' + dash(act.calories) + '</b><span>Calories</span></div>' +
+        '</div>';
+    }
+
+    // Sleep has no useful continuous day series — default week when opening sleep? Keep day for stages.
+    App.sheet(
+      sheetShell(title, hero, stats, chartFor(metric, range), metric, range),
+      {
+        cls: 'sheet--body',
+        onMount: function (sheet) {
+          sheet.addEventListener('click', function (e) {
+            var tab = e.target.closest('[data-bxs-range]');
+            if (!tab) return;
+            var m = tab.dataset.bxsMetric;
+            var r = tab.dataset.bxsRange;
+            var root = sheet.querySelector('.bxs');
+            if (!root) return;
+            root.dataset.bxsRange = r;
+            App.$$('.bxs-tab', sheet).forEach(function (t) {
+              t.classList.toggle('is-on', t.dataset.bxsRange === r);
+            });
+            var chart = sheet.querySelector('[data-bxs-chart]');
+            if (chart) chart.innerHTML = chartFor(m, r);
+          });
+        }
+      }
+    );
+  }
+
   function empty() {
     return '<div class="body body--empty">' +
       '<div class="b-head"><div class="label">Body</div></div>' +
@@ -120,7 +315,7 @@
       '  <div class="b-updated">' + App.esc(fmtUpdated(data.updatedAt)) + '</div>' +
       '</header>' +
 
-      '<section class="b-battery b-reveal ' + batteryTone(bb.current) + '" style="--d:1">' +
+      '<button type="button" class="b-battery b-card b-reveal ' + batteryTone(bb.current) + '" style="--d:1" data-metric="battery" aria-label="Body battery details">' +
       '  <div class="label">Body battery</div>' +
       '  <div class="b-bat-main">' +
       '    <div class="b-dial">' + ring(bb.current || 0, 100, 220) +
@@ -129,21 +324,21 @@
       '    <div class="b-bat-meta">' +
       '      <div class="b-stat"><span class="label">Charged</span><b class="num">+' + dash(bb.charged) + '</b></div>' +
       '      <div class="b-stat"><span class="label">Drained</span><b class="num">−' + dash(bb.drained) + '</b></div>' +
-      '      <div class="b-spark-wrap">' + sparkline(bb.series) + '<span class="b-spark-cap">Today</span></div>' +
+      '      <div class="b-spark-wrap">' + sparkline(bb.series) + '<span class="b-spark-cap">Today · tap for more</span></div>' +
       '    </div>' +
       '  </div>' +
-      '</section>' +
+      '</button>' +
 
-      '<section class="b-panel b-sleep b-reveal" style="--d:2">' +
+      '<button type="button" class="b-panel b-sleep b-card b-reveal" style="--d:2" data-metric="sleep" aria-label="Sleep details">' +
       '  <div class="label">Sleep</div>' +
       '  <div class="b-panel-top">' +
       '    <div class="b-big"><b class="num">' + dash(sleep.score) + '</b><small>score</small></div>' +
       '    <div class="b-sub serif">' + fmtDur(sleep.durationMin) + '</div>' +
       '  </div>' +
       stageBar(sleep) +
-      '</section>' +
+      '</button>' +
 
-      '<section class="b-panel b-stress b-reveal ' + stressTone(stress.current) + '" style="--d:3">' +
+      '<button type="button" class="b-panel b-stress b-card b-reveal ' + stressTone(stress.current) + '" style="--d:3" data-metric="stress" aria-label="Stress details">' +
       '  <div class="label">Stress</div>' +
       '  <div class="b-panel-top">' +
       '    <div class="b-big"><b class="num">' + dash(stress.current) + '</b><small>now</small></div>' +
@@ -153,9 +348,9 @@
       '    <div class="b-stat"><span class="label">Rest</span><b class="num">' + dash(stress.restMin != null ? stress.restMin + 'm' : null) + '</b></div>' +
       '    <div class="b-stat"><span class="label">High</span><b class="num">' + dash(stress.highMin != null ? stress.highMin + 'm' : null) + '</b></div>' +
       '  </div>' +
-      '</section>' +
+      '</button>' +
 
-      '<section class="b-panel b-act b-reveal' + (goalHit ? ' is-goal' : '') + '" style="--d:4">' +
+      '<button type="button" class="b-panel b-act b-card b-reveal' + (goalHit ? ' is-goal' : '') + '" style="--d:4" data-metric="activity" aria-label="Activity details">' +
       '  <div class="label">Activity</div>' +
       '  <div class="b-act-main">' +
       '    <div class="b-steps-dial">' + ring(steps || 0, goal, 120) +
@@ -167,7 +362,7 @@
       '      <div class="b-stat"><span class="label">Calories</span><b class="num">' + dash(act.calories) + '</b></div>' +
       '    </div>' +
       '  </div>' +
-      '</section>' +
+      '</button>' +
       '</div>';
   }
 
@@ -179,6 +374,14 @@
   App.register('body', {
     show: function (el) {
       V.el = el;
+      if (!V.bound) {
+        V.bound = true;
+        el.addEventListener('click', function (e) {
+          var card = e.target.closest('[data-metric]');
+          if (!card || !el.contains(card)) return;
+          openMetricSheet(card.dataset.metric, 'day');
+        });
+      }
       paint();
     }
   });

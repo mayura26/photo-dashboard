@@ -4,3 +4,4 @@
 [x] Garmin Sync
 [ ] Review app for any dead stuff
 [ ] Photos works off on device photo gallary wiht upload
+[ ] Add versionjosn to allow a forced reload on new version
