@@ -16,11 +16,29 @@ Open [http://localhost:8080](http://localhost:8080).
 | Target | What it does |
 |--------|----------------|
 | `make run` | `go run` with `.env` loaded if present |
+| `make watch` | auto-restart the Go server on `.go` changes ([Air](https://github.com/air-verse/air)) |
 | `make build` | compile to `bin/server` |
 | `make test` | `go test ./...` |
-| `make clean` | remove `bin/` |
+| `make clean` | remove `bin/` and `tmp/` |
+| `make garmin-run` | run the Garmin sidecar (`services/garmin/poller.py`) |
 
 Or without Make: `go run ./cmd/server` (pass env vars yourself). Optional `ADDR=:3000`.
+
+For day-to-day Go work, prefer `make watch` so edits under `cmd/` / `internal/` rebuild and restart automatically. `web/` is served from disk with `Cache-Control: no-cache` — refresh the browser after HTML/JS/CSS changes (no server restart).
+
+### Garmin sidecar
+
+One-time setup, then `make garmin-run` from the repo root (needs the Go server running and `HQ_INGEST_TOKEN` / Garmin creds in `.env`):
+
+```bash
+cd services/garmin
+python -m venv .venv
+# Windows: .venv/Scripts/activate
+# Unix:    source .venv/bin/activate
+pip install -r requirements.txt
+cd ../..
+make garmin-run
+```
 
 ### Live weather
 
