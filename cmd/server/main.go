@@ -15,6 +15,7 @@ import (
 	"time"
 	"unicode"
 
+	"photo-dashboard/internal/auth"
 	"photo-dashboard/internal/demo"
 	"photo-dashboard/internal/gcal"
 	"photo-dashboard/internal/weather"
@@ -46,14 +47,25 @@ func main() {
 	startWeatherPoller(store, hub)
 	startGCalPoller(store, hub)
 
+	gate := auth.FromEnv()
+	if gate.Enabled() {
+		log.Printf("auth: HQ_PASSWORD set; dashboard login required")
+	} else {
+		log.Printf("auth: HQ_PASSWORD unset; dashboard open")
+	}
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", hub.ServeWS)
+	mux.HandleFunc("/ws", gate.RequireFunc(hub.ServeWS))
+	mux.HandleFunc("/api/auth/status", gate.HandleStatus)
+	mux.HandleFunc("/api/login", gate.HandleLogin)
+	mux.HandleFunc("/api/logout", gate.HandleLogout)
 	mux.HandleFunc("/internal/garmin", garminIngest(store, hub))
 	mux.HandleFunc("/version.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]string{"version": version})
 	})
+	// Static SPA is public so the login gate can load; data lives behind /ws.
 	mux.Handle("/", spaFileServer(static))
 
 	log.Printf("Home HQ listening on http://localhost%s", addr)

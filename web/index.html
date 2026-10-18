@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Serif:ital@0;1&display=swap">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
   <link rel="stylesheet" href="/css/views/home.css">
   <link rel="stylesheet" href="/css/views/calendar.css">
   <link rel="stylesheet" href="/css/views/tasks.css">
@@ -42,7 +43,9 @@
   </div>
 
   <script>
-    setTimeout(function () { if (!window.App) location.reload(); }, 15000);
+    setTimeout(function () {
+      if (!window.App && !window.__hqAuthGate) location.reload();
+    }, 15000);
   </script>
   <script type="module" src="/js/main.js"></script>
 </body>

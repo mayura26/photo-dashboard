@@ -1,11 +1,13 @@
 import { connect } from './ws-client.js';
 import store from './store.js';
+import { ensureAuth } from './auth.js';
 import './components/hq-rail.js';
 import './components/hq-views.js';
 
 window.__hqAction = (name, payload) => store.dispatch(name, payload);
 
 async function boot() {
+  await ensureAuth();
   const first = await connect();
   store.applySnapshot(first.data);
 

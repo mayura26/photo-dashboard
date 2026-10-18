@@ -7,7 +7,7 @@ No Node, no Vite, no npm. Content is still placeholder — see [DEMO.md](DEMO.md
 ## Run
 
 ```bash
-cp .env.example .env   # optional: set WEATHER_LAT / WEATHER_LON
+cp .env.example .env   # optional: WEATHER_*, HQ_PASSWORD, …
 make run
 ```
 
@@ -28,6 +28,8 @@ Forecasts from [Open-Meteo](https://open-meteo.com/) (CC BY 4.0; no API key for 
 ### Coolify
 
 Use the repo `Dockerfile`. Set **Ports Exposes** to `8080` (must match `PORT`). Domain should proxy to container port `8080`. Redeploy after changing ports. Add `WEATHER_LAT` / `WEATHER_LON` (and optional `WEATHER_REFRESH`) as environment variables for live weather.
+
+Set `HQ_PASSWORD` to require a shared login before the dashboard connects (long-lived cookie; optional `HQ_AUTH_SECRET`). Leave unset for open local use.
 
 ## Architecture
 
