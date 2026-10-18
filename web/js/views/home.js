@@ -31,17 +31,16 @@
       '<span class="h-wx-icon">' + App.icon(w.cond, 60) + '</span>' +
       '<span class="h-wx-temp num">' + w.temp + '°</span>' +
       '<span class="h-wx-meta"><b>' + w.label + '</b><span>H ' + w.hi + '°  L ' + w.lo + '°</span></span>' +
+      '<span class="h-wx-side">' +
+      '  <span><b class="num">' + w.humidity + '%</b><small>Humidity</small></span>' +
+      '  <span><b class="num">' + w.wind + '</b><small>Wind</small></span>' +
+      '</span>' +
       '</div>' +
       '<div class="h-wx-say h-reveal" style="--d:1"><b>' + w.summary + '.</b> ' + w.advice + '.</div>' +
-      '<div class="h-wx-stats h-reveal" style="--d:2">' +
-      '  <div><b class="num">' + w.feels + '°</b><span>Feels</span></div>' +
-      '  <div><b class="num">' + w.humidity + '%</b><span>Humidity</span></div>' +
-      '  <div><b class="num">' + w.wind + '</b><span>Wind</span></div>' +
-      '</div>' +
       '<div class="h-wx-hours">' + hours.map(function (h, i) {
         var lift = tmax === tmin ? 0 : Math.round((h.t - tmin) / (tmax - tmin) * 8);
         var mm = h.p > App.REAL_RAIN_MM ? '<span class="h-hr-mm">' + App.fmtMm(h.p) + '</span>' : '<span class="h-hr-mm"></span>';
-        return '<div class="h-hr h-reveal' + wetClass(h.p) + '" style="--d:' + (3 + i) + '"><span class="h-hr-l">' + h.label + '</span>' +
+        return '<div class="h-hr h-reveal' + wetClass(h.p) + '" style="--d:' + (2 + i) + '"><span class="h-hr-l">' + h.label + '</span>' +
           '<span class="h-hr-i" style="transform:translateY(' + -lift + 'px)">' + App.icon(h.c, 22) + '</span><b>' + h.t + '°</b>' + mm + '</div>';
       }).join('') + '</div>';
   }
@@ -149,7 +148,12 @@
 
   function openTodos(who) {
     var r = App.currentRoutine();
-    return (D.chores || []).filter(function (c) { return !c.done && c.r === r.id && c.who === who; });
+    var today = App.dayKey(App.now());
+    return (D.chores || []).filter(function (c) {
+      if (c.done || c.r !== r.id || c.who !== who) return false;
+      var day = c.day || today;
+      return day <= today;
+    });
   }
 
   function todoRow(c) {

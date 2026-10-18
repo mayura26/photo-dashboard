@@ -459,6 +459,13 @@ func (s *Store) addChore(p map[string]any) {
 	if stars < 0 {
 		stars = 0
 	}
+	day, _ := p["day"].(string)
+	day = strings.TrimSpace(day)
+	if day == "" {
+		day = time.Now().Format("2006-01-02")
+	} else if _, err := time.Parse("2006-01-02", day); err != nil {
+		day = time.Now().Format("2006-01-02")
+	}
 	if max := maxChoreID(s.snap.Chores); s.nextCID < max {
 		s.nextCID = max
 	}
@@ -470,6 +477,7 @@ func (s *Store) addChore(p map[string]any) {
 		"r":     r,
 		"emoji": emoji,
 		"stars": stars,
+		"day":   day,
 		"done":  false,
 	})
 }

@@ -7,17 +7,22 @@
   function lanes() { return D.people.map(function (p) { return p.id; }).concat(['any']); }
 
   function routine() { return V.routine ? D.routines.filter(function (r) { return r.id === V.routine; })[0] : App.currentRoutine(); }
+  function todayKey() { return App.dayKey(App.now()); }
+  function choreDay(c) { return c.day || todayKey(); }
+  function isActiveToday(c) { return choreDay(c) <= todayKey(); }
+  function isOverdue(c) { return !c.done && !!c.day && c.day < todayKey(); }
   function listFor(who, r) {
-    return D.chores.filter(function (c) { return c.r === r.id && c.who === who; })
-      .sort(function (a, b) { return (a.done - b.done) || ((b.overdue ? 1 : 0) - (a.overdue ? 1 : 0)); });
+    return D.chores.filter(function (c) { return c.r === r.id && c.who === who && isActiveToday(c); })
+      .sort(function (a, b) { return (a.done - b.done) || ((isOverdue(b) ? 1 : 0) - (isOverdue(a) ? 1 : 0)); });
   }
 
   function row(c, p) {
     var pend = V.pending[c.id];
-    return '<button class="ch' + (c.done ? ' is-done' : '') + (pend ? ' is-checking' : '') + (c.overdue && !c.done ? ' is-overdue' : '') + '" data-ch="' + c.id + '">' +
+    var late = isOverdue(c);
+    return '<button class="ch' + (c.done ? ' is-done' : '') + (pend ? ' is-checking' : '') + (late ? ' is-overdue' : '') + '" data-ch="' + c.id + '">' +
       '<span class="ch-emoji">' + c.emoji + '<span class="ch-check"><svg viewBox="0 0 24 24" width="30" height="30"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></span>' +
       '<span class="ch-text"><b>' + App.esc(c.title) + '</b>' +
-      (c.overdue && !c.done ? '<small class="ch-late">Overdue</small>' : c.stars ? '<small>' + App.icon('star', 14, 'i--fill') + c.stars + (c.doneBy ? ' · ' + App.person(c.doneBy).name : '') + '</small>' : (c.doneBy ? '<small>by ' + App.person(c.doneBy).name + '</small>' : '')) +
+      (late ? '<small class="ch-late">Overdue</small>' : c.stars ? '<small>' + App.icon('star', 14, 'i--fill') + c.stars + (c.doneBy ? ' · ' + App.person(c.doneBy).name : '') + '</small>' : (c.doneBy ? '<small>by ' + App.person(c.doneBy).name + '</small>' : '')) +
       '</span>' +
       '</button>';
   }
@@ -51,7 +56,7 @@
 
   function render() {
     var r = routine(), auto = App.currentRoutine();
-    var inR = D.chores.filter(function (c) { return c.r === r.id; });
+    var inR = D.chores.filter(function (c) { return c.r === r.id && isActiveToday(c); });
     var done = inR.filter(function (c) { return c.done; }).length;
     V.el.innerHTML = '<div class="tasks">' +
       '<header class="t-head">' +
@@ -77,7 +82,7 @@
       render();
       App.emit('data');
       if (App.sync) App.sync.chore(c.id, true, by);
-      var allDone = D.chores.filter(function (x) { return x.r === r.id; }).every(function (x) { return x.done; });
+      var allDone = D.chores.filter(function (x) { return x.r === r.id && isActiveToday(x); }).every(function (x) { return x.done; });
       if (allDone) {
         App.toast('<b>' + r.name + ' routine complete!</b> Everyone crushed it.', { icon: 'star', ms: 5000 });
         return;
@@ -115,10 +120,13 @@
   }
 
   function addSheet() {
+    var now = App.now();
     var r = routine();
+    var dayOffsets = [0, 1, 2, 3, 4];
     var st = {
       who: D.people[0] ? D.people[0].id : 'any',
       r: r.id,
+      dayi: 0,
       stars: 0,
       emoji: EMOJIS[0]
     };
@@ -130,7 +138,11 @@
         return '<button class="who-btn' + (st.who === p.id ? ' is-on' : '') + '" data-who="' + p.id + '" style="' + App.pstyle(p) + '">' + App.avatar(p, 56) + '<span>' + p.name + '</span></button>';
       }).join('') +
       '<button class="who-btn' + (st.who === 'any' ? ' is-on' : '') + '" data-who="any" style="' + App.pstyle(D.family) + '">' + App.avatar(D.family, 56) + '<span>Anyone</span></button></div>' +
-      '<div class="label">When</div><div class="chips">' + D.routines.map(function (x) {
+      '<div class="label">Day</div><div class="chips">' + dayOffsets.map(function (i) {
+        var d = App.addDays(now, i);
+        return '<button class="chip' + (i === st.dayi ? ' is-on' : '') + '" data-dayi="' + i + '">' + (i < 2 ? App.fmt.rel(d) : App.fmt.dayShort(d) + ' ' + d.getDate()) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="label">Routine</div><div class="chips">' + D.routines.map(function (x) {
         return '<button class="chip' + (x.id === st.r ? ' is-on' : '') + '" data-routine="' + x.id + '">' + x.name + '</button>';
       }).join('') + '</div>' +
       '<div class="add-row">' +
@@ -155,6 +167,10 @@
             st.who = t.dataset.who;
             App.$$('[data-who]', s).forEach(function (b) { b.classList.toggle('is-on', b.dataset.who === st.who); });
           }
+          if (t.dataset.dayi != null) {
+            st.dayi = +t.dataset.dayi;
+            App.$$('[data-dayi]', s).forEach(function (b) { b.classList.toggle('is-on', b === t); });
+          }
           if (t.dataset.routine) {
             st.r = t.dataset.routine;
             App.$$('[data-routine]', s).forEach(function (b) { b.classList.toggle('is-on', b === t); });
@@ -171,6 +187,7 @@
           if (t.hasAttribute('data-save')) {
             var title = (input.value || '').trim();
             if (!title) { input.focus(); return; }
+            var day = App.dayKey(App.addDays(now, st.dayi));
             var chore = {
               id: 'c-tmp-' + Date.now(),
               title: title,
@@ -178,14 +195,15 @@
               r: st.r,
               emoji: st.emoji,
               stars: st.stars,
+              day: day,
               done: false
             };
             D.chores.push(chore);
             close();
             render();
             App.emit('data');
-            if (App.sync) App.sync.addChore({ title: title, who: st.who, r: st.r, emoji: st.emoji, stars: st.stars });
-            App.toast('<b>' + App.esc(title) + '</b> added', { icon: 'check' });
+            if (App.sync) App.sync.addChore({ title: title, who: st.who, r: st.r, emoji: st.emoji, stars: st.stars, day: day });
+            App.toast('<b>' + App.esc(title) + '</b> added' + (st.dayi ? ' · ' + App.fmt.rel(App.addDays(now, st.dayi)) : ''), { icon: 'check' });
           }
         });
       }
