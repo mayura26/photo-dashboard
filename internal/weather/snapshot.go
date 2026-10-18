@@ -46,6 +46,10 @@ func BuildSnapshot(om openMeteoResponse) (json.RawMessage, error) {
 		hour := hourOf(om.Hourly.Time[i])
 		day := isDaylight(hour, sunrise, sunset)
 		c[i] = IconFor(om.Hourly.WeatherCode[i], day)
+		// Wet WMO codes with no meaningful showers → cloud, not rain.
+		if c[i] == "rain" && p[i] <= RealRainMM {
+			c[i] = "cloud"
+		}
 	}
 
 	snap := Snapshot{

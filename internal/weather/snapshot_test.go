@@ -51,6 +51,10 @@ func TestBuildSnapshot(t *testing.T) {
 	}
 	om.Hourly.Showers[10] = 0.14
 	om.Hourly.Showers[16] = 1.26
+	// Rain WMO code with no/low showers → demote to cloud; real showers keep rain.
+	om.Hourly.WeatherCode[14] = 61
+	om.Hourly.Showers[14] = 0
+	om.Hourly.WeatherCode[16] = 61
 
 	raw, err := BuildSnapshot(om)
 	if err != nil {
@@ -80,6 +84,12 @@ func TestBuildSnapshot(t *testing.T) {
 	}
 	if snap.P[16] != 1.3 {
 		t.Errorf("p[16] = %v, want 1.3", snap.P[16])
+	}
+	if snap.C[14] != "cloud" {
+		t.Errorf("code 61 with 0 showers = %q, want cloud", snap.C[14])
+	}
+	if snap.C[16] != "rain" {
+		t.Errorf("code 61 with showers > RealRainMM = %q, want rain", snap.C[16])
 	}
 	if snap.T[3] != 13 {
 		t.Errorf("t[3] = %d, want 13 (apparent)", snap.T[3])
