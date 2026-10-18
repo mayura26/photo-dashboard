@@ -111,21 +111,58 @@
     for (var i = 0; i < this.queue.length; i++) if (!pred || pred(this.queue[i])) return this.queue.splice(i, 1)[0];
     return null;
   };
+
+  // YYYY-MM month index for proximity ranking; null if undated.
+  function monthIndex(p) {
+    var s = (p && (p.date || p.tag)) || '';
+    if (s.length < 7) return null;
+    var a = s.split('-');
+    var y = +a[0], m = +a[1];
+    if (!y || !m) return null;
+    return y * 12 + m;
+  }
+  function sameCalendarDay(a, b) {
+    var da = (a && a.date) || '', db = (b && b.date) || '';
+    return da.length >= 10 && db.length >= 10 && da.slice(5) === db.slice(5);
+  }
+  // Lower score = closer period. Same day < same month < nearby months < undated.
+  function pairScore(first, cand) {
+    if (sameCalendarDay(first, cand)) return 0;
+    var fi = monthIndex(first), ci = monthIndex(cand);
+    if (fi != null && ci != null) {
+      var dist = Math.abs(fi - ci);
+      return dist === 0 ? 100 : 200 + dist;
+    }
+    return 100000;
+  }
+
   S.pick = function () {
     var mode = this.o.layout, layout = mode, n = this.count++;
     var first = this.take();
     if (!first) return null;
     var self = this;
     function sibling(pred) {
-      return self.take(pred) || (D.photos || []).filter(function (x) { return x !== first && pred(x); })[0];
+      return self.take(pred) || (D.photos || []).filter(function (x) { return x && x.id !== first.id && pred(x); })[0];
+    }
+    function pairPartner(lead) {
+      var cands = (D.photos || []).filter(function (x) {
+        return x && x.id && lead.id && x.id !== lead.id && x.o === 'p';
+      });
+      if (!cands.length) return null;
+      cands.sort(function (a, b) { return pairScore(lead, a) - pairScore(lead, b); });
+      var best = pairScore(lead, cands[0]);
+      var top = cands.filter(function (x) { return pairScore(lead, x) === best; });
+      var want = {};
+      top.forEach(function (x) { want[x.id] = true; });
+      return self.take(function (x) { return x && want[x.id]; }) || top[0];
     }
     if (layout === 'auto') {
-      if (first.o === 'p') layout = (D.photos || []).some(function (x) { return x !== first && x.tag === first.tag; }) ? 'pair' : 'polaroid';
+      if (first.o === 'p') layout = (D.photos || []).some(function (x) { return x.id !== first.id && x.o === 'p' && x.tag && x.tag === first.tag; }) ? 'pair' : 'polaroid';
       else layout = n % 5 === 3 ? 'collage' : n % 5 === 4 ? 'polaroid' : 'cover';
     }
     if (layout === 'ambient') {
       if (first.o === 'p') {
-        layout = (D.photos || []).some(function (x) { return x !== first && x.o === 'p'; }) ? 'pair' : 'collage';
+        layout = (D.photos || []).some(function (x) { return x.id !== first.id && x.o === 'p'; }) ? 'pair' : 'collage';
       } else {
         layout = n % 4 === 3 ? 'collage' : 'cover';
       }
@@ -134,15 +171,15 @@
     if (layout === 'pair') {
       if (first.o !== 'p') { first = sibling(function (x) { return x.o === 'p'; }); ps = [first]; }
       if (!first) return null;
-      ps.push(sibling(function (x) { return x !== first && x.o === 'p' && x.tag === first.tag; }) || sibling(function (x) { return x !== first && x.o === 'p'; }));
+      ps.push(pairPartner(first));
       if (!ps[1]) {
         if (mode === 'ambient') { layout = 'collage'; ps = [first]; }
         else return { layout: 'polaroid', photos: [ps[0]] };
       }
     }
     if (layout === 'collage') {
-      ps.push(sibling(function (x) { return x !== first; }));
-      ps.push(sibling(function (x) { return ps.indexOf(x) < 0; }));
+      ps.push(sibling(function (x) { return x.id !== first.id; }));
+      ps.push(sibling(function (x) { return ps.every(function (p) { return !p || p.id !== x.id; }); }));
       if (!ps[1] || !ps[2]) return { layout: 'cover', photos: [ps[0]] };
     }
     return { layout: layout, photos: ps };
