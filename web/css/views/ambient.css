@@ -35,7 +35,6 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  animation: ambIn .55s ease both;
 }
 .amb-sp-league {
   font-size: 12px; font-weight: 700; letter-spacing: .1em;
@@ -71,7 +70,6 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  animation: ambIn .55s ease both;
 }
 .amb-ph-ago {
   font-size: 12px; font-weight: 700; letter-spacing: .1em;
@@ -87,6 +85,9 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Entrance only when content actually changes (see ambient.js markEnter). */
+.amb-enter { animation: ambIn .55s ease both; }
+.amb-g-chip.amb-enter { animation-delay: calc(var(--d, 0) * 70ms + 80ms); }
 
 /* Schedule card — calendar / Plan My Day / todo */
 .amb-task {
@@ -95,7 +96,6 @@
   border-radius: 22px;
   background: rgba(255, 255, 255, .16);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
-  animation: ambIn .55s ease both;
 }
 .amb-task-lab {
   font-family: var(--serif); font-style: italic; font-size: 18px;
@@ -148,8 +148,6 @@
   background: rgba(255, 255, 255, .14);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
   color: #fff;
-  animation: ambIn .55s ease both;
-  animation-delay: calc(var(--d, 0) * 70ms + 80ms);
 }
 .amb-g-chip.is-ok { --tone: #3DDBA0; }
 .amb-g-chip.is-mid { --tone: #F0B429; }

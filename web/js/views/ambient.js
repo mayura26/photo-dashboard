@@ -2,7 +2,8 @@
 (function () {
   'use strict';
   var D = window.DATA, $ = App.$;
-  var amb = { show: null }, shiftTimer = null;
+  var amb = { show: null, infoKey: null, sportsKey: null, photoKey: null, nightKey: null };
+  var shiftTimer = null;
 
   // Placeholder fixtures until a D.sports snapshot lands (same as home).
   var SPORTS = [
@@ -72,6 +73,13 @@
       '</div></div>';
   }
 
+  function nextEventMeta(next, now) {
+    var mins = Math.round((next.start - now) / 60000);
+    return mins > 0 && mins < 24 * 60
+      ? (mins < 60 ? 'in ' + mins + 'm' : App.fmt.time(next.start))
+      : App.fmt.time(next.start);
+  }
+
   // Prefer in-progress calendar/PMD, then next upcoming, then open todos.
   function ambientSchedule() {
     var now = App.now();
@@ -87,14 +95,10 @@
     }
     var next = App.nextEvent();
     if (next) {
-      var mins = Math.round((next.start - now) / 60000);
-      var when = mins > 0 && mins < 24 * 60
-        ? (mins < 60 ? 'in ' + mins + 'm' : App.fmt.time(next.start))
-        : App.fmt.time(next.start);
       return schedulePill({
         lab: 'Up next · ' + eventSourceLabel(next),
         title: next.title,
-        meta: when,
+        meta: nextEventMeta(next, now),
         style: App.pstyle(App.evColor(next)),
         who: next.people && next.people[0] ? App.avatar(next.people[0], 28) : ''
       });
@@ -162,28 +166,6 @@
       '</div>';
   }
 
-  function ambientPhoto(slide) {
-    var el = $('#ambient .amb-photo');
-    if (!el) return;
-    var p = slide && slide.photos && slide.photos[0];
-    if (!p) {
-      el.innerHTML = '';
-      return;
-    }
-    var m = App.photoMeta(p);
-    var kicker = m.kicker
-      ? ((m.onThisDay && m.kicker !== 'Today' ? 'On this day · ' : '') + m.kicker)
-      : '';
-    if (!kicker && !m.place) {
-      el.innerHTML = '';
-      return;
-    }
-    el.innerHTML = '<div class="amb-ph">' +
-      (kicker ? '<span class="amb-ph-ago">' + App.esc(kicker) + '</span>' : '') +
-      (m.place ? '<span class="amb-ph-place">' + App.esc(m.place) + '</span>' : '') +
-      '</div>';
-  }
-
   function ambientInfo() {
     var n = App.now(), w = App.weatherNow();
     return '<div class="amb-clock"><div class="amb-time num">' + App.fmt.time(n, false) + '</div>' +
@@ -196,6 +178,7 @@
       ambientGarmin() +
       '</div>';
   }
+
   function nightInfo() {
     var n = App.now(), tomorrow = App.addDays(n, n.getHours() < 6 ? 0 : 1);
     var first = App.timedOn(tomorrow)[0], w = App.weatherNow();
@@ -204,18 +187,173 @@
       '<div class="nt-lock">' + App.icon('lock', 20) + ' House locked · alarm armed</div>';
   }
 
-  function paint() {
-    if (App.mode === 'ambient') {
-      $('#ambient .amb-info').innerHTML = ambientInfo();
-      $('#ambient .amb-sports').innerHTML = ambientSports();
+  function markEnter(root) {
+    if (!root) return;
+    root.querySelectorAll('.amb-task, .amb-g-chip, .amb-sp, .amb-ph').forEach(function (n) {
+      n.classList.add('amb-enter');
+    });
+  }
+
+  function scheduleKey() {
+    var cur = currentEvent();
+    if (cur) {
+      return 'now|' + (cur.id || '') + '|' + cur.title + '|' + +cur.start + '|' + +cur.end + '|' +
+        ((cur.people && cur.people[0]) || '') + '|' + (cur.source || '');
     }
-    if (App.mode === 'night') $('#night .nt-inner').innerHTML = nightInfo();
+    var next = App.nextEvent();
+    if (next) {
+      return 'next|' + (next.id || '') + '|' + next.title + '|' + +next.start + '|' +
+        ((next.people && next.people[0]) || '') + '|' + (next.source || '');
+    }
+    var todos = openAmbientTodos();
+    if (!todos.length) return 'todo|';
+    var c = todos[0];
+    return 'todo|' + (c.id || c.title) + '|' + c.title + '|' + c.who + '|' + (c.emoji || '') + '|' + todos.length;
+  }
+
+  function garminKey() {
+    var data = D.garmin;
+    if (!data) return '';
+    var bb = data.bodyBattery || {};
+    var sleep = data.sleep || {};
+    var act = data.activity || {};
+    return [bb.current, sleep.score, sleep.durationMin, act.steps, act.stepsGoal || 10000].join('|');
+  }
+
+  function weatherKey() {
+    var w = App.weatherNow();
+    return [w.cond, w.temp, w.summary, w.hi, w.lo, w.rain].join('|');
+  }
+
+  function infoFingerprint() {
+    return weatherKey() + '//' + scheduleKey() + '//' + garminKey();
+  }
+
+  function sportsFingerprint() {
+    var g = upcomingSport();
+    if (!g) return '';
+    return [g.league, g.team, g.opp, g.when, g.home ? 1 : 0].join('|');
+  }
+
+  function nightFingerprint() {
+    var n = App.now(), tomorrow = App.addDays(n, n.getHours() < 6 ? 0 : 1);
+    var first = App.timedOn(tomorrow)[0], w = App.weatherNow();
+    return [
+      w.cond, w.temp,
+      first ? (first.id || first.title) : '',
+      first ? +first.start : '',
+      first && first.people ? first.people[0] : ''
+    ].join('|');
+  }
+
+  function paintClock() {
+    var n = App.now();
+    var time = App.fmt.time(n, false);
+    var date = App.fmt.day(n) + ', ' + App.fmt.month(n) + ' ' + n.getDate();
+    var t = $('#ambient .amb-time');
+    var d = $('#ambient .amb-date');
+    if (t) t.textContent = time;
+    if (d) d.textContent = date;
+    var nt = $('#night .nt-time');
+    if (nt) nt.textContent = time;
+  }
+
+  // Countdown / range range can change without a card rebuild.
+  function syncScheduleMeta() {
+    var meta = $('#ambient .amb-task-meta');
+    if (!meta) return;
+    var now = App.now();
+    var cur = currentEvent();
+    if (cur) {
+      meta.textContent = App.fmt.time(cur.start, false) + '–' + App.fmt.time(cur.end, false);
+      return;
+    }
+    var next = App.nextEvent();
+    if (next) meta.textContent = nextEventMeta(next, now);
+  }
+
+  function setInfo(html) {
+    var el = $('#ambient .amb-info');
+    if (!el) return;
+    el.innerHTML = html;
+    markEnter(el);
+  }
+
+  function setSports(html) {
+    var el = $('#ambient .amb-sports');
+    if (!el) return;
+    el.innerHTML = html;
+    markEnter(el);
+  }
+
+  function paintAmbient(force) {
+    paintClock();
+    var ik = infoFingerprint();
+    if (force || ik !== amb.infoKey) {
+      amb.infoKey = ik;
+      setInfo(ambientInfo());
+    } else {
+      syncScheduleMeta();
+    }
+    var sk = sportsFingerprint();
+    if (force || sk !== amb.sportsKey) {
+      amb.sportsKey = sk;
+      setSports(ambientSports());
+    }
+  }
+
+  function paintNight(force) {
+    paintClock();
+    var nk = nightFingerprint();
+    if (force || nk !== amb.nightKey) {
+      amb.nightKey = nk;
+      var el = $('#night .nt-inner');
+      if (el) el.innerHTML = nightInfo();
+    }
+  }
+
+  function paint(force) {
+    if (App.mode === 'ambient') paintAmbient(force);
+    if (App.mode === 'night') paintNight(force);
+  }
+
+  function ambientPhoto(slide) {
+    var el = $('#ambient .amb-photo');
+    if (!el) return;
+    var p = slide && slide.photos && slide.photos[0];
+    if (!p) {
+      amb.photoKey = '';
+      el.innerHTML = '';
+      return;
+    }
+    var m = App.photoMeta(p);
+    var kicker = m.kicker
+      ? ((m.onThisDay && m.kicker !== 'Today' ? 'On this day · ' : '') + m.kicker)
+      : '';
+    var key = kicker + '|' + (m.place || '');
+    if (!kicker && !m.place) {
+      if (amb.photoKey === '') return;
+      amb.photoKey = '';
+      el.innerHTML = '';
+      return;
+    }
+    if (key === amb.photoKey) return;
+    amb.photoKey = key;
+    el.innerHTML = '<div class="amb-ph">' +
+      (kicker ? '<span class="amb-ph-ago">' + App.esc(kicker) + '</span>' : '') +
+      (m.place ? '<span class="amb-ph-place">' + App.esc(m.place) + '</span>' : '') +
+      '</div>';
+    markEnter(el);
   }
 
   // Nudge static content a few px every minute so nothing sits still for hours (image retention)
   function pixelShift() {
     var x = Math.round(Math.random() * 8 - 4), y = Math.round(Math.random() * 8 - 4);
     App.$$('.amb-info, .amb-sports, .amb-photo, .nt-inner').forEach(function (el) { el.style.transform = 'translate(' + x + 'px,' + y + 'px)'; });
+  }
+
+  function resetKeys() {
+    amb.infoKey = amb.sportsKey = amb.photoKey = amb.nightKey = null;
   }
 
   App.on('ready', function () {
@@ -234,17 +372,22 @@
   App.on('mode', function (m) {
     clearInterval(shiftTimer);
     if (m === 'ambient') {
+      resetKeys();
       amb.show.start();
-      paint();
+      paint(true);
       ambientPhoto(amb.show.current);
       shiftTimer = setInterval(pixelShift, 60000);
     }
-    else amb.show.stop();
-    if (m === 'night') { paint(); shiftTimer = setInterval(pixelShift, 60000); }
+    else if (amb.show) amb.show.stop();
+    if (m === 'night') {
+      resetKeys();
+      paint(true);
+      shiftTimer = setInterval(pixelShift, 60000);
+    }
     App.resetIdle();
   });
-  App.on('minute', paint);
+  App.on('minute', function () { paint(false); });
   App.on('data', function () {
-    if (App.mode === 'ambient' || App.mode === 'night') paint();
+    if (App.mode === 'ambient' || App.mode === 'night') paint(false);
   });
 })();
