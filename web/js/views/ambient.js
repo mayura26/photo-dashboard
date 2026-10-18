@@ -162,6 +162,28 @@
       '</div>';
   }
 
+  function ambientPhoto(slide) {
+    var el = $('#ambient .amb-photo');
+    if (!el) return;
+    var p = slide && slide.photos && slide.photos[0];
+    if (!p) {
+      el.innerHTML = '';
+      return;
+    }
+    var m = App.photoMeta(p);
+    var kicker = m.kicker
+      ? (m.onThisDay ? 'On this day · ' : '') + m.kicker
+      : '';
+    if (!kicker && !m.place) {
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = '<div class="amb-ph">' +
+      (kicker ? '<span class="amb-ph-ago">' + App.esc(kicker) + '</span>' : '') +
+      (m.place ? '<span class="amb-ph-place">' + App.esc(m.place) + '</span>' : '') +
+      '</div>';
+  }
+
   function ambientInfo() {
     var n = App.now(), w = App.weatherNow();
     return '<div class="amb-clock"><div class="amb-time num">' + App.fmt.time(n, false) + '</div>' +
@@ -191,20 +213,30 @@
   // Nudge static content a few px every minute so nothing sits still for hours (image retention)
   function pixelShift() {
     var x = Math.round(Math.random() * 8 - 4), y = Math.round(Math.random() * 8 - 4);
-    App.$$('.amb-info, .amb-sports, .nt-inner').forEach(function (el) { el.style.transform = 'translate(' + x + 'px,' + y + 'px)'; });
+    App.$$('.amb-info, .amb-sports, .amb-photo, .nt-inner').forEach(function (el) { el.style.transform = 'translate(' + x + 'px,' + y + 'px)'; });
   }
 
   App.on('ready', function () {
-    $('#ambient').innerHTML = '<div class="amb-stage"></div><div class="amb-scrim"></div><div class="amb-sports"></div><div class="amb-info"></div>';
+    $('#ambient').innerHTML = '<div class="amb-stage"></div><div class="amb-scrim"></div><div class="amb-sports"></div><div class="amb-photo"></div><div class="amb-info"></div>';
     $('#night').innerHTML = '<div class="nt-inner"></div>';
-    amb.show = new App.Slideshow($('#ambient .amb-stage'), { layout: 'cover', captions: false, interval: 14000 });
+    amb.show = new App.Slideshow($('#ambient .amb-stage'), {
+      layout: 'cover',
+      captions: false,
+      interval: 14000,
+      onChange: ambientPhoto
+    });
     $('#ambient').addEventListener('click', function () { App.setMode('day'); App.go('home'); });
     $('#night').addEventListener('click', function () { App.setMode('nightdash'); });
   });
 
   App.on('mode', function (m) {
     clearInterval(shiftTimer);
-    if (m === 'ambient') { amb.show.start(); paint(); shiftTimer = setInterval(pixelShift, 60000); }
+    if (m === 'ambient') {
+      amb.show.start();
+      paint();
+      ambientPhoto(amb.show.current);
+      shiftTimer = setInterval(pixelShift, 60000);
+    }
     else amb.show.stop();
     if (m === 'night') { paint(); shiftTimer = setInterval(pixelShift, 60000); }
     App.resetIdle();
