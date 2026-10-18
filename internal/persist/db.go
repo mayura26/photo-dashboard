@@ -17,6 +17,7 @@ const (
 	keyWeekHits  = "week_hits"
 	keyNextGID   = "next_gid"
 	keyGarmin    = "garmin"
+	keyPhotos    = "photos"
 )
 
 // DB is a thin SQLite store for shopping/TODO mutable state.
@@ -218,6 +219,41 @@ func (d *DB) SaveGarmin(raw json.RawMessage) error {
 		keyGarmin, string(raw),
 	); err != nil {
 		return fmt.Errorf("persist: upsert garmin: %w", err)
+	}
+	return nil
+}
+
+// LoadPhotos returns persisted photo metadata.
+// ok is false when no photos key has been saved yet.
+func (d *DB) LoadPhotos() (photos []map[string]any, ok bool, err error) {
+	raw, found, err := d.get(keyPhotos)
+	if err != nil || !found {
+		return nil, found, err
+	}
+	if err := json.Unmarshal(raw, &photos); err != nil {
+		return nil, false, fmt.Errorf("persist: photos: %w", err)
+	}
+	if photos == nil {
+		photos = []map[string]any{}
+	}
+	return photos, true, nil
+}
+
+// SavePhotos replaces the persisted photo metadata list.
+func (d *DB) SavePhotos(photos []map[string]any) error {
+	if photos == nil {
+		photos = []map[string]any{}
+	}
+	b, err := json.Marshal(photos)
+	if err != nil {
+		return fmt.Errorf("persist: marshal photos: %w", err)
+	}
+	if _, err := d.sql.Exec(
+		`INSERT INTO kv(key, value) VALUES(?, ?)
+		 ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
+		keyPhotos, string(b),
+	); err != nil {
+		return fmt.Errorf("persist: upsert photos: %w", err)
 	}
 	return nil
 }

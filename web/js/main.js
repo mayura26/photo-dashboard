@@ -43,7 +43,7 @@ function patchMutations() {
       store.dispatch('addEvent', payload);
     },
     removeEvent(id) { store.dispatch('removeEvent', { id }); },
-    fav(seed) { store.dispatch('toggleFav', { seed }); },
+    fav(id) { store.dispatch('toggleFav', { id: id }); },
     completePmdTask(id) { store.dispatch('completePmdTask', { id }); },
     schedulePmdTask(id, mode) { store.dispatch('schedulePmdTask', { id, mode }); }
   };

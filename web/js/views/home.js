@@ -328,8 +328,14 @@
   }
 
   function photoCaption(s) {
+    var cap = V.el && V.el.querySelector('.h-photo-cap');
+    if (!cap) return;
+    if (!s || !s.photos || !s.photos[0]) {
+      cap.innerHTML = '<b>Photos</b><span>Add some in Photos</span>';
+      return;
+    }
     var m = App.photoMeta(s.photos[0]);
-    V.el.querySelector('.h-photo-cap').innerHTML = '<b>' + (m.onThisDay ? 'On this day · ' : '') + m.kicker + '</b><span>' + App.esc(m.place) + '</span>';
+    cap.innerHTML = '<b>' + (m.onThisDay ? 'On this day · ' : '') + m.kicker + '</b><span>' + App.esc(m.place || '') + '</span>';
   }
 
   App.register('home', {

@@ -145,6 +145,36 @@ func TestGarminSaveLoadRoundTrip(t *testing.T) {
 	}
 }
 
+func TestPhotosSaveLoadRoundTrip(t *testing.T) {
+	db, err := Open(filepath.Join(t.TempDir(), "hq.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, ok, err := db.LoadPhotos()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("expected no photos before save")
+	}
+
+	in := []map[string]any{
+		{"id": "aabbccddeeff00112233445566778899", "o": "l", "date": "2024-05-19", "place": "Park", "from": "mayura", "tag": "2024-05", "fav": true},
+	}
+	if err := db.SavePhotos(in); err != nil {
+		t.Fatal(err)
+	}
+	out, ok, err := db.LoadPhotos()
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if len(out) != 1 || out[0]["id"] != in[0]["id"] || out[0]["place"] != "Park" {
+		t.Fatalf("photos: %+v", out)
+	}
+}
+
 func TestSaveGarminRejectsInvalid(t *testing.T) {
 	db, err := Open(filepath.Join(t.TempDir(), "hq.db"))
 	if err != nil {

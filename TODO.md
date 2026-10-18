@@ -4,7 +4,7 @@
 [x] Shopping and TODO into sqlite db?
 [x] Garmin Sync
 [ ] Review app for any dead stuff
-[ ] Photos works off on device photo gallary wiht upload
+[x] Photos works off on device photo gallary wiht upload
 [x] Add version.json to allow a forced reload on new version
 [x] Build sports backend for league scores
 [x] Add aconnection to plan my day cal

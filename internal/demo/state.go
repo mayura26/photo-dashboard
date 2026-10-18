@@ -97,7 +97,8 @@ func Load(seedPath string) (*Store, error) {
 	mustUnmarshal(raw["climate"], &s.snap.Climate)
 	mustUnmarshal(raw["media"], &s.snap.Media)
 	mustUnmarshal(raw["scenes"], &s.snap.Scenes)
-	mustUnmarshal(raw["photos"], &s.snap.Photos)
+	// Photos come from SQLite (see AttachPersist), not seed placeholders.
+	s.snap.Photos = []map[string]any{}
 
 	s.shiftEventsToToday()
 	// Real wall clock (timeOffset stays 0). setTime action kept for compatibility only.
@@ -183,6 +184,19 @@ func (s *Store) AttachPersist(db *persist.DB) error {
 	if found {
 		s.snap.Garmin = append(json.RawMessage(nil), garmin...)
 	}
+
+	photos, found, err := db.LoadPhotos()
+	if err != nil {
+		return err
+	}
+	if found {
+		s.snap.Photos = photos
+	} else {
+		s.snap.Photos = []map[string]any{}
+		if err := s.savePhotosLocked(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -217,11 +231,22 @@ func (s *Store) saveMutableLocked() error {
 	})
 }
 
+func (s *Store) savePhotosLocked() error {
+	if s.db == nil {
+		return nil
+	}
+	return s.db.SavePhotos(s.snap.Photos)
+}
+
 func (s *Store) persistAfterMutation(name string) {
 	switch name {
 	case "setChore", "addChore", "delayChore", "setGrocery", "addGrocery", "clearChecked":
 		if err := s.saveMutableLocked(); err != nil {
 			log.Printf("persist: save after %s: %v", name, err)
+		}
+	case "toggleFav":
+		if err := s.savePhotosLocked(); err != nil {
+			log.Printf("persist: save photos after %s: %v", name, err)
 		}
 	}
 }
@@ -290,6 +315,81 @@ func (s *Store) Snapshot() Snapshot {
 		}
 	}
 	return s.cloneLocked()
+}
+
+// DefaultPhotoFrom returns the first person id for new uploads.
+func (s *Store) DefaultPhotoFrom() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	ids := s.personIDsLocked()
+	if len(ids) == 0 {
+		return ""
+	}
+	return ids[0]
+}
+
+// AddPhoto appends a photo record and persists it.
+func (s *Store) AddPhoto(p map[string]any) (map[string]any, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.snap.Photos = append(s.snap.Photos, p)
+	if err := s.savePhotosLocked(); err != nil {
+		s.snap.Photos = s.snap.Photos[:len(s.snap.Photos)-1]
+		return nil, err
+	}
+	return cloneMap(p), nil
+}
+
+// UpdatePhoto patches metadata fields on an existing photo.
+func (s *Store) UpdatePhoto(id string, patch map[string]any) (map[string]any, bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, p := range s.snap.Photos {
+		if p["id"] != id {
+			continue
+		}
+		for _, key := range []string{"place", "from", "tag", "date", "fav"} {
+			if v, ok := patch[key]; ok {
+				p[key] = v
+			}
+		}
+		if err := s.savePhotosLocked(); err != nil {
+			return nil, true, err
+		}
+		return cloneMap(p), true, nil
+	}
+	return nil, false, nil
+}
+
+// DeletePhoto removes a photo record by id and persists.
+func (s *Store) DeletePhoto(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := s.snap.Photos[:0]
+	found := false
+	for _, p := range s.snap.Photos {
+		if p["id"] == id {
+			found = true
+			continue
+		}
+		out = append(out, p)
+	}
+	if !found {
+		return false
+	}
+	s.snap.Photos = out
+	if err := s.savePhotosLocked(); err != nil {
+		log.Printf("persist: save photos after delete: %v", err)
+	}
+	return true
+}
+
+func cloneMap(m map[string]any) map[string]any {
+	out := make(map[string]any, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
 }
 
 // SetWeather replaces the weather blob in the snapshot (e.g. from Open-Meteo).
@@ -491,9 +591,13 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 		}
 		s.snap.Events = filtered
 	case "toggleFav":
-		seed, _ := payload["seed"].(string)
+		id, _ := payload["id"].(string)
+		if id == "" {
+			// Legacy clients sent seed; ignore quietly.
+			id, _ = payload["seed"].(string)
+		}
 		for _, p := range s.snap.Photos {
-			if p["seed"] == seed {
+			if p["id"] == id {
 				fav, _ := p["fav"].(bool)
 				p["fav"] = !fav
 				break

@@ -19,6 +19,7 @@ import (
 	"photo-dashboard/internal/demo"
 	"photo-dashboard/internal/gcal"
 	"photo-dashboard/internal/persist"
+	"photo-dashboard/internal/photos"
 	"photo-dashboard/internal/pmday"
 	"photo-dashboard/internal/sports"
 	"photo-dashboard/internal/weather"
@@ -73,12 +74,27 @@ func main() {
 		log.Printf("auth: HQ_PASSWORD unset; dashboard open")
 	}
 
+	photoDir := photos.DirFromDBPath(dbPath)
+	if err := photoDir.Ensure(); err != nil {
+		log.Fatal("photos dir: ", err)
+	}
+	photoAPI := &photos.API{Dir: photoDir, Lib: store, Hub: hub}
+	log.Printf("photos: library at %s", photoDir.Path)
+	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) != "" {
+		log.Printf("photos: OPENAI_API_KEY set; GPT-5.4 place fallback enabled")
+	} else {
+		log.Printf("photos: OPENAI_API_KEY unset; place only from GPS EXIF")
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", gate.RequireFunc(hub.ServeWS))
 	mux.HandleFunc("/api/auth/status", gate.HandleStatus)
 	mux.HandleFunc("/api/login", gate.HandleLogin)
 	mux.HandleFunc("/api/logout", gate.HandleLogout)
 	mux.HandleFunc("/internal/garmin", garminIngest(store, hub))
+	mux.HandleFunc("/api/photos", gate.RequireFunc(photoAPI.HandleCollection))
+	mux.HandleFunc("/api/photos/", gate.RequireFunc(photoAPI.HandleItem))
+	mux.HandleFunc("/media/photos/", gate.RequireFunc(photoAPI.HandleMedia))
 	mux.HandleFunc("/version.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Content-Type", "application/json")
