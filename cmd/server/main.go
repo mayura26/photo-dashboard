@@ -35,7 +35,13 @@ func main() {
 	if err != nil {
 		log.Fatal("load seed: ", err)
 	}
-	hub := demo.NewHub(store)
+
+	static, err := webfs.FS()
+	if err != nil {
+		log.Fatal("web fs: ", err)
+	}
+	version := resolveAppVersion(static)
+	hub := demo.NewHub(store, version)
 
 	startWeatherPoller(store, hub)
 	startGCalPoller(store, hub)
@@ -43,16 +49,35 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", hub.ServeWS)
 	mux.HandleFunc("/internal/garmin", garminIngest(store, hub))
-
-	static, err := webfs.FS()
-	if err != nil {
-		log.Fatal("web fs: ", err)
-	}
+	mux.HandleFunc("/version.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"version": version})
+	})
 	mux.Handle("/", spaFileServer(static))
 
 	log.Printf("Home HQ listening on http://localhost%s", addr)
 	log.Printf("WebSocket at ws://localhost%s/ws", addr)
+	log.Printf("App version %s", version)
 	log.Fatal(http.ListenAndServe(addr, mux))
+}
+
+// resolveAppVersion prefers APP_VERSION, then web/version.json, then "dev".
+func resolveAppVersion(webRoot fs.FS) string {
+	if v := strings.TrimSpace(os.Getenv("APP_VERSION")); v != "" {
+		return v
+	}
+	raw, err := fs.ReadFile(webRoot, "version.json")
+	if err != nil {
+		return "dev"
+	}
+	var meta struct {
+		Version string `json:"version"`
+	}
+	if err := json.Unmarshal(raw, &meta); err != nil || strings.TrimSpace(meta.Version) == "" {
+		return "dev"
+	}
+	return strings.TrimSpace(meta.Version)
 }
 
 func garminIngest(store *demo.Store, hub *demo.Hub) http.HandlerFunc {
@@ -126,28 +151,28 @@ func startGCalPoller(store *demo.Store, hub *demo.Hub) {
 		return
 	}
 
-	alexID := os.Getenv("GCAL_ALEX")
-	jordanID := os.Getenv("GCAL_JORDAN")
+	mayuraID := os.Getenv("GCAL_MAYURA")
+	deniseID := os.Getenv("GCAL_DENISE")
 	familyID := os.Getenv("GCAL_FAMILY")
-	if alexID == "" && jordanID == "" && familyID == "" {
-		log.Printf("gcal: no GCAL_ALEX/GCAL_JORDAN/GCAL_FAMILY; using seed calendar")
+	if mayuraID == "" && deniseID == "" && familyID == "" {
+		log.Printf("gcal: no GCAL_MAYURA/GCAL_DENISE/GCAL_FAMILY; using seed calendar")
 		return
 	}
 
 	var people []string
 	var cals []gcal.CalendarRef
-	if alexID != "" {
-		people = append(people, "alex")
-		cals = append(cals, gcal.CalendarRef{ID: alexID, Source: "personal", People: []string{"alex"}})
+	if mayuraID != "" {
+		people = append(people, "mayura")
+		cals = append(cals, gcal.CalendarRef{ID: mayuraID, Source: "personal", People: []string{"mayura"}})
 	}
-	if jordanID != "" {
-		people = append(people, "jordan")
-		cals = append(cals, gcal.CalendarRef{ID: jordanID, Source: "personal", People: []string{"jordan"}})
+	if deniseID != "" {
+		people = append(people, "denise")
+		cals = append(cals, gcal.CalendarRef{ID: deniseID, Source: "personal", People: []string{"denise"}})
 	}
 	if familyID != "" {
 		famPeople := people
 		if len(famPeople) == 0 {
-			famPeople = []string{"alex", "jordan"}
+			famPeople = []string{"mayura", "denise"}
 		}
 		cals = append(cals, gcal.CalendarRef{ID: familyID, Source: "family", People: append([]string(nil), famPeople...)})
 	}
@@ -233,6 +258,19 @@ func spaFileServer(root fs.FS) http.Handler {
 		if _, err := fs.Stat(root, path); err != nil {
 			// fall through to FileServer for 404 on missing assets
 		}
+		if shouldNoCache(path) {
+			w.Header().Set("Cache-Control", "no-cache")
+		}
 		fileServer.ServeHTTP(w, r)
 	})
+}
+
+func shouldNoCache(path string) bool {
+	switch path {
+	case "index.html", "version.json":
+		return true
+	}
+	return strings.HasSuffix(path, ".html") ||
+		strings.HasSuffix(path, ".js") ||
+		strings.HasSuffix(path, ".css")
 }

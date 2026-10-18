@@ -496,3 +496,4 @@ button.b-card:active { transform: scale(.985); }
 }
 .bxs-sleep-day { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
 .bxs-sleep-dur { font-size: 42px; line-height: 1; }
+.bxs-chart-cap { margin: 0 0 10px; }

@@ -18,16 +18,21 @@ type Envelope struct {
 	Name    string         `json:"name,omitempty"`
 	Payload map[string]any `json:"payload,omitempty"`
 	Data    any            `json:"data,omitempty"`
+	Version string         `json:"version,omitempty"`
 }
 
 type Hub struct {
-	store *Store
-	mu    sync.Mutex
-	conns map[*websocket.Conn]struct{}
+	store   *Store
+	version string
+	mu      sync.Mutex
+	conns   map[*websocket.Conn]struct{}
 }
 
-func NewHub(store *Store) *Hub {
-	return &Hub{store: store, conns: make(map[*websocket.Conn]struct{})}
+func NewHub(store *Store, version string) *Hub {
+	if version == "" {
+		version = "dev"
+	}
+	return &Hub{store: store, version: version, conns: make(map[*websocket.Conn]struct{})}
 }
 
 func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +46,7 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 	h.mu.Unlock()
 
 	snap := h.store.Snapshot()
-	if err := conn.WriteJSON(Envelope{Type: "snapshot", Data: snap}); err != nil {
+	if err := conn.WriteJSON(h.envelope(Envelope{Type: "snapshot", Data: snap})); err != nil {
 		log.Println("ws snapshot:", err)
 		h.drop(conn)
 		return
@@ -81,7 +86,13 @@ func (h *Hub) drop(conn *websocket.Conn) {
 	_ = conn.Close()
 }
 
+func (h *Hub) envelope(msg Envelope) Envelope {
+	msg.Version = h.version
+	return msg
+}
+
 func (h *Hub) broadcast(msg Envelope) {
+	msg = h.envelope(msg)
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	for c := range h.conns {

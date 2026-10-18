@@ -101,5 +101,5 @@ func main() {
 	fmt.Printf("GOOGLE_CLIENT_SECRET=%s\n", clientSecret)
 	fmt.Printf("GOOGLE_REFRESH_TOKEN=%s\n", tok.RefreshToken)
 	fmt.Println()
-	fmt.Println("Then set GCAL_ALEX / GCAL_JORDAN / GCAL_FAMILY to calendar IDs from Google Calendar → Settings → Integrate calendar.")
+	fmt.Println("Then set GCAL_MAYURA / GCAL_DENISE / GCAL_FAMILY to calendar IDs from Google Calendar → Settings → Integrate calendar.")
 }

@@ -1,4 +1,6 @@
 // WebSocket client with reconnect. Speaks the dashboard JSON protocol.
+import { checkVersion, fetchAndCheckVersion } from './version.js';
+
 const listeners = new Set();
 
 let socket = null;
@@ -30,11 +32,13 @@ export function connect() {
     function open() {
       socket = new WebSocket(url);
       socket.addEventListener('open', () => {
-        // wait for first snapshot via onMessage
+        fetchAndCheckVersion();
       });
       socket.addEventListener('message', (ev) => {
         let msg;
         try { msg = JSON.parse(ev.data); } catch { return; }
+        // Version gate before any snapshot/event handlers paint stale UI.
+        if (msg.version && checkVersion(msg.version)) return;
         if (!settled && msg.type === 'snapshot') {
           settled = true;
           resolve(msg);

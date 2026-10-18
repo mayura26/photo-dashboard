@@ -8,7 +8,7 @@ import (
 )
 
 func TestNormalizeEventsPersonal(t *testing.T) {
-	cal := CalendarRef{ID: "cal1", Source: "personal", People: []string{"alex"}}
+	cal := CalendarRef{ID: "cal1", Source: "personal", People: []string{"mayura"}}
 	items := []*calendar.Event{
 		{
 			Id:      "ev1",
@@ -24,7 +24,7 @@ func TestNormalizeEventsPersonal(t *testing.T) {
 		t.Fatalf("got %d events, want 1", len(out))
 	}
 	e := out[0]
-	if e["id"] != "alex:ev1" {
+	if e["id"] != "mayura:ev1" {
 		t.Errorf("id = %v", e["id"])
 	}
 	if e["title"] != "Gym" {
@@ -34,7 +34,7 @@ func TestNormalizeEventsPersonal(t *testing.T) {
 		t.Errorf("source = %v", e["source"])
 	}
 	people, _ := e["people"].([]string)
-	if len(people) != 1 || people[0] != "alex" {
+	if len(people) != 1 || people[0] != "mayura" {
 		t.Errorf("people = %v", e["people"])
 	}
 	if e["loc"] != "YMCA" {
@@ -50,7 +50,7 @@ func TestNormalizeEventsPersonal(t *testing.T) {
 }
 
 func TestNormalizeEventsAllDayFamily(t *testing.T) {
-	cal := CalendarRef{ID: "fam", Source: "family", People: []string{"alex", "jordan"}}
+	cal := CalendarRef{ID: "fam", Source: "family", People: []string{"mayura", "denise"}}
 	items := []*calendar.Event{
 		{
 			Id:      "day1",
@@ -80,7 +80,7 @@ func TestNormalizeEventsAllDayFamily(t *testing.T) {
 }
 
 func TestTruncateNotes(t *testing.T) {
-	cal := CalendarRef{ID: "c", Source: "personal", People: []string{"jordan"}}
+	cal := CalendarRef{ID: "c", Source: "personal", People: []string{"denise"}}
 	long := make([]rune, maxNotesRunes+50)
 	for i := range long {
 		long[i] = 'a'

@@ -209,7 +209,17 @@
           stageBar(sleep) +
           '</div>';
       }
-      return barChart(weekRows('sleep'), { key: 'score', max: 100 });
+      // Prefer score bars; many accounts have null scores — fall back to duration (hours).
+      var sleepWeek = weekRows('sleep');
+      var hasScore = sleepWeek.some(function (r) { return r && r.score != null; });
+      if (hasScore) return barChart(sleepWeek, { key: 'score', max: 100 });
+      var asHours = sleepWeek.map(function (r) {
+        return {
+          d: r.d,
+          v: r.durationMin != null ? Math.round(r.durationMin / 60 * 10) / 10 : null
+        };
+      });
+      return '<div class="bxs-chart-cap label">Hours asleep</div>' + barChart(asHours, {});
     }
     if (metric === 'stress') {
       if (range === 'day') return lineChart(daySeries('stress'), { min: 0, max: 100 });

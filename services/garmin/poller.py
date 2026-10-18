@@ -326,22 +326,26 @@ def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[
         log.warning("body battery week failed: %s", e)
 
     # ---- sleep week
+    # get_sleep_daily returns [{calendarDate, values:{totalSleepTimeInSeconds, sleepScore, ...}}]
     sleep_week: list[dict[str, Any]] = []
     try:
         sleep_range = client.get_sleep_daily(start_s, end_s) or []
-        by_date = {}
+        by_date: dict[str, dict[str, Any]] = {}
         rows = sleep_range if isinstance(sleep_range, list) else []
         for row in rows:
             if not isinstance(row, dict):
                 continue
-            parsed = parse_sleep(row)
-            dkey = str(
-                row.get("calendarDate")
-                or dig(row, "dailySleepDTO", "calendarDate")
-                or ""
-            )[:10]
+            dkey = str(row.get("calendarDate") or "")[:10]
+            vals = row.get("values") if isinstance(row.get("values"), dict) else {}
+            # Some accounts have no sleep score; duration is always useful.
+            score = as_int(vals.get("sleepScore") or row.get("sleepScore"))
+            duration = seconds_to_min(
+                vals.get("totalSleepTimeInSeconds")
+                or vals.get("sleepTimeSeconds")
+                or row.get("sleepTimeSeconds")
+            )
             if dkey:
-                by_date[dkey] = parsed
+                by_date[dkey] = {"score": score, "durationMin": duration}
         for d in week_days:
             p = by_date.get(d.isoformat(), {})
             sleep_week.append(
@@ -353,9 +357,9 @@ def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[
             )
     except Exception as e:  # noqa: BLE001
         log.warning("sleep week failed: %s", e)
-        # Fallback: one call per day is heavy; leave empty on failure
 
     # ---- stress week
+    # get_daily_stress_stats returns [{calendarDate, values:{overallStressLevel, ...}}]
     stress_week: list[dict[str, Any]] = []
     try:
         stress_range = client.get_daily_stress_stats(start_s, end_s) or []
@@ -365,8 +369,12 @@ def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[
             if not isinstance(row, dict):
                 continue
             dkey = str(row.get("calendarDate") or row.get("date") or "")[:10]
+            vals = row.get("values") if isinstance(row.get("values"), dict) else {}
             v = as_int(
-                row.get("overallStressLevel")
+                vals.get("overallStressLevel")
+                or vals.get("averageStressLevel")
+                or vals.get("avgStressLevel")
+                or row.get("overallStressLevel")
                 or row.get("averageStressLevel")
                 or row.get("avgStressLevel")
             )

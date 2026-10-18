@@ -51,7 +51,7 @@
 .wxs-say b { font-weight: 400; font-style: italic; }
 .wxs-body { padding: 0 36px 28px; overflow: auto; min-height: 0; }
 .wxs-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  display: grid; grid-template-columns: repeat(var(--chore-lanes, 3), 1fr); gap: 10px;
   padding: 14px 0 18px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 8px;
 }
 .wxs-stats > div { display: flex; flex-direction: column; gap: 2px; }
@@ -99,7 +99,7 @@
 .h-hero--empty { background: var(--ink); color: var(--paper); flex-direction: column; justify-content: center; }
 .h-hero--empty .h-hero-title { white-space: normal; font-size: 56px; }
 
-.h-lanes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; min-height: 0; }
+.h-lanes { display: grid; grid-template-columns: repeat(var(--people-count, 2), 1fr); gap: 12px; min-height: 0; }
 .h-lane { display: flex; flex-direction: column; gap: 6px; min-width: 0; border-top: 6px solid var(--c); padding-top: 10px; }
 .h-lane-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .h-lane-head b { font-size: 18px; font-weight: 800; font-stretch: 80%; text-transform: uppercase; letter-spacing: .06em; }

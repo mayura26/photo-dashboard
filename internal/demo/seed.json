@@ -1,8 +1,8 @@
 {
   "people": [
     {
-      "id": "alex",
-      "name": "Wes",
+      "id": "mayura",
+      "name": "Mayura",
       "color": "#2D5BFF",
       "rgb": "45 91 255",
       "ink": "#FFFFFF",
@@ -11,33 +11,13 @@
       "eta": 12
     },
     {
-      "id": "jordan",
-      "name": "Claudia",
+      "id": "denise",
+      "name": "Denise",
       "color": "#E4007C",
       "rgb": "228 0 124",
       "ink": "#FFFFFF",
       "home": false,
       "status": "At the office"
-    },
-    {
-      "id": "maya",
-      "name": "Buzzsaw",
-      "age": 10,
-      "color": "#00A36C",
-      "rgb": "0 163 108",
-      "ink": "#FFFFFF",
-      "home": true,
-      "status": "Home"
-    },
-    {
-      "id": "otto",
-      "name": "Skidmark",
-      "age": 6,
-      "color": "#FFB000",
-      "rgb": "255 176 0",
-      "ink": "#111111",
-      "home": true,
-      "status": "Home"
     }
   ],
   "family": {
@@ -48,10 +28,8 @@
     "ink": "#FFFFFF"
   },
   "ALL": [
-    "alex",
-    "jordan",
-    "maya",
-    "otto"
+    "mayura",
+    "denise"
   ],
   "events": [
     {
@@ -61,7 +39,7 @@
       "end": "2026-10-17T13:00:00.000Z",
       "title": "Pajama Day at school",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -71,10 +49,8 @@
       "end": "2026-10-17T13:00:00.000Z",
       "title": "Garbage + recycling night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -83,7 +59,7 @@
       "end": "2026-10-16T20:45:00.000Z",
       "title": "Gym",
       "people": [
-        "jordan"
+        "denise"
       ],
       "loc": "Iron Works"
     },
@@ -93,7 +69,7 @@
       "end": "2026-10-16T21:40:00.000Z",
       "title": "School drop-off",
       "people": [
-        "alex"
+        "mayura"
       ],
       "travel": 10,
       "loc": "Parkdale Elementary"
@@ -104,7 +80,7 @@
       "end": "2026-10-16T23:30:00.000Z",
       "title": "Design review",
       "people": [
-        "jordan"
+        "denise"
       ],
       "loc": "Office · Room 4B"
     },
@@ -114,8 +90,8 @@
       "end": "2026-10-17T01:45:00.000Z",
       "title": "Dentist",
       "people": [
-        "maya",
-        "jordan"
+        "mayura",
+        "denise"
       ],
       "travel": 15,
       "loc": "Bright Smiles Dental"
@@ -126,7 +102,7 @@
       "end": "2026-10-17T03:00:00.000Z",
       "title": "Lunch with Sam",
       "people": [
-        "alex"
+        "mayura"
       ],
       "loc": "Café Rustica"
     },
@@ -136,7 +112,7 @@
       "end": "2026-10-17T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ],
       "travel": 12,
       "loc": "Ms. Park's Studio",
@@ -146,18 +122,18 @@
       "id": "e9",
       "start": "2026-10-17T05:05:00.000Z",
       "end": "2026-10-17T05:30:00.000Z",
-      "title": "Drive Buzzsaw to soccer",
+      "title": "Soccer drop-off",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
       "id": "e10",
       "start": "2026-10-17T05:25:00.000Z",
       "end": "2026-10-17T05:50:00.000Z",
-      "title": "Pick up Skidmark",
+      "title": "School pickup",
       "people": [
-        "jordan"
+        "denise"
       ],
       "loc": "Ms. Park's Studio"
     },
@@ -167,7 +143,7 @@
       "end": "2026-10-17T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ],
       "travel": 20,
       "loc": "Lakeshore Fields",
@@ -179,8 +155,8 @@
       "end": "2026-10-17T06:30:00.000Z",
       "title": "Parent–teacher call",
       "people": [
-        "alex",
-        "jordan"
+        "mayura",
+        "denise"
       ],
       "loc": "Zoom"
     },
@@ -190,10 +166,8 @@
       "end": "2026-10-17T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ],
       "travel": 20,
       "loc": "Nonna's",
@@ -205,7 +179,7 @@
       "end": "2026-10-17T09:30:00.000Z",
       "title": "Bath + books",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -213,9 +187,9 @@
       "allDay": true,
       "start": "2026-10-17T13:00:00.000Z",
       "end": "2026-10-20T13:00:00.000Z",
-      "title": "Wes in Montréal",
+      "title": "Mayura in Montréal",
       "people": [
-        "alex"
+        "mayura"
       ],
       "loc": "Hotel William Gray"
     },
@@ -225,7 +199,7 @@
       "end": "2026-10-17T20:45:00.000Z",
       "title": "Gym",
       "people": [
-        "jordan"
+        "denise"
       ],
       "loc": "Iron Works"
     },
@@ -235,7 +209,7 @@
       "end": "2026-10-17T21:40:00.000Z",
       "title": "School drop-off",
       "people": [
-        "jordan"
+        "denise"
       ],
       "travel": 10
     },
@@ -245,7 +219,7 @@
       "end": "2026-10-18T00:15:00.000Z",
       "title": "Vet — Biscuit",
       "people": [
-        "jordan"
+        "denise"
       ],
       "travel": 10,
       "loc": "Riverdale Animal Clinic"
@@ -256,7 +230,7 @@
       "end": "2026-10-18T05:30:00.000Z",
       "title": "Art club",
       "people": [
-        "maya"
+        "mayura"
       ],
       "loc": "School"
     },
@@ -266,7 +240,7 @@
       "end": "2026-10-18T07:00:00.000Z",
       "title": "Playdate with Leo",
       "people": [
-        "otto"
+        "denise"
       ],
       "travel": 8,
       "loc": "Leo's house"
@@ -277,7 +251,7 @@
       "end": "2026-10-18T10:00:00.000Z",
       "title": "Book club",
       "people": [
-        "jordan"
+        "denise"
       ],
       "travel": 10,
       "loc": "Priya's"
@@ -288,7 +262,7 @@
       "end": "2026-10-19T03:00:00.000Z",
       "title": "Science Centre trip",
       "people": [
-        "otto"
+        "denise"
       ],
       "loc": "Ontario Science Centre"
     },
@@ -298,8 +272,8 @@
       "end": "2026-10-19T02:45:00.000Z",
       "title": "Haircuts",
       "people": [
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ],
       "travel": 10,
       "loc": "Snip Snip Kids"
@@ -310,7 +284,7 @@
       "end": "2026-10-19T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ],
       "travel": 20,
       "loc": "Lakeshore Fields"
@@ -321,10 +295,8 @@
       "end": "2026-10-19T08:30:00.000Z",
       "title": "Pizza night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -333,7 +305,7 @@
       "end": "2026-10-19T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ],
       "travel": 12,
       "loc": "Wellesley Pool"
@@ -344,7 +316,7 @@
       "end": "2026-10-20T01:00:00.000Z",
       "title": "Grocery run",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -353,7 +325,7 @@
       "end": "2026-10-20T04:30:00.000Z",
       "title": "Zoe's birthday party",
       "people": [
-        "maya"
+        "mayura"
       ],
       "travel": 15,
       "loc": "Pottery Place"
@@ -364,10 +336,8 @@
       "end": "2026-10-20T10:00:00.000Z",
       "title": "Movie night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -376,10 +346,8 @@
       "end": "2026-10-21T01:00:00.000Z",
       "title": "Sunday brunch",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ],
       "travel": 15,
       "loc": "Lady Marmalade"
@@ -390,7 +358,7 @@
       "end": "2026-10-21T07:20:00.000Z",
       "title": "Flight home · AC 418",
       "people": [
-        "alex"
+        "mayura"
       ],
       "loc": "YUL → YYZ"
     },
@@ -400,7 +368,7 @@
       "end": "2026-10-21T20:45:00.000Z",
       "title": "Gym",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -409,7 +377,7 @@
       "end": "2026-10-22T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ],
       "travel": 12
     },
@@ -419,7 +387,7 @@
       "end": "2026-10-22T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ],
       "travel": 20
     },
@@ -429,7 +397,7 @@
       "end": "2026-10-22T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -439,10 +407,8 @@
       "end": "2026-10-24T13:00:00.000Z",
       "title": "Grandma visits",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -451,7 +417,7 @@
       "end": "2026-10-22T22:45:00.000Z",
       "title": "Dentist",
       "people": [
-        "otto"
+        "denise"
       ],
       "travel": 15,
       "loc": "Bright Smiles Dental"
@@ -462,7 +428,7 @@
       "end": "2026-10-23T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ],
       "travel": 20
     },
@@ -472,7 +438,7 @@
       "end": "2026-09-07T06:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -481,7 +447,7 @@
       "end": "2026-09-08T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -490,7 +456,7 @@
       "end": "2026-09-09T10:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -499,7 +465,7 @@
       "end": "2026-09-10T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -508,10 +474,8 @@
       "end": "2026-09-11T09:30:00.000Z",
       "title": "Pizza night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -520,7 +484,7 @@
       "end": "2026-09-11T03:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -529,7 +493,7 @@
       "end": "2026-09-12T00:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -538,10 +502,8 @@
       "end": "2026-09-13T09:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -550,7 +512,7 @@
       "end": "2026-09-14T06:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -559,7 +521,7 @@
       "end": "2026-09-14T00:00:00.000Z",
       "title": "Doctor",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -568,7 +530,7 @@
       "end": "2026-09-15T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -577,7 +539,7 @@
       "end": "2026-09-16T10:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -586,7 +548,7 @@
       "end": "2026-09-17T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -595,7 +557,7 @@
       "end": "2026-09-19T00:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -604,10 +566,8 @@
       "end": "2026-09-20T09:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -616,7 +576,7 @@
       "end": "2026-09-20T03:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -625,7 +585,7 @@
       "end": "2026-09-21T06:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -634,7 +594,7 @@
       "end": "2026-09-22T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -643,7 +603,7 @@
       "end": "2026-09-23T10:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -652,7 +612,7 @@
       "end": "2026-09-24T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -661,10 +621,8 @@
       "end": "2026-09-25T09:30:00.000Z",
       "title": "Pizza night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -673,7 +631,7 @@
       "end": "2026-09-25T00:00:00.000Z",
       "title": "Doctor",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -682,7 +640,7 @@
       "end": "2026-09-26T00:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -691,10 +649,8 @@
       "end": "2026-09-27T09:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -703,7 +659,7 @@
       "end": "2026-09-28T06:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -712,7 +668,7 @@
       "end": "2026-09-29T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -721,7 +677,7 @@
       "end": "2026-09-29T03:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -730,7 +686,7 @@
       "end": "2026-09-30T10:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -739,7 +695,7 @@
       "end": "2026-10-01T08:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -748,7 +704,7 @@
       "end": "2026-10-03T00:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -757,10 +713,8 @@
       "end": "2026-10-04T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -769,7 +723,7 @@
       "end": "2026-10-05T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -778,7 +732,7 @@
       "end": "2026-10-06T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -787,7 +741,7 @@
       "end": "2026-10-05T23:00:00.000Z",
       "title": "Doctor",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -796,7 +750,7 @@
       "end": "2026-10-07T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -805,7 +759,7 @@
       "end": "2026-10-08T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -814,7 +768,7 @@
       "end": "2026-10-08T02:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -823,10 +777,8 @@
       "end": "2026-10-09T08:30:00.000Z",
       "title": "Pizza night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -835,7 +787,7 @@
       "end": "2026-10-09T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -844,10 +796,8 @@
       "end": "2026-10-11T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -856,7 +806,7 @@
       "end": "2026-10-12T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -865,7 +815,7 @@
       "end": "2026-10-13T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -874,7 +824,7 @@
       "end": "2026-10-14T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -883,7 +833,7 @@
       "end": "2026-10-15T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -892,7 +842,7 @@
       "end": "2026-10-23T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -901,10 +851,8 @@
       "end": "2026-10-25T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -913,7 +861,7 @@
       "end": "2026-10-26T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -922,7 +870,7 @@
       "end": "2026-10-26T02:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -931,7 +879,7 @@
       "end": "2026-10-27T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -940,7 +888,7 @@
       "end": "2026-10-28T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -949,7 +897,7 @@
       "end": "2026-10-27T23:00:00.000Z",
       "title": "Doctor",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -958,7 +906,7 @@
       "end": "2026-10-29T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -967,7 +915,7 @@
       "end": "2026-10-30T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -976,10 +924,8 @@
       "end": "2026-11-01T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -988,7 +934,7 @@
       "end": "2026-11-02T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -997,7 +943,7 @@
       "end": "2026-11-03T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1006,7 +952,7 @@
       "end": "2026-11-04T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1015,7 +961,7 @@
       "end": "2026-11-04T02:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -1024,7 +970,7 @@
       "end": "2026-11-05T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1033,10 +979,8 @@
       "end": "2026-11-06T08:30:00.000Z",
       "title": "Pizza night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1045,7 +989,7 @@
       "end": "2026-11-06T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1054,10 +998,8 @@
       "end": "2026-11-08T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1066,7 +1008,7 @@
       "end": "2026-11-07T23:00:00.000Z",
       "title": "Doctor",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1075,7 +1017,7 @@
       "end": "2026-11-09T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1084,7 +1026,7 @@
       "end": "2026-11-10T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1093,7 +1035,7 @@
       "end": "2026-11-11T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1102,7 +1044,7 @@
       "end": "2026-11-12T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1111,7 +1053,7 @@
       "end": "2026-11-13T02:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -1120,7 +1062,7 @@
       "end": "2026-11-13T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1129,10 +1071,8 @@
       "end": "2026-11-15T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1141,7 +1081,7 @@
       "end": "2026-11-16T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1150,7 +1090,7 @@
       "end": "2026-11-17T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1159,7 +1099,7 @@
       "end": "2026-11-18T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1168,7 +1108,7 @@
       "end": "2026-11-19T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1177,7 +1117,7 @@
       "end": "2026-11-18T23:00:00.000Z",
       "title": "Doctor",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1186,10 +1126,8 @@
       "end": "2026-11-20T08:30:00.000Z",
       "title": "Pizza night",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1198,7 +1136,7 @@
       "end": "2026-11-20T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1207,10 +1145,8 @@
       "end": "2026-11-22T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1219,7 +1155,7 @@
       "end": "2026-11-22T02:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -1228,7 +1164,7 @@
       "end": "2026-11-23T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1237,7 +1173,7 @@
       "end": "2026-11-24T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1246,7 +1182,7 @@
       "end": "2026-11-25T09:00:00.000Z",
       "title": "Yoga",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1255,7 +1191,7 @@
       "end": "2026-11-26T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1264,7 +1200,7 @@
       "end": "2026-11-27T23:45:00.000Z",
       "title": "Swim lessons",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1273,10 +1209,8 @@
       "end": "2026-11-29T08:30:00.000Z",
       "title": "Dinner at Nonna's",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1285,7 +1219,7 @@
       "end": "2026-11-30T05:30:00.000Z",
       "title": "Piano lesson",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1294,7 +1228,7 @@
       "end": "2026-11-29T23:00:00.000Z",
       "title": "Doctor",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1303,7 +1237,7 @@
       "end": "2026-12-01T07:00:00.000Z",
       "title": "Soccer practice",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1312,7 +1246,7 @@
       "end": "2026-12-01T02:00:00.000Z",
       "title": "Lunch meeting",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -1320,12 +1254,10 @@
       "allDay": true,
       "start": "2026-10-28T13:00:00.000Z",
       "end": "2026-10-29T13:00:00.000Z",
-      "title": "Buzzsaw's birthday 🎂",
+      "title": "Mayura's birthday 🎂",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1335,10 +1267,8 @@
       "end": "2026-10-11T13:00:00.000Z",
       "title": "Cottage weekend",
       "people": [
-        "alex",
-        "jordan",
-        "maya",
-        "otto"
+        "mayura",
+        "denise"
       ]
     }
   ],
@@ -1349,7 +1279,7 @@
       "end": "2026-10-17T00:00:00.000Z",
       "title": "Plumber window",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1358,7 +1288,7 @@
       "end": "2026-10-17T00:30:00.000Z",
       "title": "Call with bank",
       "people": [
-        "alex"
+        "mayura"
       ]
     },
     {
@@ -1367,7 +1297,7 @@
       "end": "2026-10-17T04:30:00.000Z",
       "title": "Library volunteer",
       "people": [
-        "jordan"
+        "denise"
       ]
     },
     {
@@ -1376,7 +1306,7 @@
       "end": "2026-10-17T05:00:00.000Z",
       "title": "Snack prep",
       "people": [
-        "maya"
+        "mayura"
       ]
     },
     {
@@ -1385,7 +1315,7 @@
       "end": "2026-10-17T05:45:00.000Z",
       "title": "Math tutor",
       "people": [
-        "otto"
+        "denise"
       ]
     },
     {
@@ -1394,7 +1324,7 @@
       "end": "2026-10-17T06:00:00.000Z",
       "title": "Swim make-up",
       "people": [
-        "otto"
+        "denise"
       ],
       "travel": 10
     },
@@ -1404,8 +1334,8 @@
       "end": "2026-10-17T09:30:00.000Z",
       "title": "Bake sale prep",
       "people": [
-        "maya",
-        "jordan"
+        "mayura",
+        "denise"
       ]
     },
     {
@@ -1414,7 +1344,7 @@
       "end": "2026-10-17T10:30:00.000Z",
       "title": "Hockey",
       "people": [
-        "alex"
+        "mayura"
       ],
       "travel": 15
     }
@@ -1446,7 +1376,7 @@
     {
       "id": "c1",
       "r": "morning",
-      "who": "maya",
+      "who": "mayura",
       "title": "Make bed",
       "emoji": "🛏️",
       "stars": 1,
@@ -1455,7 +1385,7 @@
     {
       "id": "c2",
       "r": "morning",
-      "who": "maya",
+      "who": "mayura",
       "title": "Brush teeth",
       "emoji": "🪥",
       "stars": 1,
@@ -1464,7 +1394,7 @@
     {
       "id": "c3",
       "r": "morning",
-      "who": "maya",
+      "who": "mayura",
       "title": "Pack backpack",
       "emoji": "🎒",
       "stars": 1,
@@ -1473,7 +1403,7 @@
     {
       "id": "c4",
       "r": "morning",
-      "who": "otto",
+      "who": "denise",
       "title": "Make bed",
       "emoji": "🛏️",
       "stars": 1,
@@ -1482,7 +1412,7 @@
     {
       "id": "c5",
       "r": "morning",
-      "who": "otto",
+      "who": "denise",
       "title": "Brush teeth",
       "emoji": "🪥",
       "stars": 1,
@@ -1491,7 +1421,7 @@
     {
       "id": "c6",
       "r": "morning",
-      "who": "otto",
+      "who": "denise",
       "title": "Get dressed",
       "emoji": "👕",
       "stars": 1,
@@ -1500,7 +1430,7 @@
     {
       "id": "c7",
       "r": "morning",
-      "who": "alex",
+      "who": "mayura",
       "title": "School drop-off",
       "emoji": "🚗",
       "stars": 0,
@@ -1509,7 +1439,7 @@
     {
       "id": "c8",
       "r": "morning",
-      "who": "jordan",
+      "who": "denise",
       "title": "Pack lunches",
       "emoji": "🥪",
       "stars": 0,
@@ -1527,7 +1457,7 @@
     {
       "id": "c10",
       "r": "after",
-      "who": "maya",
+      "who": "mayura",
       "title": "Unpack lunchbox",
       "emoji": "🥪",
       "stars": 1,
@@ -1536,7 +1466,7 @@
     {
       "id": "c11",
       "r": "after",
-      "who": "maya",
+      "who": "mayura",
       "title": "Homework",
       "emoji": "📚",
       "stars": 2,
@@ -1545,7 +1475,7 @@
     {
       "id": "c12",
       "r": "after",
-      "who": "maya",
+      "who": "mayura",
       "title": "Pack soccer bag",
       "emoji": "⚽",
       "stars": 1,
@@ -1554,7 +1484,7 @@
     {
       "id": "c13",
       "r": "after",
-      "who": "otto",
+      "who": "denise",
       "title": "Unpack lunchbox",
       "emoji": "🥪",
       "stars": 1,
@@ -1563,7 +1493,7 @@
     {
       "id": "c14",
       "r": "after",
-      "who": "otto",
+      "who": "denise",
       "title": "Read for 20 min",
       "emoji": "📖",
       "stars": 2,
@@ -1572,7 +1502,7 @@
     {
       "id": "c15",
       "r": "after",
-      "who": "otto",
+      "who": "denise",
       "title": "Practice piano",
       "emoji": "🎹",
       "stars": 2,
@@ -1581,7 +1511,7 @@
     {
       "id": "c16",
       "r": "after",
-      "who": "otto",
+      "who": "denise",
       "title": "Tidy the Lego",
       "emoji": "🧱",
       "stars": 1,
@@ -1590,7 +1520,7 @@
     {
       "id": "c17",
       "r": "after",
-      "who": "alex",
+      "who": "mayura",
       "title": "Take out recycling",
       "emoji": "♻️",
       "stars": 0,
@@ -1600,7 +1530,7 @@
     {
       "id": "c18",
       "r": "after",
-      "who": "alex",
+      "who": "mayura",
       "title": "Call the plumber",
       "emoji": "☎️",
       "stars": 0,
@@ -1609,7 +1539,7 @@
     {
       "id": "c19",
       "r": "after",
-      "who": "jordan",
+      "who": "denise",
       "title": "Fold laundry",
       "emoji": "🧺",
       "stars": 0,
@@ -1618,7 +1548,7 @@
     {
       "id": "c20",
       "r": "after",
-      "who": "jordan",
+      "who": "denise",
       "title": "Order Zoe’s gift",
       "emoji": "🎁",
       "stars": 0,
@@ -1654,7 +1584,7 @@
     {
       "id": "c24",
       "r": "evening",
-      "who": "maya",
+      "who": "mayura",
       "title": "Set the table",
       "emoji": "🍴",
       "stars": 1,
@@ -1663,7 +1593,7 @@
     {
       "id": "c25",
       "r": "evening",
-      "who": "maya",
+      "who": "mayura",
       "title": "Lay out clothes",
       "emoji": "👕",
       "stars": 1,
@@ -1672,7 +1602,7 @@
     {
       "id": "c26",
       "r": "evening",
-      "who": "maya",
+      "who": "mayura",
       "title": "Shower",
       "emoji": "🚿",
       "stars": 1,
@@ -1681,7 +1611,7 @@
     {
       "id": "c27",
       "r": "evening",
-      "who": "otto",
+      "who": "denise",
       "title": "Clear plates",
       "emoji": "🍽️",
       "stars": 1,
@@ -1690,7 +1620,7 @@
     {
       "id": "c28",
       "r": "evening",
-      "who": "otto",
+      "who": "denise",
       "title": "Bath",
       "emoji": "🛁",
       "stars": 1,
@@ -1699,7 +1629,7 @@
     {
       "id": "c29",
       "r": "evening",
-      "who": "otto",
+      "who": "denise",
       "title": "Lay out clothes",
       "emoji": "👕",
       "stars": 1,
@@ -1708,7 +1638,7 @@
     {
       "id": "c30",
       "r": "evening",
-      "who": "alex",
+      "who": "mayura",
       "title": "Lock up",
       "emoji": "🔐",
       "stars": 0,
@@ -1717,7 +1647,7 @@
     {
       "id": "c31",
       "r": "evening",
-      "who": "jordan",
+      "who": "denise",
       "title": "Run dishwasher",
       "emoji": "🫧",
       "stars": 0,
@@ -1742,12 +1672,9 @@
       "done": false
     }
   ],
-  "stars": {
-    "maya": 42,
-    "otto": 57
-  },
+  "stars": {},
   "week": {
-    "maya": [
+    "mayura": [
       1,
       1,
       0,
@@ -1756,7 +1683,7 @@
       0,
       1
     ],
-    "otto": [
+    "denise": [
       1,
       0,
       1,
@@ -2432,7 +2359,7 @@
       "id": "u-maya",
       "room": "upstairs",
       "type": "light",
-      "name": "Buzzsaw's Lamp",
+      "name": "Desk Lamp",
       "on": true,
       "level": 30
     },
@@ -2440,7 +2367,7 @@
       "id": "u-otto",
       "room": "upstairs",
       "type": "light",
-      "name": "Skidmark's Nightlight",
+      "name": "Hall Nightlight",
       "on": false,
       "level": 15
     },
@@ -2676,7 +2603,7 @@
   },
   "garmin": {
     "updatedAt": "2026-10-18T08:00:00+11:00",
-    "displayName": "Wes",
+    "displayName": "Mayura",
     "sleep": {
       "score": 78,
       "durationMin": 432,
@@ -2690,54 +2617,198 @@
       "charged": 48,
       "drained": 55,
       "series": [
-        { "t": 0, "v": 28 },
-        { "t": 1, "v": 32 },
-        { "t": 2, "v": 38 },
-        { "t": 3, "v": 45 },
-        { "t": 4, "v": 52 },
-        { "t": 5, "v": 60 },
-        { "t": 6, "v": 68 },
-        { "t": 7, "v": 74 },
-        { "t": 8, "v": 78 },
-        { "t": 9, "v": 76 },
-        { "t": 10, "v": 72 },
-        { "t": 11, "v": 68 },
-        { "t": 12, "v": 64 },
-        { "t": 13, "v": 60 },
-        { "t": 14, "v": 56 },
-        { "t": 15, "v": 54 },
-        { "t": 16, "v": 52 },
-        { "t": 17, "v": 50 },
-        { "t": 18, "v": 48 },
-        { "t": 19, "v": 46 },
-        { "t": 20, "v": 44 },
-        { "t": 21, "v": 42 },
-        { "t": 22, "v": 40 },
-        { "t": 23, "v": 38 },
-        { "t": 24, "v": 36 },
-        { "t": 25, "v": 42 },
-        { "t": 26, "v": 48 },
-        { "t": 27, "v": 52 },
-        { "t": 28, "v": 55 },
-        { "t": 29, "v": 58 },
-        { "t": 30, "v": 60 },
-        { "t": 31, "v": 61 },
-        { "t": 32, "v": 62 },
-        { "t": 33, "v": 62 },
-        { "t": 34, "v": 61 },
-        { "t": 35, "v": 60 },
-        { "t": 36, "v": 58 },
-        { "t": 37, "v": 56 },
-        { "t": 38, "v": 54 },
-        { "t": 39, "v": 52 },
-        { "t": 40, "v": 50 },
-        { "t": 41, "v": 48 },
-        { "t": 42, "v": 46 },
-        { "t": 43, "v": 44 },
-        { "t": 44, "v": 42 },
-        { "t": 45, "v": 48 },
-        { "t": 46, "v": 55 },
-        { "t": 47, "v": 62 }
+        {
+          "t": 0,
+          "v": 28
+        },
+        {
+          "t": 1,
+          "v": 32
+        },
+        {
+          "t": 2,
+          "v": 38
+        },
+        {
+          "t": 3,
+          "v": 45
+        },
+        {
+          "t": 4,
+          "v": 52
+        },
+        {
+          "t": 5,
+          "v": 60
+        },
+        {
+          "t": 6,
+          "v": 68
+        },
+        {
+          "t": 7,
+          "v": 74
+        },
+        {
+          "t": 8,
+          "v": 78
+        },
+        {
+          "t": 9,
+          "v": 76
+        },
+        {
+          "t": 10,
+          "v": 72
+        },
+        {
+          "t": 11,
+          "v": 68
+        },
+        {
+          "t": 12,
+          "v": 64
+        },
+        {
+          "t": 13,
+          "v": 60
+        },
+        {
+          "t": 14,
+          "v": 56
+        },
+        {
+          "t": 15,
+          "v": 54
+        },
+        {
+          "t": 16,
+          "v": 52
+        },
+        {
+          "t": 17,
+          "v": 50
+        },
+        {
+          "t": 18,
+          "v": 48
+        },
+        {
+          "t": 19,
+          "v": 46
+        },
+        {
+          "t": 20,
+          "v": 44
+        },
+        {
+          "t": 21,
+          "v": 42
+        },
+        {
+          "t": 22,
+          "v": 40
+        },
+        {
+          "t": 23,
+          "v": 38
+        },
+        {
+          "t": 24,
+          "v": 36
+        },
+        {
+          "t": 25,
+          "v": 42
+        },
+        {
+          "t": 26,
+          "v": 48
+        },
+        {
+          "t": 27,
+          "v": 52
+        },
+        {
+          "t": 28,
+          "v": 55
+        },
+        {
+          "t": 29,
+          "v": 58
+        },
+        {
+          "t": 30,
+          "v": 60
+        },
+        {
+          "t": 31,
+          "v": 61
+        },
+        {
+          "t": 32,
+          "v": 62
+        },
+        {
+          "t": 33,
+          "v": 62
+        },
+        {
+          "t": 34,
+          "v": 61
+        },
+        {
+          "t": 35,
+          "v": 60
+        },
+        {
+          "t": 36,
+          "v": 58
+        },
+        {
+          "t": 37,
+          "v": 56
+        },
+        {
+          "t": 38,
+          "v": 54
+        },
+        {
+          "t": 39,
+          "v": 52
+        },
+        {
+          "t": 40,
+          "v": 50
+        },
+        {
+          "t": 41,
+          "v": 48
+        },
+        {
+          "t": 42,
+          "v": 46
+        },
+        {
+          "t": 43,
+          "v": 44
+        },
+        {
+          "t": 44,
+          "v": 42
+        },
+        {
+          "t": 45,
+          "v": 48
+        },
+        {
+          "t": 46,
+          "v": 55
+        },
+        {
+          "t": 47,
+          "v": 62
+        }
       ]
     },
     "stress": {
@@ -2746,12 +2817,102 @@
       "restMin": 120,
       "highMin": 45,
       "series": [
-        { "t": 0, "v": 18 }, { "t": 1, "v": 22 }, { "t": 2, "v": 20 }, { "t": 3, "v": 25 },
-        { "t": 4, "v": 30 }, { "t": 5, "v": 28 }, { "t": 6, "v": 35 }, { "t": 7, "v": 42 },
-        { "t": 8, "v": 48 }, { "t": 9, "v": 40 }, { "t": 10, "v": 36 }, { "t": 11, "v": 32 },
-        { "t": 12, "v": 38 }, { "t": 13, "v": 45 }, { "t": 14, "v": 50 }, { "t": 15, "v": 44 },
-        { "t": 16, "v": 38 }, { "t": 17, "v": 34 }, { "t": 18, "v": 30 }, { "t": 19, "v": 28 },
-        { "t": 20, "v": 26 }, { "t": 21, "v": 24 }, { "t": 22, "v": 22 }, { "t": 23, "v": 28 }
+        {
+          "t": 0,
+          "v": 18
+        },
+        {
+          "t": 1,
+          "v": 22
+        },
+        {
+          "t": 2,
+          "v": 20
+        },
+        {
+          "t": 3,
+          "v": 25
+        },
+        {
+          "t": 4,
+          "v": 30
+        },
+        {
+          "t": 5,
+          "v": 28
+        },
+        {
+          "t": 6,
+          "v": 35
+        },
+        {
+          "t": 7,
+          "v": 42
+        },
+        {
+          "t": 8,
+          "v": 48
+        },
+        {
+          "t": 9,
+          "v": 40
+        },
+        {
+          "t": 10,
+          "v": 36
+        },
+        {
+          "t": 11,
+          "v": 32
+        },
+        {
+          "t": 12,
+          "v": 38
+        },
+        {
+          "t": 13,
+          "v": 45
+        },
+        {
+          "t": 14,
+          "v": 50
+        },
+        {
+          "t": 15,
+          "v": 44
+        },
+        {
+          "t": 16,
+          "v": 38
+        },
+        {
+          "t": 17,
+          "v": 34
+        },
+        {
+          "t": 18,
+          "v": 30
+        },
+        {
+          "t": 19,
+          "v": 28
+        },
+        {
+          "t": 20,
+          "v": 26
+        },
+        {
+          "t": 21,
+          "v": 24
+        },
+        {
+          "t": 22,
+          "v": 22
+        },
+        {
+          "t": 23,
+          "v": 28
+        }
       ]
     },
     "activity": {
@@ -2764,55 +2925,250 @@
       "bodyBattery": {
         "day": [],
         "week": [
-          { "d": "Mon", "v": 48 },
-          { "d": "Tue", "v": 55 },
-          { "d": "Wed", "v": 42 },
-          { "d": "Thu", "v": 61 },
-          { "d": "Fri", "v": 58 },
-          { "d": "Sat", "v": 70 },
-          { "d": "Sun", "v": 62 }
+          {
+            "d": "Mon",
+            "v": 48
+          },
+          {
+            "d": "Tue",
+            "v": 55
+          },
+          {
+            "d": "Wed",
+            "v": 42
+          },
+          {
+            "d": "Thu",
+            "v": 61
+          },
+          {
+            "d": "Fri",
+            "v": 58
+          },
+          {
+            "d": "Sat",
+            "v": 70
+          },
+          {
+            "d": "Sun",
+            "v": 62
+          }
         ]
       },
       "sleep": {
         "week": [
-          { "d": "Mon", "score": 72, "durationMin": 410 },
-          { "d": "Tue", "score": 80, "durationMin": 445 },
-          { "d": "Wed", "score": 68, "durationMin": 390 },
-          { "d": "Thu", "score": 85, "durationMin": 460 },
-          { "d": "Fri", "score": 74, "durationMin": 420 },
-          { "d": "Sat", "score": 88, "durationMin": 480 },
-          { "d": "Sun", "score": 78, "durationMin": 432 }
+          {
+            "d": "Mon",
+            "score": 72,
+            "durationMin": 410
+          },
+          {
+            "d": "Tue",
+            "score": 80,
+            "durationMin": 445
+          },
+          {
+            "d": "Wed",
+            "score": 68,
+            "durationMin": 390
+          },
+          {
+            "d": "Thu",
+            "score": 85,
+            "durationMin": 460
+          },
+          {
+            "d": "Fri",
+            "score": 74,
+            "durationMin": 420
+          },
+          {
+            "d": "Sat",
+            "score": 88,
+            "durationMin": 480
+          },
+          {
+            "d": "Sun",
+            "score": 78,
+            "durationMin": 432
+          }
         ]
       },
       "stress": {
         "day": [],
         "week": [
-          { "d": "Mon", "v": 34 },
-          { "d": "Tue", "v": 28 },
-          { "d": "Wed", "v": 41 },
-          { "d": "Thu", "v": 30 },
-          { "d": "Fri", "v": 36 },
-          { "d": "Sat", "v": 22 },
-          { "d": "Sun", "v": 32 }
+          {
+            "d": "Mon",
+            "v": 34
+          },
+          {
+            "d": "Tue",
+            "v": 28
+          },
+          {
+            "d": "Wed",
+            "v": 41
+          },
+          {
+            "d": "Thu",
+            "v": 30
+          },
+          {
+            "d": "Fri",
+            "v": 36
+          },
+          {
+            "d": "Sat",
+            "v": 22
+          },
+          {
+            "d": "Sun",
+            "v": 32
+          }
         ]
       },
       "activity": {
         "day": [
-          { "t": 0, "v": 0 }, { "t": 1, "v": 0 }, { "t": 2, "v": 0 }, { "t": 3, "v": 12 },
-          { "t": 4, "v": 40 }, { "t": 5, "v": 180 }, { "t": 6, "v": 620 }, { "t": 7, "v": 890 },
-          { "t": 8, "v": 420 }, { "t": 9, "v": 310 }, { "t": 10, "v": 280 }, { "t": 11, "v": 550 },
-          { "t": 12, "v": 640 }, { "t": 13, "v": 380 }, { "t": 14, "v": 290 }, { "t": 15, "v": 410 },
-          { "t": 16, "v": 720 }, { "t": 17, "v": 580 }, { "t": 18, "v": 320 }, { "t": 19, "v": 180 },
-          { "t": 20, "v": 90 }, { "t": 21, "v": 40 }, { "t": 22, "v": 20 }, { "t": 23, "v": 0 }
+          {
+            "t": 0,
+            "v": 0
+          },
+          {
+            "t": 1,
+            "v": 0
+          },
+          {
+            "t": 2,
+            "v": 0
+          },
+          {
+            "t": 3,
+            "v": 12
+          },
+          {
+            "t": 4,
+            "v": 40
+          },
+          {
+            "t": 5,
+            "v": 180
+          },
+          {
+            "t": 6,
+            "v": 620
+          },
+          {
+            "t": 7,
+            "v": 890
+          },
+          {
+            "t": 8,
+            "v": 420
+          },
+          {
+            "t": 9,
+            "v": 310
+          },
+          {
+            "t": 10,
+            "v": 280
+          },
+          {
+            "t": 11,
+            "v": 550
+          },
+          {
+            "t": 12,
+            "v": 640
+          },
+          {
+            "t": 13,
+            "v": 380
+          },
+          {
+            "t": 14,
+            "v": 290
+          },
+          {
+            "t": 15,
+            "v": 410
+          },
+          {
+            "t": 16,
+            "v": 720
+          },
+          {
+            "t": 17,
+            "v": 580
+          },
+          {
+            "t": 18,
+            "v": 320
+          },
+          {
+            "t": 19,
+            "v": 180
+          },
+          {
+            "t": 20,
+            "v": 90
+          },
+          {
+            "t": 21,
+            "v": 40
+          },
+          {
+            "t": 22,
+            "v": 20
+          },
+          {
+            "t": 23,
+            "v": 0
+          }
         ],
         "week": [
-          { "d": "Mon", "steps": 9200, "activeMin": 48, "calories": 2100 },
-          { "d": "Tue", "steps": 11040, "activeMin": 62, "calories": 2350 },
-          { "d": "Wed", "steps": 5400, "activeMin": 28, "calories": 1750 },
-          { "d": "Thu", "steps": 9800, "activeMin": 55, "calories": 2200 },
-          { "d": "Fri", "steps": 8700, "activeMin": 44, "calories": 2050 },
-          { "d": "Sat", "steps": 12400, "activeMin": 78, "calories": 2600 },
-          { "d": "Sun", "steps": 6842, "activeMin": 42, "calories": 1850 }
+          {
+            "d": "Mon",
+            "steps": 9200,
+            "activeMin": 48,
+            "calories": 2100
+          },
+          {
+            "d": "Tue",
+            "steps": 11040,
+            "activeMin": 62,
+            "calories": 2350
+          },
+          {
+            "d": "Wed",
+            "steps": 5400,
+            "activeMin": 28,
+            "calories": 1750
+          },
+          {
+            "d": "Thu",
+            "steps": 9800,
+            "activeMin": 55,
+            "calories": 2200
+          },
+          {
+            "d": "Fri",
+            "steps": 8700,
+            "activeMin": 44,
+            "calories": 2050
+          },
+          {
+            "d": "Sat",
+            "steps": 12400,
+            "activeMin": 78,
+            "calories": 2600
+          },
+          {
+            "d": "Sun",
+            "steps": 6842,
+            "activeMin": 42,
+            "calories": 1850
+          }
         ]
       }
     }
@@ -2823,7 +3179,7 @@
       "o": "l",
       "date": "2021-10-17",
       "place": "Tofino, BC",
-      "from": "jordan",
+      "from": "denise",
       "tag": "tofino"
     },
     {
@@ -2831,7 +3187,7 @@
       "o": "l",
       "date": "2023-08-12",
       "place": "Lake of Bays",
-      "from": "alex",
+      "from": "mayura",
       "tag": "cottage"
     },
     {
@@ -2839,7 +3195,7 @@
       "o": "p",
       "date": "2024-05-19",
       "place": "Humber Bay Park",
-      "from": "jordan",
+      "from": "denise",
       "tag": "spring24"
     },
     {
@@ -2847,7 +3203,7 @@
       "o": "p",
       "date": "2024-05-19",
       "place": "Humber Bay Park",
-      "from": "alex",
+      "from": "mayura",
       "tag": "spring24"
     },
     {
@@ -2855,7 +3211,7 @@
       "o": "l",
       "date": "2022-10-09",
       "place": "High Park",
-      "from": "alex",
+      "from": "mayura",
       "tag": "fall22"
     },
     {
@@ -2863,7 +3219,7 @@
       "o": "p",
       "date": "2025-10-12",
       "place": "Home",
-      "from": "jordan",
+      "from": "denise",
       "tag": "bday25"
     },
     {
@@ -2871,7 +3227,7 @@
       "o": "p",
       "date": "2025-10-12",
       "place": "Home",
-      "from": "alex",
+      "from": "mayura",
       "tag": "bday25"
     },
     {
@@ -2879,7 +3235,7 @@
       "o": "l",
       "date": "2019-10-17",
       "place": "Banff, AB",
-      "from": "alex",
+      "from": "mayura",
       "tag": "banff"
     },
     {
@@ -2887,7 +3243,7 @@
       "o": "l",
       "date": "2024-01-21",
       "place": "Riverdale Hill",
-      "from": "jordan",
+      "from": "denise",
       "tag": "winter24"
     },
     {
@@ -2895,7 +3251,7 @@
       "o": "l",
       "date": "2023-07-02",
       "place": "Sandbanks",
-      "from": "maya",
+      "from": "mayura",
       "tag": "sandbanks"
     },
     {
@@ -2903,7 +3259,7 @@
       "o": "l",
       "date": "2022-12-18",
       "place": "Nathan Phillips Sq.",
-      "from": "jordan",
+      "from": "denise",
       "tag": "xmas22"
     },
     {
@@ -2911,7 +3267,7 @@
       "o": "p",
       "date": "2025-06-08",
       "place": "Backyard",
-      "from": "otto",
+      "from": "denise",
       "tag": "garden"
     },
     {
@@ -2919,7 +3275,7 @@
       "o": "p",
       "date": "2025-06-08",
       "place": "Backyard",
-      "from": "maya",
+      "from": "mayura",
       "tag": "garden"
     },
     {
@@ -2927,7 +3283,7 @@
       "o": "l",
       "date": "2024-08-04",
       "place": "Cabot Trail, NS",
-      "from": "alex",
+      "from": "mayura",
       "tag": "ns"
     },
     {
@@ -2935,7 +3291,7 @@
       "o": "l",
       "date": "2024-08-06",
       "place": "Cape Breton",
-      "from": "jordan",
+      "from": "denise",
       "tag": "ns"
     },
     {
@@ -2943,7 +3299,7 @@
       "o": "l",
       "date": "2020-09-26",
       "place": "Algonquin",
-      "from": "alex",
+      "from": "mayura",
       "tag": "algonquin"
     },
     {
@@ -2951,7 +3307,7 @@
       "o": "p",
       "date": "2026-03-14",
       "place": "Home",
-      "from": "maya",
+      "from": "mayura",
       "tag": "pancakes"
     },
     {
@@ -2959,7 +3315,7 @@
       "o": "p",
       "date": "2026-03-14",
       "place": "Sugar Shack",
-      "from": "jordan",
+      "from": "denise",
       "tag": "pancakes"
     },
     {
@@ -2967,7 +3323,7 @@
       "o": "l",
       "date": "2025-07-19",
       "place": "Toronto Harbour",
-      "from": "otto",
+      "from": "denise",
       "tag": "sail"
     },
     {
@@ -2975,7 +3331,7 @@
       "o": "l",
       "date": "2025-10-25",
       "place": "Chudleigh's",
-      "from": "maya",
+      "from": "mayura",
       "tag": "fall25"
     }
   ],
