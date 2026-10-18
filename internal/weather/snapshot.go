@@ -10,7 +10,7 @@ import (
 // RealRainMM is the shower amount above which we treat an hour as real rain.
 const RealRainMM = 0.2
 
-// Snapshot is the dashboard weather payload (matches seed.json / DATA.weather).
+// Snapshot is the dashboard weather payload (matches DATA.weather).
 type Snapshot struct {
 	Hi       int       `json:"hi"`
 	Lo       int       `json:"lo"`

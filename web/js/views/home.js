@@ -25,8 +25,8 @@
   function weather() {
     var w = App.weatherNow();
     var hours = App.hourly(7);
-    var tmin = Math.min.apply(null, hours.map(function (h) { return h.t; }));
-    var tmax = Math.max.apply(null, hours.map(function (h) { return h.t; }));
+    var tmin = hours.length ? Math.min.apply(null, hours.map(function (h) { return h.t; })) : 0;
+    var tmax = hours.length ? Math.max.apply(null, hours.map(function (h) { return h.t; })) : 0;
     return '<div class="h-wx-top h-reveal" style="--d:0">' +
       '<span class="h-wx-icon">' + App.icon(w.cond, 60) + '</span>' +
       '<span class="h-wx-temp num">' + w.temp + '°</span>' +

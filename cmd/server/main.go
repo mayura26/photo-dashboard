@@ -16,8 +16,8 @@ import (
 	"unicode"
 
 	"photo-dashboard/internal/auth"
-	"photo-dashboard/internal/demo"
 	"photo-dashboard/internal/gcal"
+	"photo-dashboard/internal/hq"
 	"photo-dashboard/internal/persist"
 	"photo-dashboard/internal/photos"
 	"photo-dashboard/internal/pmday"
@@ -32,13 +32,13 @@ func main() {
 		addr = v
 	}
 
-	seed := filepath.Join(webfs.ModuleRoot(), "internal", "demo", "seed.json")
-	if _, err := os.Stat(seed); err != nil {
-		seed = demo.SeedPath()
+	household := filepath.Join(webfs.ModuleRoot(), "internal", "hq", "household.json")
+	if _, err := os.Stat(household); err != nil {
+		household = hq.HouseholdPath()
 	}
-	store, err := demo.Load(seed)
+	store, err := hq.Load(household)
 	if err != nil {
-		log.Fatal("load seed: ", err)
+		log.Fatal("load household: ", err)
 	}
 
 	dbPath := strings.TrimSpace(os.Getenv("HQ_DB_PATH"))
@@ -60,7 +60,7 @@ func main() {
 		log.Fatal("web fs: ", err)
 	}
 	version := resolveAppVersion(static)
-	hub := demo.NewHub(store, version)
+	hub := hq.NewHub(store, version)
 
 	startWeatherPoller(store, hub)
 	startGCalPoller(store, hub)
@@ -155,7 +155,7 @@ func isHex(s string) bool {
 	return true
 }
 
-func garminIngest(store *demo.Store, hub *demo.Hub) http.HandlerFunc {
+func garminIngest(store *hq.Store, hub *hq.Hub) http.HandlerFunc {
 	token := os.Getenv("HQ_INGEST_TOKEN")
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -182,7 +182,7 @@ func garminIngest(store *demo.Store, hub *demo.Hub) http.HandlerFunc {
 	}
 }
 
-func startSportsPoller(store *demo.Store, hub *demo.Hub) {
+func startSportsPoller(store *hq.Store, hub *hq.Hub) {
 	watchRaw := strings.TrimSpace(os.Getenv("SPORTS_WATCH"))
 	if watchRaw == "" {
 		log.Printf("sports: SPORTS_WATCH unset; using placeholder fixtures")
@@ -234,16 +234,16 @@ func startSportsPoller(store *demo.Store, hub *demo.Hub) {
 	log.Printf("sports: TheSportsDB poller every %s for %s", interval, strings.Join(names, ", "))
 }
 
-func startWeatherPoller(store *demo.Store, hub *demo.Hub) {
+func startWeatherPoller(store *hq.Store, hub *hq.Hub) {
 	latS, lonS := os.Getenv("WEATHER_LAT"), os.Getenv("WEATHER_LON")
 	if latS == "" || lonS == "" {
-		log.Printf("weather: WEATHER_LAT/WEATHER_LON unset; using seed weather")
+		log.Printf("weather: WEATHER_LAT/WEATHER_LON unset; weather strip empty until configured")
 		return
 	}
 	lat, err1 := strconv.ParseFloat(latS, 64)
 	lon, err2 := strconv.ParseFloat(lonS, 64)
 	if err1 != nil || err2 != nil {
-		log.Printf("weather: invalid WEATHER_LAT/WEATHER_LON; using seed weather")
+		log.Printf("weather: invalid WEATHER_LAT/WEATHER_LON; weather strip empty until configured")
 		return
 	}
 
@@ -269,12 +269,12 @@ func startWeatherPoller(store *demo.Store, hub *demo.Hub) {
 	log.Printf("weather: Open-Meteo poller every %s for %.4f, %.4f", interval, lat, lon)
 }
 
-func startGCalPoller(store *demo.Store, hub *demo.Hub) {
+func startGCalPoller(store *hq.Store, hub *hq.Hub) {
 	clientID := os.Getenv("GOOGLE_CLIENT_ID")
 	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
 	refresh := os.Getenv("GOOGLE_REFRESH_TOKEN")
 	if clientID == "" || clientSecret == "" || refresh == "" {
-		log.Printf("gcal: OAuth env unset; using seed calendar")
+		log.Printf("gcal: OAuth env unset; calendar empty until configured")
 		return
 	}
 
@@ -282,7 +282,7 @@ func startGCalPoller(store *demo.Store, hub *demo.Hub) {
 	familyID := os.Getenv("GCAL_FAMILY")
 	// GCAL_DENISE is intentionally unused: calendar lanes are Mayura + Family only.
 	if mayuraID == "" && familyID == "" {
-		log.Printf("gcal: no GCAL_MAYURA/GCAL_FAMILY; using seed calendar")
+		log.Printf("gcal: no GCAL_MAYURA/GCAL_FAMILY; calendar empty until configured")
 		return
 	}
 
@@ -303,7 +303,7 @@ func startGCalPoller(store *demo.Store, hub *demo.Hub) {
 	ctx := context.Background()
 	client, err := gcal.NewClient(ctx, clientID, clientSecret, refresh)
 	if err != nil {
-		log.Printf("gcal: client init failed: %v; using seed calendar", err)
+		log.Printf("gcal: client init failed: %v; calendar empty until configured", err)
 		return
 	}
 
@@ -345,7 +345,7 @@ func startGCalPoller(store *demo.Store, hub *demo.Hub) {
 	log.Printf("gcal: poller every %s (%d calendar(s), window -%s / +%s)", interval, len(cals), past, future)
 }
 
-func startPmdayPoller(store *demo.Store, hub *demo.Hub) {
+func startPmdayPoller(store *hq.Store, hub *hq.Hub) {
 	baseURL := strings.TrimSpace(os.Getenv("PLAN_MY_DAY_URL"))
 	if baseURL == "" {
 		baseURL = "https://plan-my-day.edgeanalytics.app"

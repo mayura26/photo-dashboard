@@ -6,6 +6,5 @@ bin
 *.log
 .DS_Store
 README.md
-DEMO.md
 .env
 .env.example

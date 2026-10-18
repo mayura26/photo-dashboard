@@ -1,4 +1,4 @@
-package demo
+package hq
 
 import (
 	"encoding/json"
@@ -15,36 +15,26 @@ import (
 
 // Snapshot is the full dashboard payload sent to clients.
 type Snapshot struct {
-	People json.RawMessage  `json:"people"`
-	Family json.RawMessage  `json:"family"`
-	ALL    json.RawMessage  `json:"ALL"`
-	Events []map[string]any `json:"events"`
-	// TEMP: busyExtras was for calendar density demo; unused by UI
-	BusyExtras []map[string]any   `json:"busyExtras,omitempty"`
-	Routines   json.RawMessage    `json:"routines"`
-	Chores     []map[string]any   `json:"chores"`
-	Stars      map[string]float64 `json:"stars"`
-	Week       json.RawMessage    `json:"week"`
-	Stores     json.RawMessage    `json:"stores"`
-	CatOrder   json.RawMessage    `json:"catOrder"`
-	Groceries  []map[string]any   `json:"groceries"`
-	Catalog    json.RawMessage    `json:"catalog"`
-	Usuals     json.RawMessage    `json:"usuals"`
-	// TEMP: rooms/devices/climate/media/cameras/scenes/agents left from removed Home/Agents views
-	Rooms      json.RawMessage  `json:"rooms"`
-	Devices    []map[string]any `json:"devices"`
-	Climate    map[string]any   `json:"climate"`
-	Media      map[string]any   `json:"media"`
-	Cameras    json.RawMessage  `json:"cameras"`
-	Scenes     []map[string]any `json:"scenes"`
-	Weather      json.RawMessage  `json:"weather"`
-	Garmin       json.RawMessage  `json:"garmin"`
-	Sports       json.RawMessage  `json:"sports,omitempty"`
-	Photos       []map[string]any `json:"photos"`
-	Agents       json.RawMessage  `json:"agents"`
-	TimeOffset      int64            `json:"timeOffset"`
-	CalendarLive    bool             `json:"calendarLive"`
-	CalendarPeople  []string         `json:"calendarPeople,omitempty"`
+	People         json.RawMessage    `json:"people"`
+	Family         json.RawMessage    `json:"family"`
+	ALL            json.RawMessage    `json:"ALL"`
+	Events         []map[string]any   `json:"events"`
+	Routines       json.RawMessage    `json:"routines"`
+	Chores         []map[string]any   `json:"chores"`
+	Stars          map[string]float64 `json:"stars"`
+	Week           json.RawMessage    `json:"week"`
+	Stores         json.RawMessage    `json:"stores"`
+	CatOrder       json.RawMessage    `json:"catOrder"`
+	Groceries      []map[string]any   `json:"groceries"`
+	Catalog        json.RawMessage    `json:"catalog"`
+	Usuals         json.RawMessage    `json:"usuals"`
+	Weather        json.RawMessage    `json:"weather,omitempty"`
+	Garmin         json.RawMessage    `json:"garmin,omitempty"`
+	Sports         json.RawMessage    `json:"sports,omitempty"`
+	Photos         []map[string]any   `json:"photos"`
+	TimeOffset     int64              `json:"timeOffset"`
+	CalendarLive   bool               `json:"calendarLive"`
+	CalendarPeople []string           `json:"calendarPeople,omitempty"`
 }
 
 type Store struct {
@@ -59,8 +49,11 @@ type Store struct {
 	choreDay       string // last local day ensureChoreDayLocked ran for
 }
 
-func Load(seedPath string) (*Store, error) {
-	b, err := os.ReadFile(seedPath)
+// Load reads household.json (people, routines, shopping catalog) into a Store.
+// Live fields (events, weather, garmin, sports, groceries, chores, photos) start empty
+// and are filled by pollers / AttachPersist.
+func Load(householdPath string) (*Store, error) {
+	b, err := os.ReadFile(householdPath)
 	if err != nil {
 		return nil, err
 	}
@@ -83,31 +76,13 @@ func Load(seedPath string) (*Store, error) {
 	s.snap.CatOrder = raw["catOrder"]
 	s.snap.Catalog = raw["catalog"]
 	s.snap.Usuals = raw["usuals"]
-	s.snap.Rooms = raw["rooms"]
-	s.snap.Cameras = raw["cameras"]
-	s.snap.Weather = raw["weather"]
-	s.snap.Garmin = raw["garmin"]
-	s.snap.Sports = raw["sports"]
-	s.snap.Agents = raw["agents"]
 
-	mustUnmarshal(raw["events"], &s.snap.Events)
-	// TEMP: busyExtras was for calendar density demo; unused by UI now
-	mustUnmarshal(raw["busyExtras"], &s.snap.BusyExtras)
-	mustUnmarshal(raw["devices"], &s.snap.Devices)
-	mustUnmarshal(raw["climate"], &s.snap.Climate)
-	mustUnmarshal(raw["media"], &s.snap.Media)
-	mustUnmarshal(raw["scenes"], &s.snap.Scenes)
-	// Photos come from SQLite (see AttachPersist), not seed placeholders.
+	s.snap.Events = []map[string]any{}
 	s.snap.Photos = []map[string]any{}
-
-	s.shiftEventsToToday()
-	// Real wall clock (timeOffset stays 0). setTime action kept for compatibility only.
-	s.snap.TimeOffset = 0
-	// Shopping/TODO come from SQLite (see AttachPersist), not seed.
 	s.snap.Groceries = []map[string]any{}
 	s.snap.Chores = []map[string]any{}
 	s.snap.Stars = map[string]float64{}
-	s.nextGID = 100
+	s.snap.TimeOffset = 0
 	s.recomputeWeekLocked(todayKey())
 	return s, nil
 }
@@ -132,7 +107,7 @@ func maxGroceryID(groceries []map[string]any) int {
 
 // AttachPersist binds a SQLite store and hydrates groceries/chores/stars
 // and the last ingested Garmin blob (when present).
-// Missing DB rows bootstrap to empty lists (no seed demo data).
+// Missing DB rows bootstrap to empty lists.
 func (s *Store) AttachPersist(db *persist.DB) error {
 	if db == nil {
 		return nil
@@ -249,61 +224,6 @@ func (s *Store) persistAfterMutation(name string) {
 			log.Printf("persist: save photos after %s: %v", name, err)
 		}
 	}
-}
-
-func mustUnmarshal(b json.RawMessage, v any) {
-	if len(b) == 0 || string(b) == "null" {
-		return
-	}
-	if err := json.Unmarshal(b, v); err != nil {
-		panic(err)
-	}
-}
-
-func (s *Store) shiftEventsToToday() {
-	if len(s.snap.Events) == 0 {
-		return
-	}
-	// Seed was generated with "today" = local calendar day of generation.
-	// Re-anchor so the first all-day / earliest event day's local date == now's local date.
-	first, ok := parseTime(s.snap.Events[0]["start"])
-	if !ok {
-		return
-	}
-	seedDay := time.Date(first.Year(), first.Month(), first.Day(), 0, 0, 0, 0, time.Local)
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
-	delta := today.Sub(seedDay)
-	if delta == 0 {
-		return
-	}
-	shift := func(list []map[string]any) {
-		for _, e := range list {
-			if t, ok := parseTime(e["start"]); ok {
-				e["start"] = t.Add(delta).Format(time.RFC3339Nano)
-			}
-			if t, ok := parseTime(e["end"]); ok {
-				e["end"] = t.Add(delta).Format(time.RFC3339Nano)
-			}
-		}
-	}
-	shift(s.snap.Events)
-	shift(s.snap.BusyExtras)
-}
-
-func parseTime(v any) (time.Time, bool) {
-	str, ok := v.(string)
-	if !ok {
-		return time.Time{}, false
-	}
-	t, err := time.Parse(time.RFC3339Nano, str)
-	if err != nil {
-		t, err = time.Parse(time.RFC3339, str)
-	}
-	if err != nil {
-		return time.Time{}, false
-	}
-	return t.In(time.Local), true
 }
 
 func (s *Store) Snapshot() Snapshot {
@@ -426,7 +346,6 @@ func (s *Store) SetEvents(events []map[string]any) {
 }
 
 // SetSourceEvents replaces events for one live calendar source and rebuilds the merged list.
-// Seed events are discarded once any live source is set.
 func (s *Store) SetSourceEvents(source string, events []map[string]any) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -510,12 +429,6 @@ func (s *Store) cloneLocked() Snapshot {
 	return out
 }
 
-func (s *Store) setTimeLocked(h, m int) {
-	now := time.Now()
-	target := time.Date(now.Year(), now.Month(), now.Day(), h, m, 0, 0, now.Location())
-	s.snap.TimeOffset = target.UnixMilli() - now.UnixMilli()
-}
-
 // Apply runs a named action and returns the new snapshot.
 func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, error) {
 	s.mu.Lock()
@@ -528,17 +441,7 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 		}
 	}
 
-	eventName := ""
 	switch name {
-	case "setTime":
-		// Kept for compatibility; UI no longer uses fake clock presets.
-		if payload["real"] == true {
-			s.snap.TimeOffset = 0
-		} else {
-			h := intNum(payload["h"])
-			m := intNum(payload["m"])
-			s.setTimeLocked(h, m)
-		}
 	case "setChore":
 		s.setChore(payload)
 	case "addChore":
@@ -557,24 +460,8 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 			}
 		}
 		s.snap.Groceries = kept
-	case "setDevice":
-		s.setDevice(payload)
-	case "applyScene":
-		s.applyScene(payload)
-	case "setClimate":
-		for k, v := range payload {
-			if k == "id" {
-				continue
-			}
-			s.snap.Climate[k] = v
-		}
-	case "setMedia":
-		for k, v := range payload {
-			s.snap.Media[k] = v
-		}
 	case "addEvent":
 		if s.snap.CalendarLive {
-			// Read-only while Google Calendar sync is active.
 			break
 		}
 		s.addEvent(payload)
@@ -593,7 +480,6 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 	case "toggleFav":
 		id, _ := payload["id"].(string)
 		if id == "" {
-			// Legacy clients sent seed; ignore quietly.
 			id, _ = payload["seed"].(string)
 		}
 		for _, p := range s.snap.Photos {
@@ -603,18 +489,11 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 				break
 			}
 		}
-	case "alert":
-		if n, ok := payload["name"].(string); ok {
-			eventName = n
-			if n == "garage" {
-				s.patchDevice("g-door", map[string]any{"state": "open"})
-			}
-		}
 	default:
 		// unknown — still return snapshot
 	}
 	s.persistAfterMutation(name)
-	return s.cloneLocked(), eventName, nil
+	return s.cloneLocked(), "", nil
 }
 
 func (s *Store) setChore(p map[string]any) {
@@ -776,62 +655,6 @@ func (s *Store) addGrocery(p map[string]any) {
 	})
 }
 
-func (s *Store) setDevice(p map[string]any) {
-	id, _ := p["id"].(string)
-	patch, _ := p["patch"].(map[string]any)
-	if patch == nil {
-		patch = map[string]any{}
-		for k, v := range p {
-			if k != "id" && k != "patch" {
-				patch[k] = v
-			}
-		}
-	}
-	s.patchDevice(id, patch)
-}
-
-func (s *Store) patchDevice(id string, patch map[string]any) {
-	for _, d := range s.snap.Devices {
-		if d["id"] != id {
-			continue
-		}
-		for k, v := range patch {
-			d[k] = v
-		}
-		return
-	}
-}
-
-func (s *Store) applyScene(p map[string]any) {
-	id, _ := p["id"].(string)
-	for _, sc := range s.snap.Scenes {
-		if sc["id"] != id {
-			continue
-		}
-		set, _ := sc["set"].(map[string]any)
-		for devID, level := range set {
-			lvl := intNum(level)
-			for _, d := range s.snap.Devices {
-				if d["id"] != devID {
-					continue
-				}
-				t, _ := d["type"].(string)
-				if t == "light" {
-					if lvl <= 0 {
-						d["on"] = false
-					} else {
-						d["on"] = true
-						d["level"] = lvl
-					}
-				} else if t == "blind" {
-					d["pos"] = lvl
-				}
-			}
-		}
-		return
-	}
-}
-
 func (s *Store) addEvent(p map[string]any) {
 	s.nextEID++
 	e := map[string]any{"id": "e" + itoa(s.nextEID)}
@@ -866,16 +689,16 @@ func itoa(n int) string {
 	return strconv.Itoa(n)
 }
 
-// SeedPath resolves seed.json next to the binary or from known relative paths.
-func SeedPath() string {
+// HouseholdPath resolves household.json next to the binary or from known relative paths.
+func HouseholdPath() string {
 	candidates := []string{
-		"internal/demo/seed.json",
-		filepath.Join("..", "..", "internal", "demo", "seed.json"),
+		"internal/hq/household.json",
+		filepath.Join("..", "..", "internal", "hq", "household.json"),
 	}
 	for _, c := range candidates {
 		if _, err := os.Stat(c); err == nil {
 			return c
 		}
 	}
-	return "internal/demo/seed.json"
+	return "internal/hq/household.json"
 }

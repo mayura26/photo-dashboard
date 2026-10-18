@@ -1,4 +1,4 @@
-package demo
+package hq
 
 import (
 	"encoding/json"
@@ -20,7 +20,7 @@ func withFixedNow(t *testing.T, day string) {
 
 func loadStore(t *testing.T) *Store {
 	t.Helper()
-	store, err := Load(filepath.Join("seed.json"))
+	store, err := Load(filepath.Join("household.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

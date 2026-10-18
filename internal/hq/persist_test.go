@@ -1,4 +1,4 @@
-package demo
+package hq
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 )
 
 func TestAttachPersistBlankBootstrap(t *testing.T) {
-	store, err := Load(filepath.Join("seed.json"))
+	store, err := Load(filepath.Join("household.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,8 +30,8 @@ func TestAttachPersistBlankBootstrap(t *testing.T) {
 }
 
 func TestAttachPersistRoundTrip(t *testing.T) {
-	seed := filepath.Join("seed.json")
-	store, err := Load(seed)
+	household := filepath.Join("household.json")
+	store, err := Load(household)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestAttachPersistRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	store2, err := Load(seed)
+	store2, err := Load(household)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,8 +76,8 @@ func TestAttachPersistRoundTrip(t *testing.T) {
 }
 
 func TestGarminSurvivesRedeploy(t *testing.T) {
-	seed := filepath.Join("seed.json")
-	store, err := Load(seed)
+	household := filepath.Join("household.json")
+	store, err := Load(household)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,17 +95,17 @@ func TestGarminSurvivesRedeploy(t *testing.T) {
 	live := json.RawMessage(`{"displayName":"Live Mayura","steps":9876,"bodyBattery":72}`)
 	store.SetGarmin(live)
 
-	// Simulate Go redeploy: new Store from seed, same SQLite file.
-	store2, err := Load(seed)
+	// Simulate Go redeploy: new Store from household config, same SQLite file.
+	store2, err := Load(household)
 	if err != nil {
 		t.Fatal(err)
 	}
-	seedGarmin := string(store2.Snapshot().Garmin)
+	beforeGarmin := string(store2.Snapshot().Garmin)
 	if err := store2.AttachPersist(db); err != nil {
 		t.Fatal(err)
 	}
 	snap := store2.Snapshot()
 	if string(snap.Garmin) != string(live) {
-		t.Fatalf("expected live garmin after AttachPersist, got %s (seed was %s)", snap.Garmin, seedGarmin)
+		t.Fatalf("expected live garmin after AttachPersist, got %s (before attach was %s)", snap.Garmin, beforeGarmin)
 	}
 }

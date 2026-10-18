@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// ActionStore is the subset of demo.Store used after complete/schedule.
+// ActionStore is the subset of hq.Store used after complete/schedule.
 type ActionStore interface {
 	SetSourceEvents(source string, events []map[string]any)
 	PatchSourceEvent(source, id string, patch map[string]any) bool

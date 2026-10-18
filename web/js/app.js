@@ -164,7 +164,15 @@
     return (x % 12 || 12) + (x >= 12 ? 'p' : 'a');
   };
   App.weatherNow = function () {
-    var W = D.weather, h = App.now().getHours(), real = App.REAL_RAIN_MM;
+    var W = D.weather;
+    if (!W || !W.t || !W.c || !W.p) {
+      return {
+        temp: '–', cond: 'cloud', label: 'Weather', hi: '–', lo: '–',
+        feels: '–', humidity: '–', wind: '–', rain: 0,
+        summary: 'Waiting for forecast', advice: 'Set WEATHER_LAT / WEATHER_LON', hour: App.now().getHours()
+      };
+    }
+    var h = App.now().getHours(), real = App.REAL_RAIN_MM;
     var rainAt = -1, maybeAt = -1;
     for (var i = h; i < 24; i++) {
       var mm = W.p[i] || 0;
@@ -208,6 +216,7 @@
   };
   App.hourly = function (count) {
     var W = D.weather, h = App.now().getHours(), out = [];
+    if (!W || !W.t || !W.c || !W.p) return out;
     for (var i = 0; i < count; i++) {
       var x = (h + i) % 24;
       out.push({ h: x, t: W.t[x], c: W.c[x], p: W.p[x] || 0, label: App.hourLabel(x, i === 0) });
@@ -217,6 +226,7 @@
   // Hours from now through end of local day (no wrap) for the weather sheet.
   App.hourlyRest = function () {
     var W = D.weather, h = App.now().getHours(), out = [];
+    if (!W || !W.t || !W.c || !W.p) return out;
     for (var x = h; x < 24; x++) {
       out.push({ h: x, t: W.t[x], c: W.c[x], p: W.p[x] || 0, label: App.hourLabel(x, x === h) });
     }

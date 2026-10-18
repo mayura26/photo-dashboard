@@ -1,0 +1,382 @@
+{
+  "people": [
+    {
+      "id": "mayura",
+      "name": "Mayura",
+      "color": "#2D5BFF",
+      "rgb": "45 91 255",
+      "ink": "#FFFFFF"
+    },
+    {
+      "id": "denise",
+      "name": "Denise",
+      "color": "#E4007C",
+      "rgb": "228 0 124",
+      "ink": "#FFFFFF"
+    }
+  ],
+  "family": {
+    "id": "family",
+    "name": "Family",
+    "color": "#111111",
+    "rgb": "17 17 17",
+    "ink": "#FFFFFF"
+  },
+  "ALL": [
+    "mayura",
+    "denise"
+  ],
+  "routines": [
+    {
+      "id": "morning",
+      "name": "Morning",
+      "range": "6 – 11 AM",
+      "from": 0,
+      "to": 11
+    },
+    {
+      "id": "after",
+      "name": "Day",
+      "range": "11 AM – 5 PM",
+      "from": 11,
+      "to": 17
+    },
+    {
+      "id": "evening",
+      "name": "Evening",
+      "range": "5 – 10 PM",
+      "from": 17,
+      "to": 24
+    }
+  ],
+  "stores": [
+    {
+      "id": "grocer",
+      "name": "FreshCo"
+    },
+    {
+      "id": "costco",
+      "name": "Costco"
+    }
+  ],
+  "catOrder": {
+    "all": [
+      "Produce",
+      "Bakery",
+      "Meat & Fish",
+      "Dairy & Eggs",
+      "Pantry",
+      "Frozen",
+      "Snacks",
+      "Household"
+    ],
+    "grocer": [
+      "Produce",
+      "Bakery",
+      "Meat & Fish",
+      "Dairy & Eggs",
+      "Pantry",
+      "Frozen",
+      "Snacks",
+      "Household"
+    ],
+    "costco": [
+      "Household",
+      "Pantry",
+      "Snacks",
+      "Dairy & Eggs",
+      "Meat & Fish",
+      "Frozen",
+      "Produce",
+      "Bakery"
+    ]
+  },
+  "catalog": [
+    [
+      "Apples",
+      "Produce"
+    ],
+    [
+      "Avocados",
+      "Produce"
+    ],
+    [
+      "Bananas",
+      "Produce"
+    ],
+    [
+      "Baby spinach",
+      "Produce"
+    ],
+    [
+      "Blueberries",
+      "Produce"
+    ],
+    [
+      "Broccoli",
+      "Produce"
+    ],
+    [
+      "Carrots",
+      "Produce"
+    ],
+    [
+      "Cucumber",
+      "Produce"
+    ],
+    [
+      "Garlic",
+      "Produce"
+    ],
+    [
+      "Grapes",
+      "Produce"
+    ],
+    [
+      "Lemons",
+      "Produce"
+    ],
+    [
+      "Limes",
+      "Produce"
+    ],
+    [
+      "Onions",
+      "Produce"
+    ],
+    [
+      "Potatoes",
+      "Produce"
+    ],
+    [
+      "Strawberries",
+      "Produce"
+    ],
+    [
+      "Tomatoes",
+      "Produce"
+    ],
+    [
+      "Bread",
+      "Bakery"
+    ],
+    [
+      "Bagels",
+      "Bakery"
+    ],
+    [
+      "Croissants",
+      "Bakery"
+    ],
+    [
+      "Sourdough loaf",
+      "Bakery"
+    ],
+    [
+      "Tortillas",
+      "Bakery"
+    ],
+    [
+      "Hamburger buns",
+      "Bakery"
+    ],
+    [
+      "Bacon",
+      "Meat & Fish"
+    ],
+    [
+      "Chicken breasts",
+      "Meat & Fish"
+    ],
+    [
+      "Chicken thighs",
+      "Meat & Fish"
+    ],
+    [
+      "Ground beef",
+      "Meat & Fish"
+    ],
+    [
+      "Salmon fillets",
+      "Meat & Fish"
+    ],
+    [
+      "Shrimp",
+      "Meat & Fish"
+    ],
+    [
+      "Butter",
+      "Dairy & Eggs"
+    ],
+    [
+      "Cheddar",
+      "Dairy & Eggs"
+    ],
+    [
+      "Cream cheese",
+      "Dairy & Eggs"
+    ],
+    [
+      "Eggs",
+      "Dairy & Eggs"
+    ],
+    [
+      "Greek yogurt",
+      "Dairy & Eggs"
+    ],
+    [
+      "Milk 2%",
+      "Dairy & Eggs"
+    ],
+    [
+      "Oat milk",
+      "Dairy & Eggs"
+    ],
+    [
+      "Parmesan",
+      "Dairy & Eggs"
+    ],
+    [
+      "Black beans",
+      "Pantry"
+    ],
+    [
+      "Cereal",
+      "Pantry"
+    ],
+    [
+      "Coffee beans",
+      "Pantry"
+    ],
+    [
+      "Flour",
+      "Pantry"
+    ],
+    [
+      "Honey",
+      "Pantry"
+    ],
+    [
+      "Maple syrup",
+      "Pantry"
+    ],
+    [
+      "Olive oil",
+      "Pantry"
+    ],
+    [
+      "Pasta sauce",
+      "Pantry"
+    ],
+    [
+      "Peanut butter",
+      "Pantry"
+    ],
+    [
+      "Rice",
+      "Pantry"
+    ],
+    [
+      "Rigatoni",
+      "Pantry"
+    ],
+    [
+      "Spaghetti",
+      "Pantry"
+    ],
+    [
+      "Sugar",
+      "Pantry"
+    ],
+    [
+      "Tea",
+      "Pantry"
+    ],
+    [
+      "Frozen peas",
+      "Frozen"
+    ],
+    [
+      "Frozen berries",
+      "Frozen"
+    ],
+    [
+      "Ice cream",
+      "Frozen"
+    ],
+    [
+      "Pizza",
+      "Frozen"
+    ],
+    [
+      "Waffles",
+      "Frozen"
+    ],
+    [
+      "Chips",
+      "Snacks"
+    ],
+    [
+      "Crackers",
+      "Snacks"
+    ],
+    [
+      "Dark chocolate",
+      "Snacks"
+    ],
+    [
+      "Goldfish crackers",
+      "Snacks"
+    ],
+    [
+      "Granola bars",
+      "Snacks"
+    ],
+    [
+      "Popcorn",
+      "Snacks"
+    ],
+    [
+      "Dish soap",
+      "Household"
+    ],
+    [
+      "Dishwasher pods",
+      "Household"
+    ],
+    [
+      "Garbage bags",
+      "Household"
+    ],
+    [
+      "Laundry detergent",
+      "Household"
+    ],
+    [
+      "Paper towels",
+      "Household"
+    ],
+    [
+      "Toilet paper",
+      "Household"
+    ],
+    [
+      "Toothpaste",
+      "Household"
+    ]
+  ],
+  "usuals": [
+    "Milk 2%",
+    "Eggs",
+    "Bananas",
+    "Bread",
+    "Apples",
+    "Coffee beans",
+    "Greek yogurt",
+    "Cheddar",
+    "Butter",
+    "Baby spinach",
+    "Chicken thighs",
+    "Paper towels"
+  ]
+}

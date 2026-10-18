@@ -2,7 +2,7 @@
 
 Family dashboard shell: Go backend + WebSockets + plain HTML/CSS/ES modules (web components). Look and feel ported from [wesbos/photo-frame-dashboard](https://github.com/wesbos/photo-frame-dashboard) `dashboard/`.
 
-No Node, no Vite, no npm. Content is still placeholder — see [DEMO.md](DEMO.md).
+No Node, no Vite, no npm. Household identity and shopping catalog live in `internal/hq/household.json`; calendar, weather, sports, Garmin, photos, and lists come from live feeds or SQLite.
 
 ## Run
 
@@ -42,7 +42,7 @@ make garmin-run
 
 ### Live weather
 
-Forecasts from [Open-Meteo](https://open-meteo.com/) (CC BY 4.0; no API key for personal use). See [`.env.example`](.env.example). Without lat/lon, seed weather is used.
+Forecasts from [Open-Meteo](https://open-meteo.com/) (CC BY 4.0; no API key for personal use). See [`.env.example`](.env.example). Without lat/lon, the weather strip stays empty until configured.
 ### Coolify
 
 Use the repo `Dockerfile`. Set **Ports Exposes** to `8080` (must match `PORT`). Domain should proxy to container port `8080`. Redeploy after changing ports. Add `WEATHER_LAT` / `WEATHER_LON` (and optional `WEATHER_REFRESH`) as environment variables for live weather.
@@ -57,7 +57,7 @@ Grocery list and chore completion (plus star totals) are stored in SQLite (`HQ_D
 
 ## Architecture
 
-- **Go** serves `web/` as static files and owns in-memory state (`internal/demo`), with shopping/TODO write-through to SQLite (`internal/persist`).
+- **Go** serves `web/` as static files and owns in-memory state (`internal/hq`), with shopping/TODO/photos/Garmin write-through to SQLite (`internal/persist`).
 - **WebSocket** `/ws` sends a full JSON snapshot on connect and after every action.
 - **Frontend** is plain ES modules + light-DOM custom elements (`hq-rail`, `hq-home`, …).
 

@@ -1,4 +1,4 @@
-# Coolify / Docker: self-contained Go server + web/ + seed.
+# Coolify / Docker: self-contained Go server + web/ + household config.
 # Version: APP_VERSION build-arg → SOURCE_COMMIT (Coolify) → git SHA → "dev".
 # .dockerignore excludes .git, so git fallback only works when .git is present.
 FROM golang:1.27-alpine AS build
@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=build /out/server /app/server
 COPY --from=build /src/web /app/web
 COPY --from=build /out-version /app/VERSION
-COPY internal/demo/seed.json /app/internal/demo/seed.json
+COPY internal/hq/household.json /app/internal/hq/household.json
 COPY go.mod /app/go.mod
 
 # Do not bake an empty APP_VERSION into the image ENV — that blocks Coolify's

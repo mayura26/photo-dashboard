@@ -1,4 +1,4 @@
-package demo
+package hq
 
 import (
 	"path/filepath"
@@ -6,13 +6,12 @@ import (
 )
 
 func TestSetSourceEventsMerge(t *testing.T) {
-	store, err := Load(filepath.Join("seed.json"))
+	store, err := Load(filepath.Join("household.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	seedCount := len(store.Snapshot().Events)
-	if seedCount == 0 {
-		t.Fatal("expected seed events")
+	if len(store.Snapshot().Events) != 0 {
+		t.Fatalf("expected empty events before live sync, got %d", len(store.Snapshot().Events))
 	}
 
 	store.SetSourceEvents("gcal", []map[string]any{
@@ -23,7 +22,7 @@ func TestSetSourceEventsMerge(t *testing.T) {
 		t.Fatal("expected calendarLive")
 	}
 	if len(snap.Events) != 1 || snap.Events[0]["id"] != "mayura:g1" {
-		t.Fatalf("expected seed replaced by gcal only, got %#v", snap.Events)
+		t.Fatalf("expected gcal only, got %#v", snap.Events)
 	}
 
 	store.SetSourceEvents("pmday", []map[string]any{
@@ -60,7 +59,7 @@ func TestSetSourceEventsMerge(t *testing.T) {
 }
 
 func TestSetCalendarPeople(t *testing.T) {
-	store, err := Load(filepath.Join("seed.json"))
+	store, err := Load(filepath.Join("household.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
