@@ -2,12 +2,15 @@ package demo
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"photo-dashboard/internal/persist"
 )
 
 // Snapshot is the full dashboard payload sent to clients.
@@ -48,6 +51,7 @@ type Store struct {
 	nextGID int
 	nextEID int
 	nextCID int
+	db      *persist.DB
 }
 
 func Load(seedPath string) (*Store, error) {
@@ -78,9 +82,6 @@ func Load(seedPath string) (*Store, error) {
 	mustUnmarshal(raw["events"], &s.snap.Events)
 	// TEMP: busyExtras was for calendar density demo; unused by UI now
 	mustUnmarshal(raw["busyExtras"], &s.snap.BusyExtras)
-	mustUnmarshal(raw["chores"], &s.snap.Chores)
-	mustUnmarshal(raw["stars"], &s.snap.Stars)
-	mustUnmarshal(raw["groceries"], &s.snap.Groceries)
 	mustUnmarshal(raw["devices"], &s.snap.Devices)
 	mustUnmarshal(raw["climate"], &s.snap.Climate)
 	mustUnmarshal(raw["media"], &s.snap.Media)
@@ -90,7 +91,82 @@ func Load(seedPath string) (*Store, error) {
 	s.shiftEventsToToday()
 	// Real wall clock (timeOffset stays 0). setTime action kept for compatibility only.
 	s.snap.TimeOffset = 0
+	// Shopping/TODO come from SQLite (see AttachPersist), not seed.
+	s.snap.Groceries = []map[string]any{}
+	s.snap.Chores = []map[string]any{}
+	s.snap.Stars = map[string]float64{}
+	s.nextGID = 100
 	return s, nil
+}
+
+func maxGroceryID(groceries []map[string]any) int {
+	max := 100
+	for _, g := range groceries {
+		id, _ := g["id"].(string)
+		if !strings.HasPrefix(id, "g") {
+			continue
+		}
+		n, err := strconv.Atoi(id[1:])
+		if err != nil {
+			continue
+		}
+		if n > max {
+			max = n
+		}
+	}
+	return max
+}
+
+// AttachPersist binds a SQLite store and hydrates groceries/chores/stars.
+// Missing DB rows bootstrap to empty lists (no seed demo data).
+func (s *Store) AttachPersist(db *persist.DB) error {
+	if db == nil {
+		return nil
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.db = db
+
+	m, ok, err := db.LoadMutable()
+	if err != nil {
+		return err
+	}
+	if !ok {
+		s.snap.Groceries = []map[string]any{}
+		s.snap.Chores = []map[string]any{}
+		s.snap.Stars = map[string]float64{}
+		s.nextGID = 100
+		return s.saveMutableLocked()
+	}
+	s.snap.Groceries = m.Groceries
+	s.snap.Chores = m.Chores
+	s.snap.Stars = m.Stars
+	s.nextGID = m.NextGID
+	if s.nextGID < maxGroceryID(s.snap.Groceries) {
+		s.nextGID = maxGroceryID(s.snap.Groceries)
+	}
+	return nil
+}
+
+func (s *Store) saveMutableLocked() error {
+	if s.db == nil {
+		return nil
+	}
+	return s.db.SaveMutable(persist.Mutable{
+		Groceries: s.snap.Groceries,
+		Chores:    s.snap.Chores,
+		Stars:     s.snap.Stars,
+		NextGID:   s.nextGID,
+	})
+}
+
+func (s *Store) persistAfterMutation(name string) {
+	switch name {
+	case "setChore", "setGrocery", "addGrocery", "clearChecked":
+		if err := s.saveMutableLocked(); err != nil {
+			log.Printf("persist: save after %s: %v", name, err)
+		}
+	}
 }
 
 func mustUnmarshal(b json.RawMessage, v any) {
@@ -286,6 +362,7 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 	default:
 		// unknown — still return snapshot
 	}
+	s.persistAfterMutation(name)
 	return s.cloneLocked(), eventName, nil
 }
 

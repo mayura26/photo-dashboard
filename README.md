@@ -31,9 +31,15 @@ Use the repo `Dockerfile`. Set **Ports Exposes** to `8080` (must match `PORT`). 
 
 Set `HQ_PASSWORD` to require a shared login before the dashboard connects (long-lived cookie; optional `HQ_AUTH_SECRET`). Leave unset for open local use.
 
+Mount a persistent volume at `/data` and set `HQ_DB_PATH=/data/hq.db` so shopping and TODO survive redeploys.
+
+### Persistent shopping / TODO
+
+Grocery list and chore completion (plus star totals) are stored in SQLite (`HQ_DB_PATH`, default `./data/hq.db`). First run creates an empty DB; later edits survive restarts. On Coolify, mount a volume at `/data` and set `HQ_DB_PATH=/data/hq.db`.
+
 ## Architecture
 
-- **Go** serves `web/` as static files and owns in-memory state (`internal/demo`).
+- **Go** serves `web/` as static files and owns in-memory state (`internal/demo`), with shopping/TODO write-through to SQLite (`internal/persist`).
 - **WebSocket** `/ws` sends a full JSON snapshot on connect and after every action.
 - **Frontend** is plain ES modules + light-DOM custom elements (`hq-rail`, `hq-home`, …).
 

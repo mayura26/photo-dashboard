@@ -18,6 +18,7 @@ import (
 	"photo-dashboard/internal/auth"
 	"photo-dashboard/internal/demo"
 	"photo-dashboard/internal/gcal"
+	"photo-dashboard/internal/persist"
 	"photo-dashboard/internal/weather"
 	"photo-dashboard/internal/webfs"
 )
@@ -36,6 +37,20 @@ func main() {
 	if err != nil {
 		log.Fatal("load seed: ", err)
 	}
+
+	dbPath := strings.TrimSpace(os.Getenv("HQ_DB_PATH"))
+	if dbPath == "" {
+		dbPath = filepath.Join("data", "hq.db")
+	}
+	db, err := persist.Open(dbPath)
+	if err != nil {
+		log.Fatal("persist open: ", err)
+	}
+	defer db.Close()
+	if err := store.AttachPersist(db); err != nil {
+		log.Fatal("persist hydrate: ", err)
+	}
+	log.Printf("persist: shopping/TODO at %s", dbPath)
 
 	static, err := webfs.FS()
 	if err != nil {
