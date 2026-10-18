@@ -28,7 +28,7 @@
     var tmin = Math.min.apply(null, hours.map(function (h) { return h.t; }));
     var tmax = Math.max.apply(null, hours.map(function (h) { return h.t; }));
     return '<div class="h-wx-top h-reveal" style="--d:0">' +
-      '<span class="h-wx-icon">' + App.icon(w.cond, 52) + '</span>' +
+      '<span class="h-wx-icon">' + App.icon(w.cond, 60) + '</span>' +
       '<span class="h-wx-temp num">' + w.temp + '°</span>' +
       '<span class="h-wx-meta"><b>' + w.label + '</b><span>H ' + w.hi + '°  L ' + w.lo + '°</span></span>' +
       '</div>' +
@@ -39,10 +39,10 @@
       '  <div><b class="num">' + w.wind + '</b><span>Wind</span></div>' +
       '</div>' +
       '<div class="h-wx-hours">' + hours.map(function (h, i) {
-        var lift = tmax === tmin ? 0 : Math.round((h.t - tmin) / (tmax - tmin) * 6);
+        var lift = tmax === tmin ? 0 : Math.round((h.t - tmin) / (tmax - tmin) * 8);
         var mm = h.p > App.REAL_RAIN_MM ? '<span class="h-hr-mm">' + App.fmtMm(h.p) + '</span>' : '<span class="h-hr-mm"></span>';
         return '<div class="h-hr h-reveal' + wetClass(h.p) + '" style="--d:' + (3 + i) + '"><span class="h-hr-l">' + h.label + '</span>' +
-          '<span class="h-hr-i" style="transform:translateY(' + -lift + 'px)">' + App.icon(h.c, 20) + '</span><b>' + h.t + '°</b>' + mm + '</div>';
+          '<span class="h-hr-i" style="transform:translateY(' + -lift + 'px)">' + App.icon(h.c, 22) + '</span><b>' + h.t + '°</b>' + mm + '</div>';
       }).join('') + '</div>';
   }
 
