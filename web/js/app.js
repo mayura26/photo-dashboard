@@ -77,6 +77,14 @@
     for (var i = 0; i < D.people.length; i++) if (D.people[i].id === id) return D.people[i];
     return D.family;
   };
+  // Layout grids keyed off household size (calendar lanes, home lanes, chore columns).
+  App.syncPeopleLayout = function () {
+    if (!D || !D.people) return;
+    var n = D.people.length || 2;
+    var root = document.documentElement;
+    root.style.setProperty('--people-count', String(n));
+    root.style.setProperty('--chore-lanes', String(n + 1)); // people + "any"
+  };
   App.pstyle = function (p) {
     if (typeof p === 'string') p = App.person(p);
     return '--c:' + p.color + ';--c-rgb:' + p.rgb + ';--c-ink:' + p.ink;

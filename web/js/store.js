@@ -59,6 +59,7 @@ const store = {
 
     if (window.App) {
       if (typeof fresh.timeOffset === 'number') App._setOffset(fresh.timeOffset);
+      if (App.syncPeopleLayout) App.syncPeopleLayout();
       App.emit('data');
     }
   },

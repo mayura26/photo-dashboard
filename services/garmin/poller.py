@@ -278,6 +278,21 @@ def _weekday_label(d: date) -> str:
     return ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][d.weekday()]
 
 
+def _as_row_list(raw: Any) -> list[Any]:
+    """Normalize Garmin list / {data|values|...: [...]} responses to a list of rows."""
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        for key in ("data", "values", "entries", "allMetrics", "calendarEntries"):
+            v = raw.get(key)
+            if isinstance(v, list):
+                return v
+        # Single-day dict masquerading as a row
+        if raw.get("calendarDate") or raw.get("date"):
+            return [raw]
+    return []
+
+
 def parse_steps_day(raw: Any) -> list[dict[str, int]]:
     """Hourly (or finer) step samples → downsampled {t,v} series."""
     pts: list[dict[str, int]] = []
@@ -326,37 +341,66 @@ def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[
         log.warning("body battery week failed: %s", e)
 
     # ---- sleep week
-    # get_sleep_daily returns [{calendarDate, values:{totalSleepTimeInSeconds, sleepScore, ...}}]
+    # get_sleep_daily → [{calendarDate, values:{totalSleepTimeInSeconds, sleepScore, ...}}]
+    # Sleep score is often null; duration is the reliable weekly series.
     sleep_week: list[dict[str, Any]] = []
+    by_date: dict[str, dict[str, Any]] = {}
     try:
         sleep_range = client.get_sleep_daily(start_s, end_s) or []
-        by_date: dict[str, dict[str, Any]] = {}
-        rows = sleep_range if isinstance(sleep_range, list) else []
+        rows = _as_row_list(sleep_range)
         for row in rows:
             if not isinstance(row, dict):
                 continue
             dkey = str(row.get("calendarDate") or "")[:10]
             vals = row.get("values") if isinstance(row.get("values"), dict) else {}
-            # Some accounts have no sleep score; duration is always useful.
             score = as_int(vals.get("sleepScore") or row.get("sleepScore"))
-            duration = seconds_to_min(
+            # Durations may be seconds (totalSleepTimeInSeconds) or already minutes.
+            dur_raw = (
                 vals.get("totalSleepTimeInSeconds")
                 or vals.get("sleepTimeSeconds")
+                or vals.get("totalSleepTime")
                 or row.get("sleepTimeSeconds")
             )
-            if dkey:
+            duration = seconds_to_min(dur_raw)
+            if duration is None and dur_raw is not None:
+                duration = as_int(dur_raw)
+            if dkey and (score is not None or duration is not None):
                 by_date[dkey] = {"score": score, "durationMin": duration}
-        for d in week_days:
-            p = by_date.get(d.isoformat(), {})
-            sleep_week.append(
-                {
-                    "d": _weekday_label(d),
-                    "score": p.get("score"),
-                    "durationMin": p.get("durationMin"),
-                }
-            )
+        log.info(
+            "sleep week: get_sleep_daily rows=%d parsed=%d",
+            len(rows),
+            len(by_date),
+        )
     except Exception as e:  # noqa: BLE001
-        log.warning("sleep week failed: %s", e)
+        log.warning("sleep week (daily) failed: %s", e)
+
+    # Fallback: per-day get_sleep_data when the bulk endpoint yields nothing usable.
+    if len(by_date) < 3:
+        for d in week_days:
+            dkey = d.isoformat()
+            if dkey in by_date and by_date[dkey].get("durationMin") is not None:
+                continue
+            try:
+                raw = client.get_sleep_data(dkey) or {}
+                parsed = parse_sleep(raw)
+                if parsed.get("score") is not None or parsed.get("durationMin") is not None:
+                    by_date[dkey] = {
+                        "score": parsed.get("score"),
+                        "durationMin": parsed.get("durationMin"),
+                    }
+            except Exception as e:  # noqa: BLE001
+                log.debug("sleep day %s failed: %s", dkey, e)
+        log.info("sleep week: after per-day fallback parsed=%d", len(by_date))
+
+    for d in week_days:
+        p = by_date.get(d.isoformat(), {})
+        sleep_week.append(
+            {
+                "d": _weekday_label(d),
+                "score": p.get("score"),
+                "durationMin": p.get("durationMin"),
+            }
+        )
 
     # ---- stress week
     # get_daily_stress_stats returns [{calendarDate, values:{overallStressLevel, ...}}]
@@ -364,7 +408,7 @@ def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[
     try:
         stress_range = client.get_daily_stress_stats(start_s, end_s) or []
         by_date = {}
-        rows = stress_range if isinstance(stress_range, list) else []
+        rows = _as_row_list(stress_range)
         for row in rows:
             if not isinstance(row, dict):
                 continue

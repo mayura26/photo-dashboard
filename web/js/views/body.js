@@ -214,12 +214,19 @@
       var hasScore = sleepWeek.some(function (r) { return r && r.score != null; });
       if (hasScore) return barChart(sleepWeek, { key: 'score', max: 100 });
       var asHours = sleepWeek.map(function (r) {
-        return {
-          d: r.d,
-          v: r.durationMin != null ? Math.round(r.durationMin / 60 * 10) / 10 : null
-        };
+        var mins = r && (r.durationMin != null ? r.durationMin : r.v);
+        // Accept minutes or already-hours (< 24) so older payloads still chart.
+        var hours = null;
+        if (mins != null) {
+          hours = mins > 24 ? Math.round(mins / 60 * 10) / 10 : +mins;
+        }
+        return { d: r.d, v: hours };
       });
-      return '<div class="bxs-chart-cap label">Hours asleep</div>' + barChart(asHours, {});
+      var chart = barChart(asHours, {});
+      if (chart.indexOf('bxs-empty') !== -1) {
+        return '<div class="bxs-empty serif"><i>No week data yet</i><br><span style="font-size:16px;color:var(--mute)">Restart the Garmin sidecar to refresh history</span></div>';
+      }
+      return '<div class="bxs-chart-cap label">Hours asleep</div>' + chart;
     }
     if (metric === 'stress') {
       if (range === 'day') return lineChart(daySeries('stress'), { min: 0, max: 100 });
