@@ -3,6 +3,13 @@
   'use strict';
   var D = window.DATA, V = {};
 
+  // Placeholder fixtures until a D.sports snapshot lands.
+  var SPORTS = [
+    { team: 'Sydney FC', league: 'A-League', opp: 'Melbourne City', when: 'Sat', status: 'final', score: [2, 1], home: true },
+    { team: 'Swans', league: 'AFL', opp: 'Giants', when: 'Sun 1:20', status: 'upcoming', score: null, home: true },
+    { team: 'Roosters', league: 'NRL', opp: 'Rabbitohs', when: 'Fri', status: 'final', score: [18, 24], home: false }
+  ];
+
   function clock() {
     var n = App.now();
     return '<div class="h-time num">' + App.fmt.time(n, false) + '<span class="h-ampm">' + App.fmt.ampm(n) + '</span></div>' +
@@ -20,17 +27,22 @@
     var hours = App.hourly(7);
     var tmin = Math.min.apply(null, hours.map(function (h) { return h.t; }));
     var tmax = Math.max.apply(null, hours.map(function (h) { return h.t; }));
-    return '<div class="h-wx-top">' +
-      '<span class="h-wx-icon">' + App.icon(w.cond, 60) + '</span>' +
+    return '<div class="h-wx-top h-reveal" style="--d:0">' +
+      '<span class="h-wx-icon">' + App.icon(w.cond, 52) + '</span>' +
       '<span class="h-wx-temp num">' + w.temp + '°</span>' +
       '<span class="h-wx-meta"><b>' + w.label + '</b><span>H ' + w.hi + '°  L ' + w.lo + '°</span></span>' +
       '</div>' +
-      '<div class="h-wx-say"><b>' + w.summary + '.</b> ' + w.advice + '.</div>' +
-      '<div class="h-wx-hours">' + hours.map(function (h) {
-        var lift = tmax === tmin ? 0 : Math.round((h.t - tmin) / (tmax - tmin) * 8);
+      '<div class="h-wx-say h-reveal" style="--d:1"><b>' + w.summary + '.</b> ' + w.advice + '.</div>' +
+      '<div class="h-wx-stats h-reveal" style="--d:2">' +
+      '  <div><b class="num">' + w.feels + '°</b><span>Feels</span></div>' +
+      '  <div><b class="num">' + w.humidity + '%</b><span>Humidity</span></div>' +
+      '  <div><b class="num">' + w.wind + '</b><span>Wind</span></div>' +
+      '</div>' +
+      '<div class="h-wx-hours">' + hours.map(function (h, i) {
+        var lift = tmax === tmin ? 0 : Math.round((h.t - tmin) / (tmax - tmin) * 6);
         var mm = h.p > App.REAL_RAIN_MM ? '<span class="h-hr-mm">' + App.fmtMm(h.p) + '</span>' : '<span class="h-hr-mm"></span>';
-        return '<div class="h-hr' + wetClass(h.p) + '"><span class="h-hr-l">' + h.label + '</span>' +
-          '<span class="h-hr-i" style="transform:translateY(' + -lift + 'px)">' + App.icon(h.c, 22) + '</span><b>' + h.t + '°</b>' + mm + '</div>';
+        return '<div class="h-hr h-reveal' + wetClass(h.p) + '" style="--d:' + (3 + i) + '"><span class="h-hr-l">' + h.label + '</span>' +
+          '<span class="h-hr-i" style="transform:translateY(' + -lift + 'px)">' + App.icon(h.c, 20) + '</span><b>' + h.t + '°</b>' + mm + '</div>';
       }).join('') + '</div>';
   }
 
@@ -69,13 +81,37 @@
     );
   };
 
-  function presence() {
-    return D.people.map(function (p) {
-      var sub = p.home ? 'Home' : (p.eta ? '<b>ETA ' + p.eta + ' min</b>' : p.status);
-      return '<div class="h-who' + (p.home ? ' is-home' : '') + '" style="' + App.pstyle(p) + '">' +
-        App.avatar(p, 36, p.home ? '' : 'avatar--away') +
-        '<span><b>' + p.name + '</b><small>' + sub + '</small></span></div>';
-    }).join('');
+  function fixtures() {
+    return (D.sports && D.sports.fixtures) || SPORTS;
+  }
+
+  function sports() {
+    var list = fixtures().slice(0, 3);
+    return '<div class="label">Sports</div>' +
+      '<div class="h-sports-list">' + list.map(function (g, i) {
+        var followed = App.esc(g.team);
+        var opp = App.esc(g.opp);
+        var matchup = g.home ? followed + ' vs ' + opp : opp + ' vs ' + followed;
+        var right;
+        var tone = '';
+        if (g.status === 'final' && g.score) {
+          var us = g.home ? g.score[0] : g.score[1];
+          var them = g.home ? g.score[1] : g.score[0];
+          if (us > them) tone = ' is-win';
+          else if (us < them) tone = ' is-loss';
+          else tone = ' is-draw';
+          right = '<b class="num">' + g.score[0] + '–' + g.score[1] + '</b><small>' + App.esc(g.when) + '</small>';
+        } else {
+          right = '<b class="h-sp-vs">vs</b><small>' + App.esc(g.when) + '</small>';
+        }
+        return '<div class="h-sp h-reveal' + tone + '" style="--d:' + i + '">' +
+          '<div class="h-sp-main">' +
+          '  <span class="h-sp-league">' + App.esc(g.league) + '</span>' +
+          '  <span class="h-sp-match">' + matchup + '</span>' +
+          '</div>' +
+          '<div class="h-sp-score">' + right + '</div>' +
+          '</div>';
+      }).join('') + '</div>';
   }
 
   function hero() {
@@ -130,45 +166,83 @@
   }
 
   function ring(done, total, size) {
-    var r = size / 2 - 5, c = 2 * Math.PI * r, f = total ? done / total : 0;
+    var r = size / 2 - 5, c = 2 * Math.PI * r, f = total ? Math.min(1, done / total) : 0;
     return '<svg class="ring" width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
       '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" class="ring-bg"/>' +
       '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" class="ring-fg" stroke-dasharray="' + (c * f) + ' ' + c + '" transform="rotate(-90 ' + size / 2 + ' ' + size / 2 + ')"/></svg>';
   }
   App.ring = ring;
 
-  function chores() {
-    var r = App.currentRoutine();
-    var who = D.people.map(function (p) { return p.id; }).concat(['any']);
-    return '<div class="label">TODO · ' + r.name + '</div><div class="h-rings">' + who.map(function (id) {
-      var list = D.chores.filter(function (c) { return c.r === r.id && c.who === id; });
-      if (!list.length) return '';
-      var done = list.filter(function (c) { return c.done; }).length;
-      var p = App.person(id);
-      return '<div class="h-ring' + (done === list.length ? ' is-done' : '') + '" style="' + App.pstyle(p) + '">' + ring(done, list.length, 64) +
-        '<b class="num">' + (done === list.length ? '✓' : done + '/' + list.length) + '</b><span>' + (id === 'any' ? 'Anyone' : p.name) + '</span></div>';
-    }).join('') + '</div>';
+  function dash(v) {
+    return v == null || v === '' ? '—' : v;
   }
 
-  function shopping() {
-    var open = D.groceries.filter(function (g) { return !g.done; });
-    var recent = open.slice(-3).reverse();
-    return '<div class="label">Shopping</div>' +
-      '<div class="h-stat"><span class="num">' + open.length + '</span><small>items to get</small></div>' +
-      '<ul class="h-recent">' + recent.map(function (g) {
-        return '<li><i></i>' + App.esc(g.name) + '</li>';
-      }).join('') + '</ul>';
+  function fmtDur(min) {
+    if (min == null) return '—';
+    var h = Math.floor(min / 60), m = Math.round(min % 60);
+    if (!h) return m + 'm';
+    return h + 'h ' + (m < 10 ? '0' : '') + m + 'm';
+  }
+
+  function batteryTone(n) {
+    if (n == null) return '';
+    if (n >= 50) return ' is-ok';
+    if (n >= 25) return ' is-mid';
+    return ' is-hot';
+  }
+
+  function stressTone(n) {
+    if (n == null) return '';
+    if (n < 26) return ' is-ok';
+    if (n < 51) return ' is-mid';
+    return ' is-hot';
+  }
+
+  function health() {
+    var data = D.garmin;
+    if (!data) {
+      return '<div class="label label--light">Body</div>' +
+        '<div class="h-health-empty serif"><i>No Garmin data yet</i></div>';
+    }
+    var bb = data.bodyBattery || {};
+    var sleep = data.sleep || {};
+    var stress = data.stress || {};
+    var act = data.activity || {};
+    var steps = act.steps;
+    var goal = act.stepsGoal || 10000;
+    var stepsLabel = steps != null ? (Math.round(steps / 1000 * 10) / 10) + 'k' : '—';
+    var sleepHero = sleep.score != null ? dash(sleep.score) : fmtDur(sleep.durationMin);
+    var sleepSub = sleep.score != null ? fmtDur(sleep.durationMin) : '';
+    return '<div class="label label--light">Body · ' + App.esc(data.displayName || 'Garmin') + '</div>' +
+      '<div class="h-health-grid">' +
+      '<div class="h-hm h-reveal' + batteryTone(bb.current) + '" style="--d:0">' +
+      '  <div class="h-hm-dial">' + ring(bb.current || 0, 100, 56) +
+      '    <b class="num">' + dash(bb.current) + '</b></div>' +
+      '  <div class="h-hm-meta"><span>Battery</span><b class="num">' + dash(bb.current) + '</b></div>' +
+      '</div>' +
+      '<div class="h-hm h-reveal" style="--d:1">' +
+      '  <div class="h-hm-meta"><span>Sleep</span><b class="num">' + sleepHero + '</b>' +
+      (sleepSub ? '<small>' + sleepSub + '</small>' : '') + '</div>' +
+      '</div>' +
+      '<div class="h-hm h-reveal' + stressTone(stress.current) + '" style="--d:2">' +
+      '  <div class="h-hm-meta"><span>Stress</span><b class="num">' + dash(stress.current) + '</b></div>' +
+      '</div>' +
+      '<div class="h-hm h-reveal" style="--d:3">' +
+      '  <div class="h-hm-dial">' + ring(steps || 0, goal, 56) +
+      '    <b class="num">' + stepsLabel + '</b></div>' +
+      '  <div class="h-hm-meta"><span>Steps</span><b class="num">' + (steps != null ? steps.toLocaleString() : '—') + '</b></div>' +
+      '</div>' +
+      '</div>';
   }
 
   function paint() {
     var el = V.el;
     el.querySelector('.h-clock').innerHTML = clock();
     el.querySelector('.h-weather').innerHTML = weather();
-    el.querySelector('.h-presence').innerHTML = presence();
+    el.querySelector('.h-sports').innerHTML = sports();
     el.querySelector('.h-hero-slot').innerHTML = hero();
     el.querySelector('.h-lanes').innerHTML = lanes();
-    el.querySelector('.h-chores').innerHTML = chores();
-    el.querySelector('.h-shop').innerHTML = shopping();
+    el.querySelector('.h-health').innerHTML = health();
   }
 
   function photoCaption(s) {
@@ -183,12 +257,11 @@
         el.innerHTML = '<div class="home">' +
           '<div class="h-clock" data-go="calendar"></div>' +
           '<button type="button" class="h-weather" data-wx aria-label="Weather details"></button>' +
-          '<div class="h-presence"></div>' +
-          '<div class="h-main"><div class="h-hero-slot"></div><div class="h-lanes" ></div></div>' +
+          '<div class="h-sports" aria-label="Sports scores"></div>' +
+          '<div class="h-main"><div class="h-hero-slot"></div><div class="h-lanes"></div></div>' +
           '<div class="h-side">' +
           '  <button class="h-photo" data-go="photos"><div class="h-photo-stage"></div><div class="h-photo-cap"></div></button>' +
-          '  <button class="h-chores card" data-go="tasks"></button>' +
-          '  <button class="h-shop card" data-go="shopping"></button>' +
+          '  <button type="button" class="h-health" data-go="body" aria-label="Body health summary"></button>' +
           '</div></div>';
         el.addEventListener('click', function (e) {
           var ev = e.target.closest('[data-ev]');
@@ -211,7 +284,10 @@
     if (!V.el || !V.el.firstChild) return;
     V.el.querySelector('.h-clock').innerHTML = clock();
     V.el.querySelector('.h-hero-slot').innerHTML = hero();
-    if (n.getMinutes() === 0) { V.el.querySelector('.h-weather').innerHTML = weather(); V.el.querySelector('.h-lanes').innerHTML = lanes(); }
+    if (n.getMinutes() === 0) {
+      V.el.querySelector('.h-weather').innerHTML = weather();
+      V.el.querySelector('.h-lanes').innerHTML = lanes();
+    }
   });
   App.on('data', function () { if (App.current === 'home') paint(); });
 })();

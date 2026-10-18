@@ -63,6 +63,9 @@
   padding: 20px 22px 18px;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 0;
   --c: var(--ink);
   --c-rgb: var(--ink-rgb);
@@ -185,6 +188,9 @@
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 0;
   overflow: hidden;
 }
@@ -225,17 +231,33 @@
 }
 .b-sub b { font-size: 32px; }
 
-/* sleep stages */
+/* sleep stages — width:100% + flex-basis 0% so Android WebView buttons don't shrink-wrap to a ball */
 .b-stages {
   display: flex;
+  width: 100%;
+  align-self: stretch;
   height: 18px;
   border-radius: 9px;
   overflow: hidden;
   background: var(--paper-2);
   margin-top: auto;
+  box-sizing: border-box;
 }
-.b-stages--empty { height: 18px; background: var(--paper-2); border-radius: 9px; margin-top: auto; }
-.b-stage { display: block; min-width: 4px; }
+.b-stages--empty {
+  width: 100%;
+  align-self: stretch;
+  height: 18px;
+  background: var(--paper-2);
+  border-radius: 9px;
+  margin-top: auto;
+  box-sizing: border-box;
+}
+.b-stage {
+  display: block;
+  min-width: 4px;
+  flex-basis: 0%;
+  height: 100%;
+}
 .b-stage--deep { background: #1B3A6B; }
 .b-stage--light { background: #5B8DEF; }
 .b-stage--rem { background: #8B6CC9; }
@@ -244,8 +266,11 @@
 .b-stage-legend {
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
+  align-self: stretch;
   gap: 10px 16px;
   margin-top: 12px;
+  box-sizing: border-box;
 }
 .b-leg {
   display: inline-flex;

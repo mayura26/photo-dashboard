@@ -413,6 +413,26 @@
     });
     document.addEventListener('pointerdown', App.resetIdle, true);
     window.addEventListener('hashchange', function () { App.go(location.hash.slice(1)); });
+
+    // Long-press rail clock 2s → show build version (for kiosk/frame debugging).
+    var railClock = $('#railClock');
+    if (railClock) {
+      railClock.setAttribute('aria-label', 'Clock · hold for version');
+      App.hold(railClock, 2000, {
+        done: function () {
+          fetch('/version.json', { cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (meta) {
+              var v = meta && meta.version ? String(meta.version) : 'unknown';
+              App.toast('Version <b>' + App.esc(v) + '</b>', { ms: 4000 });
+            })
+            .catch(function () {
+              App.toast('Version <b>unknown</b>', { ms: 3000 });
+            });
+        }
+      });
+    }
+
     App.go(location.hash.slice(1) || 'home');
     tick();
     setInterval(tick, 1000);

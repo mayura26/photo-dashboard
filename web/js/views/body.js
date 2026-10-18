@@ -84,7 +84,7 @@
       return '<div class="b-stages b-stages--empty"></div>';
     }
     return '<div class="b-stages" aria-hidden="true">' + parts.map(function (p) {
-      return '<i class="b-stage b-stage--' + p.k + '" style="flex:' + (p.n || 0) + '" title="' + p.label + '"></i>';
+      return '<i class="b-stage b-stage--' + p.k + '" style="flex:' + (p.n || 0) + ' 1 0%" title="' + p.label + '"></i>';
     }).join('') + '</div>' +
       '<div class="b-stage-legend">' + parts.map(function (p) {
         return '<span class="b-leg b-leg--' + p.k + '"><i></i>' + p.label + ' <b>' + dash(p.n != null ? p.n + 'm' : null) + '</b></span>';
