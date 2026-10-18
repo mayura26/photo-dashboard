@@ -147,22 +147,85 @@
       '</div>' + big + '</button>';
   }
 
+  function openTodos(who) {
+    var r = App.currentRoutine();
+    return (D.chores || []).filter(function (c) { return !c.done && c.r === r.id && c.who === who; });
+  }
+
+  function todoRow(c) {
+    return '<button class="h-todo" data-ch="' + c.id + '">' +
+      '<span class="h-todo-mark">' + (c.emoji || '✓') + '</span>' +
+      '<span class="h-todo-n">' + App.esc(c.title) + '</span></button>';
+  }
+
   function lanes() {
     var now = App.now();
     return D.people.map(function (p) {
-      var list = App.timedOn(now, p.id).filter(function (e) { return e.end > now; });
-      var shown = list.slice(0, 3), more = list.length - shown.length;
+      var events = App.timedOn(now, p.id).filter(function (e) { return e.end > now; });
+      var todos = openTodos(p.id);
+      var shownEv = events.slice(0, 2);
+      var shownTd = todos.slice(0, 2);
+      var moreEv = events.length - shownEv.length;
+      var moreTd = todos.length - shownTd.length;
+      var empty = !events.length && !todos.length;
       return '<div class="h-lane" style="' + App.pstyle(p) + '">' +
         '<div class="h-lane-head">' + App.avatar(p, 30) + '<b>' + p.name + '</b></div>' +
-        (list.length ? shown.map(function (e) {
+        (empty ? '<div class="h-free serif"><i>Free</i> the rest of the day</div>' : '') +
+        shownEv.map(function (e) {
           var cur = e.start <= now;
           return '<button class="h-ev' + (cur ? ' is-now' : '') + '" data-ev="' + e.id + '">' +
             '<span class="h-ev-t">' + (cur ? 'Now' : App.fmt.time(e.start, false)) + '</span>' +
             '<span class="h-ev-n">' + App.esc(e.title) + '</span></button>';
-        }).join('') : '<div class="h-free serif"><i>Free</i> the rest of the day</div>') +
-        (more > 0 ? '<button class="h-more" data-go="calendar">+' + more + ' more</button>' : '') +
+        }).join('') +
+        shownTd.map(todoRow).join('') +
+        (moreEv > 0 ? '<button class="h-more" data-go="calendar">+' + moreEv + ' more</button>' : '') +
+        (moreTd > 0 ? '<button class="h-more" data-go="tasks">+' + moreTd + ' todo</button>' : '') +
         '</div>';
     }).join('');
+  }
+
+  function anyoneStrip() {
+    var any = openTodos('any');
+    if (!any.length) return '';
+    var shown = any.slice(0, 4);
+    var more = any.length - shown.length;
+    return '<div class="h-anyone-head"><span class="label">Anyone</span></div>' +
+      '<div class="h-anyone-list">' + shown.map(todoRow).join('') +
+      (more > 0 ? '<button class="h-more" data-go="tasks">+' + more + ' more</button>' : '') +
+      '</div>';
+  }
+
+  function completeTodo(c, by) {
+    c.done = true;
+    if (by) c.doneBy = by;
+    var earner = D.stars[c.who] != null ? c.who : (by && D.stars[by] != null ? by : null);
+    if (earner && c.stars) D.stars[earner] += c.stars;
+    if (App.sync) App.sync.chore(c.id, true, by);
+    App.emit('data');
+  }
+
+  function whoDidTodo(c) {
+    App.sheet('<div class="sheet-pad"><div class="label">' + (c.emoji || '✓') + ' ' + App.esc(c.title) + '</div><h2 class="serif sheet-h">Who did it?</h2>' +
+      '<div class="add-who add-who--big">' + D.people.map(function (p) {
+        return '<button class="who-btn" data-by="' + p.id + '" style="' + App.pstyle(p) + '">' + App.avatar(p, 88) + '<span>' + p.name + '</span></button>';
+      }).join('') + '</div></div>', {
+      onMount: function (s, close) {
+        s.addEventListener('click', function (e) {
+          var b = e.target.closest('[data-by]');
+          if (!b) return;
+          close();
+          completeTodo(c, b.dataset.by);
+        });
+      }
+    });
+  }
+
+  function paintDay() {
+    if (!V.el) return;
+    V.el.querySelector('.h-lanes').innerHTML = lanes();
+    var strip = V.el.querySelector('.h-anyone');
+    strip.innerHTML = anyoneStrip();
+    strip.style.cssText = strip.firstChild ? App.pstyle(D.family) : '';
   }
 
   function ring(done, total, size) {
@@ -241,7 +304,7 @@
     el.querySelector('.h-weather').innerHTML = weather();
     el.querySelector('.h-sports').innerHTML = sports();
     el.querySelector('.h-hero-slot').innerHTML = hero();
-    el.querySelector('.h-lanes').innerHTML = lanes();
+    paintDay();
     el.querySelector('.h-health').innerHTML = health();
   }
 
@@ -258,12 +321,20 @@
           '<div class="h-clock" data-go="calendar"></div>' +
           '<button type="button" class="h-weather" data-wx aria-label="Weather details"></button>' +
           '<div class="h-sports" aria-label="Sports scores"></div>' +
-          '<div class="h-main"><div class="h-hero-slot"></div><div class="h-lanes"></div></div>' +
+          '<div class="h-main"><div class="h-hero-slot"></div><div class="h-day"><div class="h-lanes"></div><div class="h-anyone"></div></div></div>' +
           '<div class="h-side">' +
           '  <button class="h-photo" data-go="photos"><div class="h-photo-stage"></div><div class="h-photo-cap"></div></button>' +
           '  <button type="button" class="h-health" data-go="body" aria-label="Body health summary"></button>' +
           '</div></div>';
         el.addEventListener('click', function (e) {
+          var ch = e.target.closest('[data-ch]');
+          if (ch) {
+            var c = (D.chores || []).filter(function (x) { return x.id === ch.dataset.ch; })[0];
+            if (!c || c.done) return;
+            if (c.who === 'any') whoDidTodo(c);
+            else completeTodo(c);
+            return;
+          }
           var ev = e.target.closest('[data-ev]');
           if (ev) { App.eventSheet(App.findEvent(ev.dataset.ev)); return; }
           var wx = e.target.closest('[data-wx]');
@@ -286,7 +357,7 @@
     V.el.querySelector('.h-hero-slot').innerHTML = hero();
     if (n.getMinutes() === 0) {
       V.el.querySelector('.h-weather').innerHTML = weather();
-      V.el.querySelector('.h-lanes').innerHTML = lanes();
+      paintDay();
     }
   });
   App.on('data', function () { if (App.current === 'home') paint(); });

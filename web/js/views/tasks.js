@@ -3,6 +3,7 @@
   'use strict';
   var D = window.DATA;
   var V = { el: null, routine: null, pending: {} };
+  var EMOJIS = ['✓', '⭐', '🧹', '📚', '🦷', '🛏️', '🍽️', '🧺'];
   function lanes() { return D.people.map(function (p) { return p.id; }).concat(['any']); }
 
   function routine() { return V.routine ? D.routines.filter(function (r) { return r.id === V.routine; })[0] : App.currentRoutine(); }
@@ -57,6 +58,7 @@
       '<div class="t-title"><div class="label">' + (r.id === auto.id ? 'Right now · ' : '') + r.range + '</div><h1 class="serif">' + r.name + '</h1></div>' +
       '<div class="seg">' + D.routines.map(function (x) { return '<button class="' + (x.id === r.id ? 'is-on' : '') + '" data-r="' + x.id + '">' + x.name + '</button>'; }).join('') + '</div>' +
       '<div class="t-progress"><span class="num">' + done + '<small>/' + inR.length + '</small></span><div class="t-bar"><i style="width:' + (inR.length ? done / inR.length * 100 : 0) + '%"></i></div><span class="label">done</span></div>' +
+      '<button class="fab t-add" data-add aria-label="Add todo">' + App.icon('plus', 26) + '</button>' +
       '</header>' +
       '<div class="ch-lanes">' + lanes().map(function (w) { return lane(w, r); }).join('') + '</div>' +
       '</div>';
@@ -75,8 +77,6 @@
       render();
       App.emit('data');
       if (App.sync) App.sync.chore(c.id, true, by);
-      var laneList = listFor(c.who, r);
-      var laneDone = laneList.every(function (x) { return x.done; });
       var allDone = D.chores.filter(function (x) { return x.r === r.id; }).every(function (x) { return x.done; });
       if (allDone) {
         App.toast('<b>' + r.name + ' routine complete!</b> Everyone crushed it.', { icon: 'star', ms: 5000 });
@@ -114,8 +114,87 @@
     });
   }
 
+  function addSheet() {
+    var r = routine();
+    var st = {
+      who: D.people[0] ? D.people[0].id : 'any',
+      r: r.id,
+      stars: 0,
+      emoji: EMOJIS[0]
+    };
+    App.sheet(
+      '<div class="sheet-pad add">' +
+      '<div class="label">New todo</div>' +
+      '<input class="big-input serif" placeholder="What needs doing?" data-f="title">' +
+      '<div class="label">Who</div><div class="add-who">' + D.people.map(function (p) {
+        return '<button class="who-btn' + (st.who === p.id ? ' is-on' : '') + '" data-who="' + p.id + '" style="' + App.pstyle(p) + '">' + App.avatar(p, 56) + '<span>' + p.name + '</span></button>';
+      }).join('') +
+      '<button class="who-btn' + (st.who === 'any' ? ' is-on' : '') + '" data-who="any" style="' + App.pstyle(D.family) + '">' + App.avatar(D.family, 56) + '<span>Anyone</span></button></div>' +
+      '<div class="label">When</div><div class="chips">' + D.routines.map(function (x) {
+        return '<button class="chip' + (x.id === st.r ? ' is-on' : '') + '" data-routine="' + x.id + '">' + x.name + '</button>';
+      }).join('') + '</div>' +
+      '<div class="add-row">' +
+      '<div><div class="label">Stars</div><div class="chips">' +
+      '<button class="chip' + (st.stars === 0 ? ' is-on' : '') + '" data-stars="0">None</button>' +
+      '<button class="chip' + (st.stars === 1 ? ' is-on' : '') + '" data-stars="1">' + App.icon('star', 18, 'i--fill') + ' 1</button>' +
+      '</div></div>' +
+      '<div><div class="label">Icon</div><div class="chips">' + EMOJIS.map(function (em) {
+        return '<button class="chip chip--emoji' + (em === st.emoji ? ' is-on' : '') + '" data-emoji="' + em + '">' + em + '</button>';
+      }).join('') + '</div></div>' +
+      '</div>' +
+      '<div class="sheet-actions"><button class="btn btn--ghost" data-close>Cancel</button><button class="btn btn--solid" data-save>Add todo</button></div>' +
+      '</div>', {
+      cls: 'sheet--wide',
+      onMount: function (s, close) {
+        var input = s.querySelector('[data-f=title]');
+        setTimeout(function () { if (input) input.focus(); }, 50);
+        s.addEventListener('click', function (ev) {
+          var t = ev.target.closest('button');
+          if (!t) return;
+          if (t.dataset.who) {
+            st.who = t.dataset.who;
+            App.$$('[data-who]', s).forEach(function (b) { b.classList.toggle('is-on', b.dataset.who === st.who); });
+          }
+          if (t.dataset.routine) {
+            st.r = t.dataset.routine;
+            App.$$('[data-routine]', s).forEach(function (b) { b.classList.toggle('is-on', b === t); });
+          }
+          if (t.dataset.stars != null) {
+            st.stars = +t.dataset.stars;
+            App.$$('[data-stars]', s).forEach(function (b) { b.classList.toggle('is-on', b === t); });
+          }
+          if (t.dataset.emoji) {
+            st.emoji = t.dataset.emoji;
+            App.$$('[data-emoji]', s).forEach(function (b) { b.classList.toggle('is-on', b === t); });
+          }
+          if (t.hasAttribute('data-close')) { close(); return; }
+          if (t.hasAttribute('data-save')) {
+            var title = (input.value || '').trim();
+            if (!title) { input.focus(); return; }
+            var chore = {
+              id: 'c-tmp-' + Date.now(),
+              title: title,
+              who: st.who,
+              r: st.r,
+              emoji: st.emoji,
+              stars: st.stars,
+              done: false
+            };
+            D.chores.push(chore);
+            close();
+            render();
+            App.emit('data');
+            if (App.sync) App.sync.addChore({ title: title, who: st.who, r: st.r, emoji: st.emoji, stars: st.stars });
+            App.toast('<b>' + App.esc(title) + '</b> added', { icon: 'check' });
+          }
+        });
+      }
+    });
+  }
+
   function onClick(e) {
     var t;
+    if ((t = e.target.closest('[data-add]'))) { addSheet(); return; }
     if ((t = e.target.closest('[data-r]'))) { V.routine = t.dataset.r === App.currentRoutine().id ? null : t.dataset.r; return render(); }
     if ((t = e.target.closest('[data-ch]'))) {
       var c = D.chores.filter(function (x) { return x.id === t.dataset.ch; })[0];
@@ -142,4 +221,5 @@
     }
   });
   App.on('time', function () { V.routine = null; });
+  App.on('data', function () { if (App.current === 'tasks' && V.el) render(); });
 })();
