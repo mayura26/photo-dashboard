@@ -19,6 +19,85 @@
 .amb-who { display: flex; gap: 8px; }
 .amb-who .avatar--away { background: rgba(0, 0, 0, .3); }
 
+/* Active task pill */
+@keyframes ambIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.amb-task {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+  min-width: 220px; max-width: 360px; padding: 12px 18px 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+  animation: ambIn .55s ease both;
+}
+.amb-task-lab {
+  font-family: var(--serif); font-style: italic; font-size: 18px;
+  color: rgba(255, 255, 255, .72); line-height: 1;
+}
+.amb-task-row {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  min-width: 0;
+}
+.amb-task-mark {
+  flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgb(var(--c-rgb) / .35);
+  font-size: 16px; line-height: 1;
+}
+.amb-task-n {
+  flex: 1; min-width: 0;
+  font-size: 22px; font-weight: 700; letter-spacing: -.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.amb-task-who {
+  flex: 0 0 auto;
+  font-size: 14px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: rgba(255, 255, 255, .65);
+}
+.amb-task-more {
+  flex: 0 0 auto;
+  font-size: 15px; font-weight: 700; color: rgba(255, 255, 255, .55);
+}
+.amb-task .avatar { flex: 0 0 auto; }
+
+/* Compact Garmin strip */
+.amb-g {
+  display: flex; align-items: stretch; gap: 8px;
+}
+.amb-g-chip {
+  --tone: rgba(255, 255, 255, .9);
+  display: flex; align-items: center; gap: 8px;
+  min-width: 92px; padding: 10px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);
+  color: #fff;
+  animation: ambIn .55s ease both;
+  animation-delay: calc(var(--d, 0) * 70ms + 80ms);
+}
+.amb-g-chip.is-ok { --tone: #3DDBA0; }
+.amb-g-chip.is-mid { --tone: #F0B429; }
+.amb-g-chip.is-hot { --tone: #F07167; }
+.amb-g-chip > .i { color: var(--tone); flex: 0 0 auto; }
+.amb-g-meta {
+  display: flex; flex-direction: column; gap: 1px; min-width: 0; line-height: 1.05;
+}
+.amb-g-meta b { font-size: 26px; letter-spacing: -.03em; color: var(--tone); }
+.amb-g-meta small {
+  font-size: 12px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: rgba(255, 255, 255, .55);
+}
+.amb-g-bar {
+  display: block; margin-top: 4px; width: 48px; height: 3px;
+  border-radius: 999px; background: rgba(255, 255, 255, .18); overflow: hidden;
+}
+.amb-g-bar > i {
+  display: block; height: 100%; border-radius: inherit;
+  background: rgba(255, 255, 255, .85);
+}
+
 /* Night (dim red clock) — kept above a minimum readable brightness */
 .night { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 66; background: #000; display: none; place-items: center; cursor: pointer; }
 .stage[data-mode="night"] .night { display: grid; }
