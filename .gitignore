@@ -11,6 +11,7 @@ data/
 .env
 services/garmin/.venv/
 services/garmin/.garmin-tokens/
+.garmin-tokens/
 services/garmin/__pycache__/
 __pycache__/
 *.pyc
