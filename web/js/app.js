@@ -94,7 +94,10 @@
   App.events = function () {
     return D.events.slice();
   };
-  App.isFamily = function (e) { return e.people.length >= D.people.length; };
+  App.isFamily = function (e) {
+    if (e && e.source === 'family') return true;
+    return e && e.people && e.people.length >= D.people.length;
+  };
   App.evColor = function (e) { return App.isFamily(e) ? D.family : App.person(e.people[0]); };
   App.timedOn = function (day, pid) {
     var s = App.dayStart(day), e = App.addDays(s, 1);

@@ -1,4 +1,4 @@
-[ ] Google calender sync
+[x] Google calender sync
 [x] Weather has card popup
 [ ] Basic auth function
 [x] Garmin Sync

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
@@ -11,8 +13,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"photo-dashboard/internal/demo"
+	"photo-dashboard/internal/gcal"
 	"photo-dashboard/internal/weather"
 	"photo-dashboard/internal/webfs"
 )
@@ -34,6 +38,7 @@ func main() {
 	hub := demo.NewHub(store)
 
 	startWeatherPoller(store, hub)
+	startGCalPoller(store, hub)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", hub.ServeWS)
@@ -110,6 +115,112 @@ func startWeatherPoller(store *demo.Store, hub *demo.Hub) {
 	}
 	p.Start()
 	log.Printf("weather: Open-Meteo poller every %s for %.4f, %.4f", interval, lat, lon)
+}
+
+func startGCalPoller(store *demo.Store, hub *demo.Hub) {
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+	refresh := os.Getenv("GOOGLE_REFRESH_TOKEN")
+	if clientID == "" || clientSecret == "" || refresh == "" {
+		log.Printf("gcal: OAuth env unset; using seed calendar")
+		return
+	}
+
+	alexID := os.Getenv("GCAL_ALEX")
+	jordanID := os.Getenv("GCAL_JORDAN")
+	familyID := os.Getenv("GCAL_FAMILY")
+	if alexID == "" && jordanID == "" && familyID == "" {
+		log.Printf("gcal: no GCAL_ALEX/GCAL_JORDAN/GCAL_FAMILY; using seed calendar")
+		return
+	}
+
+	var people []string
+	var cals []gcal.CalendarRef
+	if alexID != "" {
+		people = append(people, "alex")
+		cals = append(cals, gcal.CalendarRef{ID: alexID, Source: "personal", People: []string{"alex"}})
+	}
+	if jordanID != "" {
+		people = append(people, "jordan")
+		cals = append(cals, gcal.CalendarRef{ID: jordanID, Source: "personal", People: []string{"jordan"}})
+	}
+	if familyID != "" {
+		famPeople := people
+		if len(famPeople) == 0 {
+			famPeople = []string{"alex", "jordan"}
+		}
+		cals = append(cals, gcal.CalendarRef{ID: familyID, Source: "family", People: append([]string(nil), famPeople...)})
+	}
+
+	ctx := context.Background()
+	client, err := gcal.NewClient(ctx, clientID, clientSecret, refresh)
+	if err != nil {
+		log.Printf("gcal: client init failed: %v; using seed calendar", err)
+		return
+	}
+
+	interval := 15 * time.Minute
+	if v := os.Getenv("GCAL_REFRESH"); v != "" {
+		if d, err := parseFlexDuration(v); err != nil {
+			log.Printf("gcal: invalid GCAL_REFRESH %q; using %s", v, interval)
+		} else if d > 0 {
+			interval = d
+		}
+	}
+	past := 7 * 24 * time.Hour
+	if v := os.Getenv("GCAL_WINDOW_PAST"); v != "" {
+		if d, err := parseFlexDuration(v); err != nil {
+			log.Printf("gcal: invalid GCAL_WINDOW_PAST %q; using %s", v, past)
+		} else if d > 0 {
+			past = d
+		}
+	}
+	future := 60 * 24 * time.Hour
+	if v := os.Getenv("GCAL_WINDOW_FUTURE"); v != "" {
+		if d, err := parseFlexDuration(v); err != nil {
+			log.Printf("gcal: invalid GCAL_WINDOW_FUTURE %q; using %s", v, future)
+		} else if d > 0 {
+			future = d
+		}
+	}
+
+	p := &gcal.Poller{
+		Client:   client,
+		Cals:     cals,
+		Interval: interval,
+		Past:     past,
+		Future:   future,
+		Store:    store,
+		Hub:      hub,
+	}
+	p.Start()
+	log.Printf("gcal: poller every %s (%d calendar(s), window -%s / +%s)", interval, len(cals), past, future)
+}
+
+// parseFlexDuration accepts Go durations plus a trailing "d" for days (e.g. 7d, 15m).
+func parseFlexDuration(s string) (time.Duration, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, fmt.Errorf("empty duration")
+	}
+	if strings.HasSuffix(s, "d") && len(s) > 1 {
+		n := s[:len(s)-1]
+		ok := true
+		for _, r := range n {
+			if !unicode.IsDigit(r) {
+				ok = false
+				break
+			}
+		}
+		if ok {
+			days, err := strconv.Atoi(n)
+			if err != nil {
+				return 0, err
+			}
+			return time.Duration(days) * 24 * time.Hour, nil
+		}
+	}
+	return time.ParseDuration(s)
 }
 
 func spaFileServer(root fs.FS) http.Handler {

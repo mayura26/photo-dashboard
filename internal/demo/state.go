@@ -34,11 +34,12 @@ type Snapshot struct {
 	Media      map[string]any   `json:"media"`
 	Cameras    json.RawMessage  `json:"cameras"`
 	Scenes     []map[string]any `json:"scenes"`
-	Weather    json.RawMessage  `json:"weather"`
-	Garmin     json.RawMessage  `json:"garmin"`
-	Photos     []map[string]any `json:"photos"`
-	Agents     json.RawMessage  `json:"agents"`
-	TimeOffset int64            `json:"timeOffset"`
+	Weather      json.RawMessage  `json:"weather"`
+	Garmin       json.RawMessage  `json:"garmin"`
+	Photos       []map[string]any `json:"photos"`
+	Agents       json.RawMessage  `json:"agents"`
+	TimeOffset   int64            `json:"timeOffset"`
+	CalendarLive bool             `json:"calendarLive"`
 }
 
 type Store struct {
@@ -167,6 +168,29 @@ func (s *Store) SetGarmin(raw json.RawMessage) {
 	s.snap.Garmin = append(json.RawMessage(nil), raw...)
 }
 
+// SetEvents replaces calendar events and marks the snapshot as live Google Calendar sync.
+func (s *Store) SetEvents(events []map[string]any) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	cp := make([]map[string]any, len(events))
+	for i, e := range events {
+		m := make(map[string]any, len(e))
+		for k, v := range e {
+			m[k] = v
+		}
+		cp[i] = m
+	}
+	s.snap.Events = cp
+	s.snap.CalendarLive = true
+}
+
+// CalendarLive reports whether events are driven by Google Calendar sync.
+func (s *Store) CalendarLive() bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.snap.CalendarLive
+}
+
 func (s *Store) cloneLocked() Snapshot {
 	b, _ := json.Marshal(s.snap)
 	var out Snapshot
@@ -226,8 +250,15 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 			s.snap.Media[k] = v
 		}
 	case "addEvent":
+		if s.snap.CalendarLive {
+			// Read-only while Google Calendar sync is active.
+			break
+		}
 		s.addEvent(payload)
 	case "removeEvent":
+		if s.snap.CalendarLive {
+			break
+		}
 		id, _ := payload["id"].(string)
 		filtered := s.snap.Events[:0]
 		for _, e := range s.snap.Events {
