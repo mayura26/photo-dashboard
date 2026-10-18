@@ -14,6 +14,7 @@ const (
 	keyGroceries = "groceries"
 	keyChores    = "chores"
 	keyStars     = "stars"
+	keyWeekHits  = "week_hits"
 	keyNextGID   = "next_gid"
 	keyGarmin    = "garmin"
 )
@@ -59,12 +60,14 @@ func (d *DB) Close() error {
 	return d.sql.Close()
 }
 
-// Mutable holds groceries, chores, stars, and the grocery id counter.
+// Mutable holds groceries, chores, stars, week hits, and the grocery id counter.
 type Mutable struct {
 	Groceries []map[string]any
 	Chores    []map[string]any
 	Stars     map[string]float64
-	NextGID   int
+	// WeekHits maps person id → YYYY-MM-DD → completed-all-chores that day.
+	WeekHits map[string]map[string]bool
+	NextGID  int
 }
 
 // LoadMutable returns persisted shopping/TODO state.
@@ -110,6 +113,19 @@ func (d *DB) LoadMutable() (m Mutable, ok bool, err error) {
 		m.Stars = map[string]float64{}
 	}
 
+	raw, found, err = d.get(keyWeekHits)
+	if err != nil {
+		return m, false, err
+	}
+	if found {
+		if err := json.Unmarshal(raw, &m.WeekHits); err != nil {
+			return m, false, fmt.Errorf("persist: week_hits: %w", err)
+		}
+	}
+	if m.WeekHits == nil {
+		m.WeekHits = map[string]map[string]bool{}
+	}
+
 	raw, found, err = d.get(keyNextGID)
 	if err != nil {
 		return m, false, err
@@ -125,7 +141,7 @@ func (d *DB) LoadMutable() (m Mutable, ok bool, err error) {
 	return m, true, nil
 }
 
-// SaveMutable replaces groceries, chores, stars, and next_gid in one transaction.
+// SaveMutable replaces groceries, chores, stars, week hits, and next_gid in one transaction.
 func (d *DB) SaveMutable(m Mutable) error {
 	if m.Groceries == nil {
 		m.Groceries = []map[string]any{}
@@ -135,6 +151,9 @@ func (d *DB) SaveMutable(m Mutable) error {
 	}
 	if m.Stars == nil {
 		m.Stars = map[string]float64{}
+	}
+	if m.WeekHits == nil {
+		m.WeekHits = map[string]map[string]bool{}
 	}
 	if m.NextGID < 1 {
 		m.NextGID = 100
@@ -153,6 +172,7 @@ func (d *DB) SaveMutable(m Mutable) error {
 		{keyGroceries, m.Groceries},
 		{keyChores, m.Chores},
 		{keyStars, m.Stars},
+		{keyWeekHits, m.WeekHits},
 		{keyNextGID, m.NextGID},
 	}
 	for _, p := range pairs {

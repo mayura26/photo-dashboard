@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var D = window.DATA;
-  var V = { el: null, routine: null, pending: {} };
+  var V = { el: null, routine: null, pending: {}, holdTimer: null, skipClick: false };
   var EMOJIS = ['✓', '⭐', '🧹', '📚', '🦷', '🛏️', '🍽️', '🧺'];
   function lanes() { return D.people.map(function (p) { return p.id; }).concat(['any']); }
 
@@ -76,6 +76,7 @@
     setTimeout(function () {
       delete V.pending[c.id];
       c.done = true;
+      c.doneOn = todayKey();
       if (by) c.doneBy = by;
       var earner = D.stars[c.who] != null ? c.who : (by && D.stars[by] != null ? by : null);
       if (earner && c.stars) D.stars[earner] += c.stars;
@@ -92,6 +93,7 @@
         undo: function () {
           c.done = false;
           delete c.doneBy;
+          delete c.doneOn;
           if (earner && c.stars) D.stars[earner] -= c.stars;
           render();
           App.emit('data');
@@ -119,6 +121,54 @@
     });
   }
 
+  function delaySheet(c) {
+    App.sheet(
+      '<div class="sheet-pad">' +
+      '<div class="label">' + c.emoji + ' ' + App.esc(c.title) + '</div>' +
+      '<h2 class="serif sheet-h">Delay</h2>' +
+      '<div class="chips">' +
+      [1, 2, 3].map(function (n) {
+        return '<button class="chip" data-delay="' + n + '">' + n + ' day' + (n > 1 ? 's' : '') + '</button>';
+      }).join('') +
+      '</div>' +
+      '<div class="sheet-actions"><button class="btn btn--ghost" data-close>Cancel</button></div>' +
+      '</div>', {
+      onMount: function (s, close) {
+        s.addEventListener('click', function (e) {
+          var t = e.target.closest('button');
+          if (!t) return;
+          if (t.hasAttribute('data-close')) { close(); return; }
+          var days = +t.dataset.delay;
+          if (!days) return;
+          var day = App.dayKey(App.addDays(App.now(), days));
+          c.day = day;
+          close();
+          render();
+          App.emit('data');
+          if (App.sync) App.sync.delayChore(c.id, days);
+          App.toast('<b>' + App.esc(c.title) + '</b> delayed · ' + App.fmt.rel(App.addDays(App.now(), days)), { icon: 'check' });
+        });
+      }
+    });
+  }
+
+  function clearHold() {
+    if (V.holdTimer) { clearTimeout(V.holdTimer); V.holdTimer = null; }
+  }
+
+  function onPointerDown(e) {
+    var btn = e.target.closest('[data-ch]');
+    if (!btn || e.button !== 0) return;
+    var c = D.chores.filter(function (x) { return x.id === btn.dataset.ch; })[0];
+    if (!c || c.done || V.pending[c.id]) return;
+    clearHold();
+    V.holdTimer = setTimeout(function () {
+      V.holdTimer = null;
+      V.skipClick = true;
+      delaySheet(c);
+    }, 500);
+  }
+
   function addSheet() {
     var now = App.now();
     var r = routine();
@@ -128,8 +178,23 @@
       r: r.id,
       dayi: 0,
       stars: 0,
-      emoji: EMOJIS[0]
+      emoji: EMOJIS[0],
+      recurring: false
     };
+    function dayBlock() {
+      if (st.recurring) return '<div class="label">Repeats</div><div class="ch-hint">Every day · resets tomorrow after done</div>';
+      return '<div class="label">Day</div><div class="chips">' + dayOffsets.map(function (i) {
+        var d = App.addDays(now, i);
+        return '<button class="chip' + (i === st.dayi ? ' is-on' : '') + '" data-dayi="' + i + '">' + (i < 2 ? App.fmt.rel(d) : App.fmt.dayShort(d) + ' ' + d.getDate()) + '</button>';
+      }).join('') + '</div>';
+    }
+    function paintExtras(s) {
+      var host = s.querySelector('[data-day-block]');
+      if (host) host.innerHTML = dayBlock();
+      App.$$('[data-recurring]', s).forEach(function (b) {
+        b.classList.toggle('is-on', (b.dataset.recurring === '1') === st.recurring);
+      });
+    }
     App.sheet(
       '<div class="sheet-pad add">' +
       '<div class="label">New todo</div>' +
@@ -138,10 +203,11 @@
         return '<button class="who-btn' + (st.who === p.id ? ' is-on' : '') + '" data-who="' + p.id + '" style="' + App.pstyle(p) + '">' + App.avatar(p, 56) + '<span>' + p.name + '</span></button>';
       }).join('') +
       '<button class="who-btn' + (st.who === 'any' ? ' is-on' : '') + '" data-who="any" style="' + App.pstyle(D.family) + '">' + App.avatar(D.family, 56) + '<span>Anyone</span></button></div>' +
-      '<div class="label">Day</div><div class="chips">' + dayOffsets.map(function (i) {
-        var d = App.addDays(now, i);
-        return '<button class="chip' + (i === st.dayi ? ' is-on' : '') + '" data-dayi="' + i + '">' + (i < 2 ? App.fmt.rel(d) : App.fmt.dayShort(d) + ' ' + d.getDate()) + '</button>';
-      }).join('') + '</div>' +
+      '<div class="label">Type</div><div class="chips">' +
+      '<button class="chip is-on" data-recurring="0">One-off</button>' +
+      '<button class="chip" data-recurring="1">Every day</button>' +
+      '</div>' +
+      '<div data-day-block>' + dayBlock() + '</div>' +
       '<div class="label">Routine</div><div class="chips">' + D.routines.map(function (x) {
         return '<button class="chip' + (x.id === st.r ? ' is-on' : '') + '" data-routine="' + x.id + '">' + x.name + '</button>';
       }).join('') + '</div>' +
@@ -167,6 +233,11 @@
             st.who = t.dataset.who;
             App.$$('[data-who]', s).forEach(function (b) { b.classList.toggle('is-on', b.dataset.who === st.who); });
           }
+          if (t.dataset.recurring != null) {
+            st.recurring = t.dataset.recurring === '1';
+            if (st.recurring) st.dayi = 0;
+            paintExtras(s);
+          }
           if (t.dataset.dayi != null) {
             st.dayi = +t.dataset.dayi;
             App.$$('[data-dayi]', s).forEach(function (b) { b.classList.toggle('is-on', b === t); });
@@ -187,7 +258,7 @@
           if (t.hasAttribute('data-save')) {
             var title = (input.value || '').trim();
             if (!title) { input.focus(); return; }
-            var day = App.dayKey(App.addDays(now, st.dayi));
+            var day = App.dayKey(App.addDays(now, st.recurring ? 0 : st.dayi));
             var chore = {
               id: 'c-tmp-' + Date.now(),
               title: title,
@@ -196,14 +267,15 @@
               emoji: st.emoji,
               stars: st.stars,
               day: day,
-              done: false
+              done: false,
+              recurring: !!st.recurring
             };
             D.chores.push(chore);
             close();
             render();
             App.emit('data');
-            if (App.sync) App.sync.addChore({ title: title, who: st.who, r: st.r, emoji: st.emoji, stars: st.stars, day: day });
-            App.toast('<b>' + App.esc(title) + '</b> added' + (st.dayi ? ' · ' + App.fmt.rel(App.addDays(now, st.dayi)) : ''), { icon: 'check' });
+            if (App.sync) App.sync.addChore({ title: title, who: st.who, r: st.r, emoji: st.emoji, stars: st.stars, day: day, recurring: !!st.recurring });
+            App.toast('<b>' + App.esc(title) + '</b> added' + (st.recurring ? ' · every day' : (st.dayi ? ' · ' + App.fmt.rel(App.addDays(now, st.dayi)) : '')), { icon: 'check' });
           }
         });
       }
@@ -212,6 +284,7 @@
 
   function onClick(e) {
     var t;
+    if (V.skipClick) { V.skipClick = false; return; }
     if ((t = e.target.closest('[data-add]'))) { addSheet(); return; }
     if ((t = e.target.closest('[data-r]'))) { V.routine = t.dataset.r === App.currentRoutine().id ? null : t.dataset.r; return render(); }
     if ((t = e.target.closest('[data-ch]'))) {
@@ -222,6 +295,7 @@
         var earner = D.stars[c.who] != null ? c.who : (c.doneBy && D.stars[c.doneBy] != null ? c.doneBy : null);
         if (earner && c.stars) D.stars[earner] -= c.stars;
         delete c.doneBy;
+        delete c.doneOn;
         render();
         App.emit('data');
         if (App.sync) App.sync.chore(c.id, false);
@@ -234,7 +308,13 @@
 
   App.register('tasks', {
     show: function (el) {
-      if (!V.el) { V.el = el; el.addEventListener('click', onClick); }
+      if (!V.el) {
+        V.el = el;
+        el.addEventListener('click', onClick);
+        el.addEventListener('pointerdown', onPointerDown);
+        el.addEventListener('pointerup', clearHold);
+        el.addEventListener('pointercancel', clearHold);
+      }
       render();
     }
   });

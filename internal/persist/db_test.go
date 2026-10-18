@@ -31,8 +31,9 @@ func TestSaveLoadRoundTrip(t *testing.T) {
 		Chores: []map[string]any{
 			{"id": "c1", "title": "Dishes", "done": true, "stars": 1.0, "who": "any"},
 		},
-		Stars:   map[string]float64{"mayura": 3},
-		NextGID: 142,
+		Stars:    map[string]float64{"mayura": 3},
+		WeekHits: map[string]map[string]bool{"mayura": {"2026-10-13": true}},
+		NextGID:  142,
 	}
 	if err := db.SaveMutable(in); err != nil {
 		t.Fatal(err)
@@ -56,6 +57,9 @@ func TestSaveLoadRoundTrip(t *testing.T) {
 	}
 	if out.Stars["mayura"] != 3 {
 		t.Fatalf("stars: %+v", out.Stars)
+	}
+	if !out.WeekHits["mayura"]["2026-10-13"] {
+		t.Fatalf("weekHits: %+v", out.WeekHits)
 	}
 
 	// Re-open file to confirm durability.
@@ -87,7 +91,7 @@ func TestSaveNilSlices(t *testing.T) {
 	if err != nil || !ok {
 		t.Fatalf("ok=%v err=%v", ok, err)
 	}
-	if out.Groceries == nil || out.Chores == nil || out.Stars == nil {
+	if out.Groceries == nil || out.Chores == nil || out.Stars == nil || out.WeekHits == nil {
 		t.Fatalf("nil collections: %+v", out)
 	}
 	if out.NextGID != 100 {

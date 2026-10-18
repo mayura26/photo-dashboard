@@ -32,6 +32,7 @@ function patchMutations() {
   App.sync = {
     chore(id, done, doneBy) { store.dispatch('setChore', { id, done, doneBy }); },
     addChore(payload) { store.dispatch('addChore', payload); },
+    delayChore(id, days) { store.dispatch('delayChore', { id, days }); },
     grocery(id, patch) { store.dispatch('setGrocery', Object.assign({ id }, patch)); },
     addGrocery(payload) { store.dispatch('addGrocery', payload); },
     clearChecked() { store.dispatch('clearChecked', {}); },

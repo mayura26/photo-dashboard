@@ -10,23 +10,52 @@
 .amb-wx { display: flex; align-items: center; gap: 12px; }
 .amb-wx .num { font-size: 72px; line-height: .8; }
 .amb-wx small { font-family: var(--serif); font-size: 26px; font-style: italic; max-width: 220px; line-height: 1.05; }
-.amb-next {
-  display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 20px; border-radius: 999px;
-  background: rgba(255, 255, 255, .16);
-  font-size: 20px; font-weight: 700;
-}
-.amb-next i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2px #fff; }
-.amb-who { display: flex; gap: 8px; }
-.amb-who .avatar--away { background: rgba(0, 0, 0, .3); }
 
-/* Active task pill */
+/* Upcoming sports — top-left glance chip */
+.amb-sports {
+  position: absolute; top: 40px; left: 60px; z-index: 1;
+  max-width: 320px; pointer-events: none;
+}
+.amb-sp {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 16px 14px;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, .42);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: ambIn .55s ease both;
+}
+.amb-sp-league {
+  font-size: 12px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: rgba(255, 255, 255, .58);
+}
+.amb-sp-match {
+  display: flex; align-items: baseline; gap: 8px; min-width: 0;
+  font-size: 20px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15;
+}
+.amb-sp-match b {
+  min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.amb-sp-match i {
+  font-style: normal; font-size: 13px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .45); flex: 0 0 auto;
+}
+.amb-sp-when {
+  font-family: var(--serif); font-style: italic; font-size: 18px;
+  color: rgba(255, 255, 255, .72);
+}
+
 @keyframes ambIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Schedule card — calendar / Plan My Day / todo */
 .amb-task {
   display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
-  min-width: 220px; max-width: 360px; padding: 12px 18px 14px;
+  min-width: 240px; max-width: 380px; padding: 12px 18px 14px;
   border-radius: 22px;
   background: rgba(255, 255, 255, .16);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
@@ -40,6 +69,10 @@
   display: flex; align-items: center; gap: 10px; width: 100%;
   min-width: 0;
 }
+.amb-task-dot {
+  flex: 0 0 auto; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--c, #fff); box-shadow: 0 0 0 2px rgba(255, 255, 255, .85);
+}
 .amb-task-mark {
   flex: 0 0 auto; width: 32px; height: 32px; border-radius: 50%;
   display: grid; place-items: center;
@@ -50,6 +83,11 @@
   flex: 1; min-width: 0;
   font-size: 22px; font-weight: 700; letter-spacing: -.01em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.amb-task-meta {
+  flex: 0 0 auto;
+  font-size: 16px; font-weight: 700; color: rgba(255, 255, 255, .7);
+  letter-spacing: -.01em;
 }
 .amb-task-who {
   flex: 0 0 auto;

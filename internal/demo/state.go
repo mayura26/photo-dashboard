@@ -55,6 +55,8 @@ type Store struct {
 	nextEID        int
 	nextCID        int
 	db             *persist.DB
+	weekHits       map[string]map[string]bool
+	choreDay       string // last local day ensureChoreDayLocked ran for
 }
 
 func Load(seedPath string) (*Store, error) {
@@ -66,12 +68,17 @@ func Load(seedPath string) (*Store, error) {
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return nil, err
 	}
-	s := &Store{nextGID: 100, nextEID: 500, nextCID: 100, snap: Snapshot{}}
+	s := &Store{
+		nextGID:  100,
+		nextEID:  500,
+		nextCID:  100,
+		snap:     Snapshot{},
+		weekHits: map[string]map[string]bool{},
+	}
 	s.snap.People = raw["people"]
 	s.snap.Family = raw["family"]
 	s.snap.ALL = raw["ALL"]
 	s.snap.Routines = raw["routines"]
-	s.snap.Week = raw["week"]
 	s.snap.Stores = raw["stores"]
 	s.snap.CatOrder = raw["catOrder"]
 	s.snap.Catalog = raw["catalog"]
@@ -100,6 +107,7 @@ func Load(seedPath string) (*Store, error) {
 	s.snap.Chores = []map[string]any{}
 	s.snap.Stars = map[string]float64{}
 	s.nextGID = 100
+	s.recomputeWeekLocked(todayKey())
 	return s, nil
 }
 
@@ -140,6 +148,7 @@ func (s *Store) AttachPersist(db *persist.DB) error {
 		s.snap.Groceries = []map[string]any{}
 		s.snap.Chores = []map[string]any{}
 		s.snap.Stars = map[string]float64{}
+		s.weekHits = map[string]map[string]bool{}
 		s.nextGID = 100
 		if err := s.saveMutableLocked(); err != nil {
 			return err
@@ -148,12 +157,22 @@ func (s *Store) AttachPersist(db *persist.DB) error {
 		s.snap.Groceries = m.Groceries
 		s.snap.Chores = m.Chores
 		s.snap.Stars = m.Stars
+		s.weekHits = m.WeekHits
+		if s.weekHits == nil {
+			s.weekHits = map[string]map[string]bool{}
+		}
 		s.nextGID = m.NextGID
 		if s.nextGID < maxGroceryID(s.snap.Groceries) {
 			s.nextGID = maxGroceryID(s.snap.Groceries)
 		}
 		if max := maxChoreID(s.snap.Chores); s.nextCID < max {
 			s.nextCID = max
+		}
+	}
+
+	if s.ensureChoreDayLocked() {
+		if err := s.saveMutableLocked(); err != nil {
+			return err
 		}
 	}
 
@@ -193,13 +212,14 @@ func (s *Store) saveMutableLocked() error {
 		Groceries: s.snap.Groceries,
 		Chores:    s.snap.Chores,
 		Stars:     s.snap.Stars,
+		WeekHits:  s.weekHits,
 		NextGID:   s.nextGID,
 	})
 }
 
 func (s *Store) persistAfterMutation(name string) {
 	switch name {
-	case "setChore", "addChore", "setGrocery", "addGrocery", "clearChecked":
+	case "setChore", "addChore", "delayChore", "setGrocery", "addGrocery", "clearChecked":
 		if err := s.saveMutableLocked(); err != nil {
 			log.Printf("persist: save after %s: %v", name, err)
 		}
@@ -262,8 +282,13 @@ func parseTime(v any) (time.Time, bool) {
 }
 
 func (s *Store) Snapshot() Snapshot {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.ensureChoreDayLocked() {
+		if err := s.saveMutableLocked(); err != nil {
+			log.Printf("persist: save after chore day roll: %v", err)
+		}
+	}
 	return s.cloneLocked()
 }
 
@@ -396,6 +421,13 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	if s.ensureChoreDayLocked() {
+		// Persist roll even if the action itself is unrelated.
+		if err := s.saveMutableLocked(); err != nil {
+			log.Printf("persist: save after chore day roll: %v", err)
+		}
+	}
+
 	eventName := ""
 	switch name {
 	case "setTime":
@@ -411,6 +443,8 @@ func (s *Store) Apply(name string, payload map[string]any) (Snapshot, string, er
 		s.setChore(payload)
 	case "addChore":
 		s.addChore(payload)
+	case "delayChore":
+		s.delayChore(payload)
 	case "setGrocery":
 		s.setGrocery(payload)
 	case "addGrocery":
@@ -483,6 +517,7 @@ func (s *Store) setChore(p map[string]any) {
 	id, _ := p["id"].(string)
 	done, _ := p["done"].(bool)
 	doneBy, _ := p["doneBy"].(string)
+	today := todayKey()
 	for _, c := range s.snap.Chores {
 		if c["id"] != id {
 			continue
@@ -508,11 +543,13 @@ func (s *Store) setChore(p map[string]any) {
 		if wasDone && !done {
 			c["done"] = false
 			delete(c, "doneBy")
+			delete(c, "doneOn")
 			if earner != "" && stars > 0 {
 				s.snap.Stars[earner] -= stars
 			}
 		} else if !wasDone && done {
 			c["done"] = true
+			c["doneOn"] = today
 			if doneBy != "" {
 				c["doneBy"] = doneBy
 				if _, ok := s.snap.Stars[doneBy]; ok {
@@ -523,6 +560,8 @@ func (s *Store) setChore(p map[string]any) {
 				s.snap.Stars[earner] += stars
 			}
 		}
+		s.refreshHitsLocked(who, today)
+		s.recomputeWeekLocked(today)
 		return
 	}
 }
@@ -551,25 +590,31 @@ func (s *Store) addChore(p map[string]any) {
 	}
 	day, _ := p["day"].(string)
 	day = strings.TrimSpace(day)
+	today := todayKey()
 	if day == "" {
-		day = time.Now().Format("2006-01-02")
+		day = today
 	} else if _, err := time.Parse("2006-01-02", day); err != nil {
-		day = time.Now().Format("2006-01-02")
+		day = today
 	}
+	recurring, _ := p["recurring"].(bool)
 	if max := maxChoreID(s.snap.Chores); s.nextCID < max {
 		s.nextCID = max
 	}
 	s.nextCID++
-	s.snap.Chores = append(s.snap.Chores, map[string]any{
-		"id":    "c" + itoa(s.nextCID),
-		"title": title,
-		"who":   who,
-		"r":     r,
-		"emoji": emoji,
-		"stars": stars,
-		"day":   day,
-		"done":  false,
-	})
+	chore := map[string]any{
+		"id":        "c" + itoa(s.nextCID),
+		"title":     title,
+		"who":       who,
+		"r":         r,
+		"emoji":     emoji,
+		"stars":     stars,
+		"day":       day,
+		"done":      false,
+		"recurring": recurring,
+	}
+	s.snap.Chores = append(s.snap.Chores, chore)
+	s.refreshHitsLocked(who, today)
+	s.recomputeWeekLocked(today)
 }
 
 func (s *Store) setGrocery(p map[string]any) {

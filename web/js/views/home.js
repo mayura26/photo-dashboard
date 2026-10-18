@@ -204,6 +204,7 @@
 
   function completeTodo(c, by) {
     c.done = true;
+    c.doneOn = App.dayKey(App.now());
     if (by) c.doneBy = by;
     var earner = D.stars[c.who] != null ? c.who : (by && D.stars[by] != null ? by : null);
     if (earner && c.stars) D.stars[earner] += c.stars;

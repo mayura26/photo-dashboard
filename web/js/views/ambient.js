@@ -4,6 +4,13 @@
   var D = window.DATA, $ = App.$;
   var amb = { show: null }, shiftTimer = null;
 
+  // Placeholder fixtures until a D.sports snapshot lands (same as home).
+  var SPORTS = [
+    { team: 'Sydney FC', league: 'A-League', opp: 'Melbourne City', when: 'Sat', status: 'final', score: [2, 1], home: true },
+    { team: 'Swans', league: 'AFL', opp: 'Giants', when: 'Sun 1:20', status: 'upcoming', score: null, home: true },
+    { team: 'Roosters', league: 'NRL', opp: 'Rabbitohs', when: 'Fri', status: 'final', score: [18, 24], home: false }
+  ];
+
   function dash(v) {
     return v == null || v === '' ? '—' : v;
   }
@@ -22,15 +29,30 @@
     return ' is-hot';
   }
 
+  function eventSourceLabel(e) {
+    if (!e) return 'Calendar';
+    if (e.source === 'pmday') return 'Plan My Day';
+    if (e.source === 'family') return 'Family';
+    return 'Calendar';
+  }
+
+  function currentEvent() {
+    var now = App.now();
+    return App.timedOn(now).filter(function (e) { return e.start <= now && e.end > now; })[0] || null;
+  }
+
   function openAmbientTodos() {
     var r = App.currentRoutine();
     var today = App.dayKey(App.now());
     var order = D.people.map(function (p) { return p.id; }).concat(['any']);
     return (D.chores || []).filter(function (c) {
-      if (c.done || c.r !== r.id) return false;
+      if (c.done) return false;
       var day = c.day || today;
       return day <= today;
     }).sort(function (a, b) {
+      // Prefer current-routine todos, then household order.
+      var ra = a.r === r.id ? 0 : 1, rb = b.r === r.id ? 0 : 1;
+      if (ra !== rb) return ra - rb;
       var ia = order.indexOf(a.who), ib = order.indexOf(b.who);
       if (ia < 0) ia = 99;
       if (ib < 0) ib = 99;
@@ -38,22 +60,59 @@
     });
   }
 
-  function ambientTask() {
+  function schedulePill(opts) {
+    return '<div class="amb-task" style="' + (opts.style || '') + '">' +
+      '<div class="amb-task-lab">' + App.esc(opts.lab) + '</div>' +
+      '<div class="amb-task-row">' +
+      (opts.mark ? '<span class="amb-task-mark">' + opts.mark + '</span>' : '<i class="amb-task-dot"></i>') +
+      '<span class="amb-task-n">' + App.esc(opts.title) + '</span>' +
+      (opts.meta ? '<span class="amb-task-meta">' + App.esc(opts.meta) + '</span>' : '') +
+      (opts.who || '') +
+      (opts.more ? '<span class="amb-task-more">+' + opts.more + '</span>' : '') +
+      '</div></div>';
+  }
+
+  // Prefer in-progress calendar/PMD, then next upcoming, then open todos.
+  function ambientSchedule() {
+    var now = App.now();
+    var cur = currentEvent();
+    if (cur) {
+      return schedulePill({
+        lab: 'Now · ' + eventSourceLabel(cur),
+        title: cur.title,
+        meta: App.fmt.time(cur.start, false) + '–' + App.fmt.time(cur.end, false),
+        style: App.pstyle(App.evColor(cur)),
+        who: cur.people && cur.people[0] ? App.avatar(cur.people[0], 28) : ''
+      });
+    }
+    var next = App.nextEvent();
+    if (next) {
+      var mins = Math.round((next.start - now) / 60000);
+      var when = mins > 0 && mins < 24 * 60
+        ? (mins < 60 ? 'in ' + mins + 'm' : App.fmt.time(next.start))
+        : App.fmt.time(next.start);
+      return schedulePill({
+        lab: 'Up next · ' + eventSourceLabel(next),
+        title: next.title,
+        meta: when,
+        style: App.pstyle(App.evColor(next)),
+        who: next.people && next.people[0] ? App.avatar(next.people[0], 28) : ''
+      });
+    }
     var todos = openAmbientTodos();
     if (!todos.length) return '';
     var c = todos[0], more = todos.length - 1;
-    var r = App.currentRoutine();
     var who = c.who === 'any'
       ? '<span class="amb-task-who">Anyone</span>'
       : App.avatar(c.who, 28);
-    return '<div class="amb-task" style="' + App.pstyle(c.who) + '">' +
-      '<div class="amb-task-lab">' + App.esc(r.name || 'Todo') + '</div>' +
-      '<div class="amb-task-row">' +
-      '<span class="amb-task-mark">' + (c.emoji || '✓') + '</span>' +
-      '<span class="amb-task-n">' + App.esc(c.title) + '</span>' +
-      who +
-      (more > 0 ? '<span class="amb-task-more">+' + more + '</span>' : '') +
-      '</div></div>';
+    return schedulePill({
+      lab: 'Todo',
+      title: c.title,
+      mark: c.emoji || '✓',
+      style: App.pstyle(c.who),
+      who: who,
+      more: more > 0 ? more : 0
+    });
   }
 
   function ambientGarmin() {
@@ -83,16 +142,34 @@
       '</div></div>';
   }
 
+  function upcomingSport() {
+    var list = (D.sports && D.sports.fixtures) || SPORTS;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].status === 'upcoming') return list[i];
+    }
+    return null;
+  }
+
+  function ambientSports() {
+    var g = upcomingSport();
+    if (!g) return '';
+    var a = g.home ? g.team : g.opp;
+    var b = g.home ? g.opp : g.team;
+    return '<div class="amb-sp">' +
+      '<span class="amb-sp-league">' + App.esc(g.league) + '</span>' +
+      '<span class="amb-sp-match"><b>' + App.esc(a) + '</b><i>vs</i><b>' + App.esc(b) + '</b></span>' +
+      '<span class="amb-sp-when">' + App.esc(g.when) + '</span>' +
+      '</div>';
+  }
+
   function ambientInfo() {
-    var n = App.now(), w = App.weatherNow(), next = App.nextEvent();
+    var n = App.now(), w = App.weatherNow();
     return '<div class="amb-clock"><div class="amb-time num">' + App.fmt.time(n, false) + '</div>' +
       '<div class="amb-date">' + App.fmt.day(n) + ', ' + App.fmt.month(n) + ' ' + n.getDate() + '</div></div>' +
       '<div class="amb-right">' +
       '<div class="amb-wx">' + App.icon(w.cond, 44) + '<span class="num">' + w.temp + '°</span><small>' + w.summary + '</small></div>' +
-      (next ? '<div class="amb-next" style="' + App.pstyle(App.evColor(next)) + '"><i></i>' + App.esc(next.title) + ' · ' + App.fmt.time(next.start) + '</div>' : '') +
-      ambientTask() +
+      ambientSchedule() +
       ambientGarmin() +
-      '<div class="amb-who">' + D.people.map(function (p) { return App.avatar(p, 34, p.home ? '' : 'avatar--away'); }).join('') + '</div>' +
       '</div>';
   }
   function nightInfo() {
@@ -104,18 +181,21 @@
   }
 
   function paint() {
-    if (App.mode === 'ambient') $('#ambient .amb-info').innerHTML = ambientInfo();
+    if (App.mode === 'ambient') {
+      $('#ambient .amb-info').innerHTML = ambientInfo();
+      $('#ambient .amb-sports').innerHTML = ambientSports();
+    }
     if (App.mode === 'night') $('#night .nt-inner').innerHTML = nightInfo();
   }
 
   // Nudge static content a few px every minute so nothing sits still for hours (image retention)
   function pixelShift() {
     var x = Math.round(Math.random() * 8 - 4), y = Math.round(Math.random() * 8 - 4);
-    App.$$('.amb-info, .nt-inner').forEach(function (el) { el.style.transform = 'translate(' + x + 'px,' + y + 'px)'; });
+    App.$$('.amb-info, .amb-sports, .nt-inner').forEach(function (el) { el.style.transform = 'translate(' + x + 'px,' + y + 'px)'; });
   }
 
   App.on('ready', function () {
-    $('#ambient').innerHTML = '<div class="amb-stage"></div><div class="amb-scrim"></div><div class="amb-info"></div>';
+    $('#ambient').innerHTML = '<div class="amb-stage"></div><div class="amb-scrim"></div><div class="amb-sports"></div><div class="amb-info"></div>';
     $('#night').innerHTML = '<div class="nt-inner"></div>';
     amb.show = new App.Slideshow($('#ambient .amb-stage'), { layout: 'cover', captions: false, interval: 14000 });
     $('#ambient').addEventListener('click', function () { App.setMode('day'); App.go('home'); });
