@@ -371,8 +371,14 @@
   function onIdleTick() {
     idleSec++;
     var blocked = $('#takeover').classList.contains('is-open');
-    if (App.mode === 'nightdash' && idleSec >= 20) { App.setMode('night'); return; }
-    if (App.mode !== 'day' || blocked) return;
+    if (blocked) return;
+    if (App.mode === 'nightdash' && idleSec >= 20) {
+      App.setMode(App.isNight() ? 'night' : 'ambient');
+      return;
+    }
+    if (App.mode === 'ambient' && App.isNight()) { App.setMode('night'); return; }
+    if (App.mode === 'night' && !App.isNight()) { App.setMode('ambient'); return; }
+    if (App.mode !== 'day') return;
     if (idleSec === App.idle.home && App.current !== 'home') { App.closeSheet(); App.go('home'); }
     if (idleSec >= App.idle.ambient) {
       App.closeSheet();
