@@ -17,6 +17,11 @@
     return v == null || v === '' ? '—' : v;
   }
 
+  function weekIntensity(act) {
+    if (!act || act.weekActiveMin == null) return '—';
+    return act.weekActiveMin + '/' + (act.intensityGoal || 150);
+  }
+
   function fmtDur(min) {
     if (min == null) return '—';
     var h = Math.floor(min / 60), m = Math.round(min % 60);
@@ -276,7 +281,7 @@
       hero = '<div class="bxs-head"><b class="num bxs-hero">' + (act.steps != null ? act.steps.toLocaleString() : '—') + '</b><span class="bxs-unit">steps</span></div>';
       stats = '<div class="bxs-stats">' +
         '<div><b class="num">' + (act.stepsGoal != null ? act.stepsGoal.toLocaleString() : '—') + '</b><span>Goal</span></div>' +
-        '<div><b class="num">' + dash(act.activeMin) + 'm</b><span>Active</span></div>' +
+        '<div><b class="num">' + (act.activeMin != null ? act.activeMin + 'm' : '—') + '</b><span>Active</span></div>' +
         '<div><b class="num">' + dash(act.calories) + '</b><span>Calories</span></div>' +
         '</div>';
     }
@@ -375,7 +380,8 @@
       '    </div>' +
       '    <div class="b-act-meta">' +
       '      <div class="b-stat"><span class="label">Steps</span><b class="num">' + (steps != null ? steps.toLocaleString() : '—') + '</b><small>/ ' + goal.toLocaleString() + '</small></div>' +
-      '      <div class="b-stat"><span class="label">Active</span><b class="num">' + dash(act.activeMin != null ? act.activeMin + 'm' : null) + '</b></div>' +
+      '      <div class="b-stat"><span class="label">Active</span><b class="num">' + dash(act.activeMin != null ? act.activeMin + 'm' : null) + '</b>' +
+      (act.weekActiveMin != null ? '<small>' + weekIntensity(act) + ' wk</small>' : '') + '</div>' +
       '      <div class="b-stat"><span class="label">Calories</span><b class="num">' + dash(act.calories) + '</b></div>' +
       '    </div>' +
       '  </div>' +

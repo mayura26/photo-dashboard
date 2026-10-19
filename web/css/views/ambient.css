@@ -138,12 +138,12 @@
 
 /* Compact Garmin strip */
 .amb-g {
-  display: flex; align-items: stretch; gap: 8px;
+  display: flex; align-items: stretch; justify-content: flex-end; flex-wrap: wrap; gap: 8px;
 }
 .amb-g-chip {
   --tone: rgba(255, 255, 255, .9);
   display: flex; align-items: center; gap: 8px;
-  min-width: 92px; padding: 10px 14px;
+  min-width: 0; padding: 10px 12px;
   border-radius: 16px;
   background: rgba(255, 255, 255, .14);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07);

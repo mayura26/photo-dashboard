@@ -443,7 +443,7 @@ def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[
             if dkey:
                 by_date[dkey] = {
                     "steps": steps,
-                    "activeMin": as_int(row.get("activeTime") or row.get("activeMinutes")),
+                    "activeMin": None,
                     "calories": as_int(row.get("totalKilocalories") or row.get("calories")),
                 }
         for d in week_days:
@@ -482,22 +482,253 @@ def build_history(client: Garmin, today: date, stress: dict[str, Any], bb: dict[
     }
 
 
-def _active_min(stats: dict[str, Any]) -> int | None:
-    sec = as_int(stats.get("activeSeconds"))
-    if sec is not None:
-        return sec // 60
-    mod = as_int(stats.get("moderateIntensityMinutes"), 0) or 0
-    vig = as_int(stats.get("vigorousIntensityMinutes"), 0) or 0
-    if mod or vig:
-        return mod + vig
-    return as_int(stats.get("activeMinutes") or stats.get("totalActiveMinutes"))
+def _intensity_source(row: dict[str, Any]) -> dict[str, Any]:
+    """Flatten a Garmin intensity row, letting explicit fields beat a nested values dict."""
+    values = row.get("values")
+    src: dict[str, Any] = dict(values) if isinstance(values, dict) else {}
+    for key, val in row.items():
+        if key == "values" or val is None:
+            continue
+        src[key] = val
+    return src
+
+
+def _nested_minutes(val: Any) -> int | None:
+    if isinstance(val, dict):
+        return as_int(val.get("minutes") or val.get("value") or val.get("intensityMinutes"))
+    return as_int(val)
+
+
+def _first_int(src: dict[str, Any], *keys: str) -> int | None:
+    for key in keys:
+        if key in src and src[key] is not None:
+            return as_int(src[key])
+    return None
+
+
+def _looks_like_intensity_summary(row: dict[str, Any]) -> bool:
+    src = _intensity_source(row)
+    return any(
+        key in src and src[key] is not None
+        for key in (
+            "moderateIntensityMinutes",
+            "vigorousIntensityMinutes",
+            "moderateValue",
+            "vigorousValue",
+            "moderateMinutes",
+            "vigorousMinutes",
+            "moderate",
+            "vigorous",
+            "intensityMinutes",
+            "totalIntensityMinutes",
+            "weeklyGoal",
+            "intensityMinutesGoal",
+        )
+    )
+
+
+def parse_intensity(raw: Any) -> dict[str, Any]:
+    """One intensity summary → moderate, vigorous, Garmin score, goal, date.
+
+    Garmin intensity minutes count vigorous time twice: moderate + 2 * vigorous.
+    A precomputed total is used only when the split is missing.
+    """
+    row = raw if isinstance(raw, dict) else {}
+    src = _intensity_source(row)
+    mod = _first_int(src, "moderateIntensityMinutes", "moderateValue", "moderateMinutes")
+    if mod is None:
+        mod = _nested_minutes(src.get("moderate"))
+    vig = _first_int(src, "vigorousIntensityMinutes", "vigorousValue", "vigorousMinutes")
+    if vig is None:
+        vig = _nested_minutes(src.get("vigorous"))
+    total = _first_int(
+        src,
+        "intensityMinutes",
+        "totalIntensityMinutes",
+        "activeMinutes",
+        "totalActiveMinutes",
+    )
+    if mod is None and vig is None:
+        score = total
+    else:
+        score = (mod or 0) + 2 * (vig or 0)
+    dkey = str(src.get("calendarDate") or src.get("date") or "")[:10] or None
+    return {
+        "date": dkey,
+        "moderateMin": mod,
+        "vigorousMin": vig,
+        "activeMin": score,
+        "intensityGoal": _first_int(src, "weeklyGoal", "intensityMinutesGoal"),
+    }
+
+
+def _intensity_rows(raw: Any) -> list[dict[str, Any]]:
+    if isinstance(raw, dict) and _looks_like_intensity_summary(raw):
+        return [raw]
+    return [row for row in _as_row_list(raw) if isinstance(row, dict)]
+
+
+def _empty_intensity() -> dict[str, Any]:
+    return {
+        "date": None,
+        "moderateMin": None,
+        "vigorousMin": None,
+        "activeMin": None,
+        "intensityGoal": None,
+    }
+
+
+def summarize_intensity(raw: Any) -> dict[str, Any]:
+    """Collapse a day payload (one summary, or hourly samples) into one score."""
+    rows = _intensity_rows(raw)
+    if not rows:
+        return _empty_intensity()
+    if len(rows) == 1:
+        return parse_intensity(rows[0])
+    mod = vig = 0
+    saw_split = False
+    total = 0
+    saw_total = False
+    goal = None
+    dkey = None
+    for row in rows:
+        parsed = parse_intensity(row)
+        if parsed["moderateMin"] is not None or parsed["vigorousMin"] is not None:
+            saw_split = True
+            mod += parsed["moderateMin"] or 0
+            vig += parsed["vigorousMin"] or 0
+        elif parsed["activeMin"] is not None:
+            saw_total = True
+            total += parsed["activeMin"]
+        if goal is None and parsed["intensityGoal"] is not None:
+            goal = parsed["intensityGoal"]
+        if dkey is None and parsed["date"]:
+            dkey = parsed["date"]
+    score = (mod + 2 * vig) if saw_split else (total if saw_total else None)
+    return {
+        "date": dkey,
+        "moderateMin": mod if saw_split else None,
+        "vigorousMin": vig if saw_split else None,
+        "activeMin": score,
+        "intensityGoal": goal,
+    }
+
+
+def intensity_by_date(client: Garmin, start: date, end: date) -> dict[str, dict[str, Any]]:
+    """Per-day intensity for start..end. Prefers one range call when the client has it."""
+    start_s, end_s = start.isoformat(), end.isoformat()
+    by_date: dict[str, dict[str, Any]] = {}
+    range_fn = getattr(client, "get_daily_intensity_minutes_stats", None)
+    if callable(range_fn):
+        try:
+            raw = range_fn(start_s, end_s) or []
+            for row in _intensity_rows(raw):
+                parsed = parse_intensity(row)
+                if parsed["date"]:
+                    by_date[parsed["date"]] = parsed
+            if by_date:
+                return by_date
+        except Exception as e:  # noqa: BLE001
+            log.warning("intensity week range failed: %s", e)
+
+    day = start
+    while day <= end:
+        key = day.isoformat()
+        try:
+            parsed = summarize_intensity(client.get_intensity_minutes_data(key) or {})
+        except Exception as e:  # noqa: BLE001
+            log.warning("intensity day %s failed: %s", key, e)
+            day += timedelta(days=1)
+            continue
+        by_date[parsed["date"] or key] = parsed
+        day += timedelta(days=1)
+    return by_date
+
+
+def current_week_intensity(client: Garmin, today: date) -> dict[str, Any]:
+    """Official Garmin week total and goal (week boundary comes from Garmin)."""
+    start = (today - timedelta(days=13)).isoformat()
+    end = today.isoformat()
+    try:
+        raw = client.get_weekly_intensity_minutes(start, end) or []
+    except Exception as e:  # noqa: BLE001
+        log.warning("intensity week failed: %s", e)
+        return _empty_intensity()
+
+    chosen: dict[str, Any] | None = None
+    chosen_on: date | None = None
+    goal = None
+    for row in _intensity_rows(raw):
+        parsed = parse_intensity(row)
+        if goal is None and parsed["intensityGoal"] is not None:
+            goal = parsed["intensityGoal"]
+        if not parsed["date"]:
+            if chosen is None:
+                chosen = parsed
+            continue
+        try:
+            row_day = date.fromisoformat(parsed["date"])
+        except ValueError:
+            continue
+        if row_day > today:
+            continue
+        if chosen_on is None or row_day > chosen_on:
+            chosen_on = row_day
+            chosen = parsed
+    if chosen is None:
+        out = _empty_intensity()
+        out["intensityGoal"] = goal
+        return out
+    # A week start more than 6 days ago is the previous week, not this one.
+    if chosen_on is not None and (today - chosen_on).days > 6:
+        out = _empty_intensity()
+        out["intensityGoal"] = chosen.get("intensityGoal") or goal
+        return out
+    if chosen.get("intensityGoal") is None and goal is not None:
+        chosen["intensityGoal"] = goal
+    return chosen
+
+
+def attach_intensity(client: Garmin, today: date, activity: dict[str, Any], history: dict[str, Any]) -> None:
+    """Fill today's score, the Garmin week total, and each history day."""
+    start = today - timedelta(days=6)
+    by_date = intensity_by_date(client, start, today)
+    week_rows = ((history.get("activity") or {}).get("week")) or []
+    for offset, row in enumerate(week_rows):
+        day = start + timedelta(days=offset)
+        parsed = by_date.get(day.isoformat())
+        if parsed and parsed.get("activeMin") is not None:
+            row["activeMin"] = parsed["activeMin"]
+
+    today_parsed = by_date.get(today.isoformat()) or {}
+    if today_parsed.get("activeMin") is None:
+        try:
+            today_parsed = summarize_intensity(client.get_intensity_minutes_data(today.isoformat()) or {})
+        except Exception as e:  # noqa: BLE001
+            log.warning("intensity today failed: %s", e)
+            today_parsed = {}
+    if today_parsed.get("activeMin") is not None:
+        activity["activeMin"] = today_parsed["activeMin"]
+        activity["moderateMin"] = today_parsed.get("moderateMin")
+        activity["vigorousMin"] = today_parsed.get("vigorousMin")
+
+    week = current_week_intensity(client, today)
+    if week.get("activeMin") is not None:
+        activity["weekActiveMin"] = week["activeMin"]
+    goal = week.get("intensityGoal") or today_parsed.get("intensityGoal") or activity.get("intensityGoal")
+    activity["intensityGoal"] = goal if goal is not None else 150
 
 
 def parse_activity(stats: dict[str, Any]) -> dict[str, Any]:
+    intensity = parse_intensity(stats if isinstance(stats, dict) else {})
     return {
         "steps": as_int(stats.get("totalSteps") or stats.get("steps")),
         "stepsGoal": as_int(stats.get("dailyStepGoal") or stats.get("stepGoal")),
-        "activeMin": _active_min(stats),
+        "activeMin": intensity["activeMin"],
+        "moderateMin": intensity["moderateMin"],
+        "vigorousMin": intensity["vigorousMin"],
+        "weekActiveMin": None,
+        "intensityGoal": intensity["intensityGoal"],
         "calories": as_int(
             stats.get("totalKilocalories")
             or stats.get("calories")
@@ -543,6 +774,7 @@ def build_payload(client: Garmin, today: str) -> dict[str, Any]:
     activity = parse_activity(stats)
     today_d = date.fromisoformat(today)
     history = build_history(client, today_d, stress, body_battery)
+    attach_intensity(client, today_d, activity, history)
 
     return {
         "updatedAt": datetime.now(timezone.utc).isoformat(),
@@ -573,7 +805,15 @@ def tick(client: Garmin, hq_url: str, token: str) -> None:
     push(payload, hq_url, token)
     bb = dig(payload, "bodyBattery", "current")
     steps = dig(payload, "activity", "steps")
-    log.info("pushed garmin snapshot (bodyBattery=%s steps=%s)", bb, steps)
+    active = dig(payload, "activity", "activeMin")
+    week = dig(payload, "activity", "weekActiveMin")
+    log.info(
+        "pushed garmin snapshot (bodyBattery=%s steps=%s activeMin=%s week=%s)",
+        bb,
+        steps,
+        active,
+        week,
+    )
 
 
 def main() -> int:

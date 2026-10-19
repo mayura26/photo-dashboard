@@ -129,6 +129,11 @@
     var goal = act.stepsGoal || 10000;
     var stepsLabel = steps != null ? (Math.round(steps / 1000 * 10) / 10) + 'k' : '—';
     var stepsPct = steps != null && goal ? Math.min(100, Math.round(steps / goal * 100)) : 0;
+    var activeLabel = act.activeMin != null ? act.activeMin + 'm' : '—';
+    var weekGoal = act.intensityGoal || 150;
+    var weekPct = act.weekActiveMin != null && weekGoal
+      ? Math.min(100, Math.round(act.weekActiveMin / weekGoal * 100))
+      : 0;
     var sleepHero = sleep.score != null ? dash(sleep.score) : fmtDur(sleep.durationMin);
     return '<div class="amb-g">' +
       '<div class="amb-g-chip' + batteryTone(bb.current) + '" style="--d:0">' +
@@ -143,6 +148,11 @@
       App.icon('steps', 18) +
       '<div class="amb-g-meta"><b class="num">' + stepsLabel + '</b><small>Steps</small>' +
       '<i class="amb-g-bar"><i style="width:' + stepsPct + '%"></i></i></div>' +
+      '</div>' +
+      '<div class="amb-g-chip" style="--d:3">' +
+      App.icon('clock', 18) +
+      '<div class="amb-g-meta"><b class="num">' + activeLabel + '</b><small>Active</small>' +
+      '<i class="amb-g-bar"><i style="width:' + weekPct + '%"></i></i></div>' +
       '</div></div>';
   }
 
@@ -217,7 +227,8 @@
     var bb = data.bodyBattery || {};
     var sleep = data.sleep || {};
     var act = data.activity || {};
-    return [bb.current, sleep.score, sleep.durationMin, act.steps, act.stepsGoal || 10000].join('|');
+    return [bb.current, sleep.score, sleep.durationMin, act.steps, act.stepsGoal || 10000,
+      act.activeMin, act.weekActiveMin, act.intensityGoal || 150].join('|');
   }
 
   function weatherKey() {

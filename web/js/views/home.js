@@ -284,6 +284,10 @@
     var steps = act.steps;
     var goal = act.stepsGoal || 10000;
     var stepsLabel = steps != null ? (Math.round(steps / 1000 * 10) / 10) + 'k' : '—';
+    var activeLabel = act.activeMin != null ? act.activeMin + 'm' : '—';
+    var weekLabel = act.weekActiveMin != null
+      ? (act.weekActiveMin + '/' + (act.intensityGoal || 150))
+      : '';
     var sleepHero = sleep.score != null ? dash(sleep.score) : fmtDur(sleep.durationMin);
     var sleepSub = sleep.score != null ? fmtDur(sleep.durationMin) : '';
     return '<div class="label label--light">Body · ' + App.esc(data.displayName || 'Garmin') + '</div>' +
@@ -313,7 +317,8 @@
       '  <div class="h-hm-body">' +
       '    <div class="h-hm-dial">' + ring(steps || 0, goal, 52) +
       '      <b class="num">' + stepsLabel + '</b></div>' +
-      '    <div class="h-hm-meta"><b class="num">' + (steps != null ? steps.toLocaleString() : '—') + '</b></div>' +
+      '    <div class="h-hm-meta"><b class="num">' + activeLabel + '</b>' +
+      (weekLabel ? '<small>' + weekLabel + '</small>' : '') + '</div>' +
       '  </div>' +
       '</div>' +
       '</div>';
