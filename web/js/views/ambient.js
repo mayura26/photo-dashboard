@@ -204,7 +204,7 @@
       '<div class="amb-wx-meta"><small>' + w.summary + '</small>' +
       '<span class="amb-wx-day">H ' + w.hi + '° · L ' + w.lo + '° · ' + App.fmtMm(w.rain) + '</span></div></div>' +
       ambientSchedule() +
-      '<div class="amb-meters">' + ambientGarmin() + ambientPayoutCard() + '</div>' +
+      '<div class="amb-meters">' + ambientPayoutCard() + ambientGarmin() + '</div>' +
       '</div>';
   }
 
