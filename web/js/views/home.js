@@ -324,6 +324,32 @@
       '</div>';
   }
 
+  function payTone(sum) {
+    if (sum.value > 0) return ' is-up';
+    if (sum.value < 0) return ' is-down';
+    return '';
+  }
+
+  function payouts() {
+    var nowKey = App.payoutMonthKey(App.now());
+    var cur = App.payoutSum(App.payoutsInMonth(nowKey));
+    var prev = App.payoutSum(App.payoutsInMonth(App.payoutMonthAdd(nowKey, -1)));
+    var btn = V.el && V.el.querySelector('.h-pay');
+    if (btn) {
+      btn.classList.remove('is-up', 'is-down');
+      if (cur.value > 0) btn.classList.add('is-up');
+      else if (cur.value < 0) btn.classList.add('is-down');
+    }
+    var series = App.payoutMonthSeries(nowKey);
+    return '<span class="label label--light">Payouts</span>' +
+      (series ? '<span class="h-pay-plot">' + App.payoutSpark(series) +
+        '<span class="h-pay-axis"><span>1</span><span>' + series.days + '</span></span></span>' : '') +
+      '<span class="h-pay-figs">' +
+      '<span class="h-pay-fig' + payTone(cur) + '"><b class="num">' + cur.main + '</b><small>This month</small></span>' +
+      '<span class="h-pay-fig' + payTone(prev) + '"><b class="num">' + prev.main + '</b><small>Last month</small></span>' +
+      '</span>';
+  }
+
   function paint() {
     var el = V.el;
     el.querySelector('.h-clock').innerHTML = clock();
@@ -331,6 +357,7 @@
     el.querySelector('.h-sports').innerHTML = sports();
     el.querySelector('.h-hero-slot').innerHTML = hero();
     paintDay();
+    el.querySelector('.h-pay').innerHTML = payouts();
     el.querySelector('.h-health').innerHTML = health();
   }
 
@@ -363,6 +390,7 @@
           '<div class="h-main"><div class="h-hero-slot"></div><div class="h-day"><div class="h-lanes"></div><div class="h-anyone"></div></div></div>' +
           '<div class="h-side">' +
           '  <button class="h-photo" data-go="photos"><div class="h-photo-stage"></div><div class="h-photo-cap"></div></button>' +
+          '  <button type="button" class="h-pay" data-go="payouts" aria-label="Payouts this month and last month"></button>' +
           '  <button type="button" class="h-health" data-go="body" aria-label="Body health summary"></button>' +
           '</div></div>';
         el.addEventListener('click', function (e) {
@@ -394,6 +422,7 @@
     if (!V.el || !V.el.firstChild) return;
     V.el.querySelector('.h-clock').innerHTML = clock();
     V.el.querySelector('.h-hero-slot').innerHTML = hero();
+    V.el.querySelector('.h-pay').innerHTML = payouts();
     if (n.getMinutes() === 0) {
       V.el.querySelector('.h-weather').innerHTML = weather();
       paintDay();

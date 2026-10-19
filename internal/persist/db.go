@@ -11,13 +11,15 @@ import (
 )
 
 const (
-	keyGroceries = "groceries"
-	keyChores    = "chores"
-	keyStars     = "stars"
-	keyWeekHits  = "week_hits"
-	keyNextGID   = "next_gid"
-	keyGarmin    = "garmin"
-	keyPhotos    = "photos"
+	keyGroceries   = "groceries"
+	keyChores      = "chores"
+	keyStars       = "stars"
+	keyWeekHits    = "week_hits"
+	keyNextGID     = "next_gid"
+	keyGarmin      = "garmin"
+	keyPhotos      = "photos"
+	keyPayouts     = "payouts"
+	keyPayoutFirms = "payout_firms"
 )
 
 // DB is a thin SQLite store for shopping/TODO mutable state.
@@ -254,6 +256,81 @@ func (d *DB) SavePhotos(photos []map[string]any) error {
 		keyPhotos, string(b),
 	); err != nil {
 		return fmt.Errorf("persist: upsert photos: %w", err)
+	}
+	return nil
+}
+
+// LoadPayouts returns persisted payout rows and prop firms.
+// ok is false when neither key has been saved yet.
+func (d *DB) LoadPayouts() (payouts, firms []map[string]any, ok bool, err error) {
+	raw, foundP, err := d.get(keyPayouts)
+	if err != nil {
+		return nil, nil, false, err
+	}
+	rawF, foundF, err := d.get(keyPayoutFirms)
+	if err != nil {
+		return nil, nil, false, err
+	}
+	if !foundP && !foundF {
+		return nil, nil, false, nil
+	}
+	if foundP {
+		if err := json.Unmarshal(raw, &payouts); err != nil {
+			return nil, nil, false, fmt.Errorf("persist: payouts: %w", err)
+		}
+	}
+	if foundF {
+		if err := json.Unmarshal(rawF, &firms); err != nil {
+			return nil, nil, false, fmt.Errorf("persist: payout firms: %w", err)
+		}
+	}
+	if payouts == nil {
+		payouts = []map[string]any{}
+	}
+	if firms == nil {
+		firms = []map[string]any{}
+	}
+	return payouts, firms, true, nil
+}
+
+// SavePayouts replaces payout rows and prop firms in one transaction.
+func (d *DB) SavePayouts(payouts, firms []map[string]any) error {
+	if payouts == nil {
+		payouts = []map[string]any{}
+	}
+	if firms == nil {
+		firms = []map[string]any{}
+	}
+	pb, err := json.Marshal(payouts)
+	if err != nil {
+		return fmt.Errorf("persist: marshal payouts: %w", err)
+	}
+	fb, err := json.Marshal(firms)
+	if err != nil {
+		return fmt.Errorf("persist: marshal payout firms: %w", err)
+	}
+	tx, err := d.sql.Begin()
+	if err != nil {
+		return fmt.Errorf("persist: begin payouts: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+	for _, pair := range []struct {
+		key string
+		val string
+	}{
+		{keyPayouts, string(pb)},
+		{keyPayoutFirms, string(fb)},
+	} {
+		if _, err := tx.Exec(
+			`INSERT INTO kv(key, value) VALUES(?, ?)
+			 ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
+			pair.key, pair.val,
+		); err != nil {
+			return fmt.Errorf("persist: upsert %s: %w", pair.key, err)
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("persist: commit payouts: %w", err)
 	}
 	return nil
 }

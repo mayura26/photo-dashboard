@@ -7,6 +7,37 @@
 .amb-time { font-size: 230px; line-height: .78; letter-spacing: -.04em; }
 .amb-date { font-family: var(--serif); font-size: 38px; margin-top: 16px; }
 .amb-right { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.amb-meters {
+  display: flex; align-items: flex-end; justify-content: flex-end; gap: 16px;
+}
+.amb-pay {
+  flex: none; width: 176px;
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 1px;
+  padding: 11px 13px 9px;
+  border-radius: 18px;
+  background: rgba(8, 10, 8, .66);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+}
+.amb-pay-lab {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: rgba(255, 255, 255, .55);
+}
+.amb-pay-total { font-size: 30px; line-height: .88; letter-spacing: -.03em; }
+.amb-pay.is-up .amb-pay-total,
+.amb-pay.is-up .pay-spark-box { color: #8EDFB4; }
+.amb-pay.is-down .amb-pay-total,
+.amb-pay.is-down .pay-spark-box { color: #F07167; }
+.amb-pay-plot { margin-top: 8px; }
+.amb-pay .pay-spark { height: 34px; }
+.amb-pay .pay-spark-now { box-shadow: 0 0 0 2px rgba(8, 10, 8, .9); }
+.amb-pay-axis {
+  display: flex; justify-content: space-between; margin-top: 2px;
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  color: rgba(255, 255, 255, .42);
+}
 .amb-wx { display: flex; align-items: center; gap: 12px; }
 .amb-wx .num { font-size: 72px; line-height: .8; }
 .amb-wx-meta {
@@ -177,4 +208,3 @@
 .nt-time { font-size: 260px; line-height: .8; letter-spacing: -.04em; color: #C22C1C; }
 .nt-line { margin-top: 34px; font-size: 26px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #A02618; }
 .nt-line b { color: #C22C1C; }
-.nt-lock { margin-top: 18px; font-size: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #7A1D12; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }

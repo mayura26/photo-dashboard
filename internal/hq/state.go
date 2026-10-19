@@ -32,6 +32,8 @@ type Snapshot struct {
 	Garmin         json.RawMessage    `json:"garmin,omitempty"`
 	Sports         json.RawMessage    `json:"sports,omitempty"`
 	Photos         []map[string]any   `json:"photos"`
+	Payouts        []map[string]any   `json:"payouts"`
+	PayoutFirms    []map[string]any   `json:"payoutFirms"`
 	TimeOffset     int64              `json:"timeOffset"`
 	CalendarLive   bool               `json:"calendarLive"`
 	CalendarPeople []string           `json:"calendarPeople,omitempty"`
@@ -79,6 +81,8 @@ func Load(householdPath string) (*Store, error) {
 
 	s.snap.Events = []map[string]any{}
 	s.snap.Photos = []map[string]any{}
+	s.snap.Payouts = []map[string]any{}
+	s.snap.PayoutFirms = []map[string]any{}
 	s.snap.Groceries = []map[string]any{}
 	s.snap.Chores = []map[string]any{}
 	s.snap.Stars = map[string]float64{}
@@ -172,6 +176,21 @@ func (s *Store) AttachPersist(db *persist.DB) error {
 			return err
 		}
 	}
+
+	payouts, firms, found, err := db.LoadPayouts()
+	if err != nil {
+		return err
+	}
+	if found {
+		s.snap.Payouts = payouts
+		s.snap.PayoutFirms = firms
+	} else {
+		s.snap.Payouts = []map[string]any{}
+		s.snap.PayoutFirms = []map[string]any{}
+		if err := s.savePayoutsLocked(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -211,6 +230,19 @@ func (s *Store) savePhotosLocked() error {
 		return nil
 	}
 	return s.db.SavePhotos(s.snap.Photos)
+}
+
+func (s *Store) savePayoutsLocked() error {
+	if s.db == nil {
+		return nil
+	}
+	if s.snap.Payouts == nil {
+		s.snap.Payouts = []map[string]any{}
+	}
+	if s.snap.PayoutFirms == nil {
+		s.snap.PayoutFirms = []map[string]any{}
+	}
+	return s.db.SavePayouts(s.snap.Payouts, s.snap.PayoutFirms)
 }
 
 func (s *Store) persistAfterMutation(name string) {
@@ -352,6 +384,370 @@ func (s *Store) DeletePhoto(id string) bool {
 		log.Printf("persist: save photos after delete: %v", err)
 	}
 	return true
+}
+
+// inputError is a client-facing validation failure (HTTP 400).
+type inputError string
+
+func (e inputError) Error() string { return string(e) }
+
+// BadRequest marks the error as a rejected payload rather than a persist failure.
+func (e inputError) BadRequest() bool { return true }
+
+var firmPalette = []string{
+	"#111111",
+	"#00A36C",
+	"#1F6FEB",
+	"#C2410C",
+	"#7C3AED",
+	"#0F766E",
+	"#B45309",
+	"#BE123C",
+}
+
+// PayoutList returns a shallow clone of payout records.
+func (s *Store) PayoutList() []map[string]any {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return cloneMaps(s.snap.Payouts)
+}
+
+// FirmList returns a shallow clone of prop-firm records.
+func (s *Store) FirmList() []map[string]any {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return cloneMaps(s.snap.PayoutFirms)
+}
+
+// AddPayout appends a payout and persists both payout lists.
+func (s *Store) AddPayout(p map[string]any) (map[string]any, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	rec, err := normalizePayout(p, s.snap.PayoutFirms)
+	if err != nil {
+		return nil, err
+	}
+	s.snap.Payouts = append(s.snap.Payouts, rec)
+	if err := s.savePayoutsLocked(); err != nil {
+		s.snap.Payouts = s.snap.Payouts[:len(s.snap.Payouts)-1]
+		return nil, err
+	}
+	return cloneMap(rec), nil
+}
+
+// UpdatePayout patches fields on one payout.
+func (s *Store) UpdatePayout(id string, patch map[string]any) (map[string]any, bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, p := range s.snap.Payouts {
+		if p["id"] != id {
+			continue
+		}
+		next := cloneMap(p)
+		for _, key := range []string{"date", "amount", "currency", "account", "firmId", "note"} {
+			if v, ok := patch[key]; ok {
+				next[key] = v
+			}
+		}
+		rec, err := normalizePayout(next, s.snap.PayoutFirms)
+		if err != nil {
+			return nil, true, err
+		}
+		for k, v := range rec {
+			p[k] = v
+		}
+		if err := s.savePayoutsLocked(); err != nil {
+			return nil, true, err
+		}
+		return cloneMap(p), true, nil
+	}
+	return nil, false, nil
+}
+
+// DeletePayout removes a payout record by id.
+func (s *Store) DeletePayout(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := s.snap.Payouts[:0]
+	found := false
+	for _, p := range s.snap.Payouts {
+		if p["id"] == id {
+			found = true
+			continue
+		}
+		out = append(out, p)
+	}
+	if !found {
+		return false
+	}
+	s.snap.Payouts = out
+	if err := s.savePayoutsLocked(); err != nil {
+		log.Printf("persist: save payouts after delete: %v", err)
+	}
+	return true
+}
+
+// AddFirm appends a prop firm. Name is required; color is assigned when omitted.
+func (s *Store) AddFirm(f map[string]any) (map[string]any, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	rec, err := normalizeFirm(f, true)
+	if err != nil {
+		return nil, err
+	}
+	if strings.TrimSpace(asString(rec["color"])) == "" {
+		rec["color"] = s.nextFirmColorLocked()
+	}
+	s.snap.PayoutFirms = append(s.snap.PayoutFirms, rec)
+	if err := s.savePayoutsLocked(); err != nil {
+		s.snap.PayoutFirms = s.snap.PayoutFirms[:len(s.snap.PayoutFirms)-1]
+		return nil, err
+	}
+	return cloneMap(rec), nil
+}
+
+// UpdateFirm patches a prop firm's name, prefixes, or color.
+func (s *Store) UpdateFirm(id string, patch map[string]any) (map[string]any, bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, f := range s.snap.PayoutFirms {
+		if f["id"] != id {
+			continue
+		}
+		next := cloneMap(f)
+		for _, key := range []string{"name", "prefixes", "color"} {
+			if v, ok := patch[key]; ok {
+				next[key] = v
+			}
+		}
+		rec, err := normalizeFirm(next, false)
+		if err != nil {
+			return nil, true, err
+		}
+		for k, v := range rec {
+			f[k] = v
+		}
+		if err := s.savePayoutsLocked(); err != nil {
+			return nil, true, err
+		}
+		return cloneMap(f), true, nil
+	}
+	return nil, false, nil
+}
+
+// DeleteFirm removes a firm and clears that firm id on existing payouts.
+func (s *Store) DeleteFirm(id string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := s.snap.PayoutFirms[:0]
+	found := false
+	for _, f := range s.snap.PayoutFirms {
+		if f["id"] == id {
+			found = true
+			continue
+		}
+		out = append(out, f)
+	}
+	if !found {
+		return false
+	}
+	s.snap.PayoutFirms = out
+	for _, p := range s.snap.Payouts {
+		if p["firmId"] == id {
+			p["firmId"] = ""
+		}
+	}
+	if err := s.savePayoutsLocked(); err != nil {
+		log.Printf("persist: save payouts after firm delete: %v", err)
+	}
+	return true
+}
+
+func (s *Store) nextFirmColorLocked() string {
+	used := map[string]bool{}
+	for _, f := range s.snap.PayoutFirms {
+		used[strings.ToLower(asString(f["color"]))] = true
+	}
+	for _, c := range firmPalette {
+		if !used[strings.ToLower(c)] {
+			return c
+		}
+	}
+	if len(firmPalette) == 0 {
+		return "#111111"
+	}
+	return firmPalette[len(s.snap.PayoutFirms)%len(firmPalette)]
+}
+
+func normalizePayout(p map[string]any, firms []map[string]any) (map[string]any, error) {
+	id := strings.TrimSpace(asString(p["id"]))
+	if id == "" {
+		return nil, inputError("missing id")
+	}
+	date, ok := asDate(p["date"])
+	if !ok {
+		return nil, inputError("date must be YYYY-MM-DD")
+	}
+	amount, ok := asAmount(p["amount"])
+	if !ok {
+		return nil, inputError("amount must be a number")
+	}
+	currency := ""
+	if amount != nil {
+		currency = "USD"
+	}
+	firmID := strings.TrimSpace(asString(p["firmId"]))
+	if firmID != "" && !firmExists(firms, firmID) {
+		return nil, inputError("unknown firm")
+	}
+	note := strings.TrimSpace(asString(p["note"]))
+	if len(note) > 240 {
+		note = note[:240]
+	}
+	account := strings.TrimSpace(asString(p["account"]))
+	if len(account) > 80 {
+		account = account[:80]
+	}
+	image := strings.TrimSpace(asString(p["image"]))
+	if image == "" {
+		image = id
+	}
+	return map[string]any{
+		"id":       id,
+		"date":     date,
+		"amount":   amount,
+		"currency": currency,
+		"account":  account,
+		"firmId":   firmID,
+		"note":     note,
+		"image":    image,
+	}, nil
+}
+
+func normalizeFirm(f map[string]any, requireID bool) (map[string]any, error) {
+	id := strings.TrimSpace(asString(f["id"]))
+	if requireID && id == "" {
+		return nil, inputError("missing id")
+	}
+	name := strings.TrimSpace(asString(f["name"]))
+	if name == "" {
+		return nil, inputError("firm name is required")
+	}
+	if len(name) > 48 {
+		name = name[:48]
+	}
+	prefixes := normalizePrefixes(f["prefixes"])
+	color := strings.TrimSpace(asString(f["color"]))
+	if len(color) > 32 {
+		color = color[:32]
+	}
+	return map[string]any{
+		"id":       id,
+		"name":     name,
+		"prefixes": prefixes,
+		"color":    color,
+	}, nil
+}
+
+func normalizePrefixes(v any) []string {
+	var parts []string
+	switch t := v.(type) {
+	case string:
+		parts = strings.Split(t, ",")
+	case []string:
+		for _, s := range t {
+			parts = append(parts, strings.Split(s, ",")...)
+		}
+	case []any:
+		for _, item := range t {
+			if s, ok := item.(string); ok {
+				parts = append(parts, strings.Split(s, ",")...)
+			}
+		}
+	}
+	out := []string{}
+	seen := map[string]bool{}
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
+		}
+		if len(p) > 24 {
+			p = p[:24]
+		}
+		key := strings.ToUpper(p)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, p)
+		if len(out) == 8 {
+			break
+		}
+	}
+	return out
+}
+
+func firmExists(firms []map[string]any, id string) bool {
+	for _, f := range firms {
+		if asString(f["id"]) == id {
+			return true
+		}
+	}
+	return false
+}
+
+func asString(v any) string {
+	s, _ := v.(string)
+	return s
+}
+
+func asDate(v any) (string, bool) {
+	if v == nil {
+		return "", true
+	}
+	s, ok := v.(string)
+	if !ok {
+		return "", false
+	}
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return "", true
+	}
+	if _, err := time.Parse("2006-01-02", s); err != nil {
+		return "", false
+	}
+	return s, true
+}
+
+func asAmount(v any) (any, bool) {
+	if v == nil {
+		return nil, true
+	}
+	switch n := v.(type) {
+	case float64:
+		return n, true
+	case int:
+		return float64(n), true
+	case int64:
+		return float64(n), true
+	case json.Number:
+		f, err := n.Float64()
+		if err != nil {
+			return nil, false
+		}
+		return f, true
+	default:
+		return nil, false
+	}
+}
+
+func cloneMaps(list []map[string]any) []map[string]any {
+	out := make([]map[string]any, len(list))
+	for i, m := range list {
+		out[i] = cloneMap(m)
+	}
+	return out
 }
 
 func cloneMap(m map[string]any) map[string]any {

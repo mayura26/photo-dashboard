@@ -18,6 +18,7 @@ import (
 	"photo-dashboard/internal/auth"
 	"photo-dashboard/internal/gcal"
 	"photo-dashboard/internal/hq"
+	"photo-dashboard/internal/payouts"
 	"photo-dashboard/internal/persist"
 	"photo-dashboard/internal/photos"
 	"photo-dashboard/internal/pmday"
@@ -82,9 +83,18 @@ func main() {
 	log.Printf("photos: library at %s", photoDir.Path)
 	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) != "" {
 		log.Printf("photos: OPENAI_API_KEY set; GPT-5.4 place fallback enabled")
+		log.Printf("payouts: OPENAI_API_KEY set; GPT-5.4 screenshot reading enabled")
 	} else {
 		log.Printf("photos: OPENAI_API_KEY unset; place only from GPS EXIF")
+		log.Printf("payouts: OPENAI_API_KEY unset; screenshots save without auto-fill")
 	}
+
+	payoutDir := payouts.DirFromDBPath(dbPath)
+	if err := payoutDir.Ensure(); err != nil {
+		log.Fatal("payouts dir: ", err)
+	}
+	payoutAPI := &payouts.API{Dir: payoutDir, Lib: store, Hub: hub}
+	log.Printf("payouts: screenshots at %s", payoutDir.Path)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", gate.RequireFunc(hub.ServeWS))
@@ -96,6 +106,11 @@ func main() {
 	mux.HandleFunc("/api/photos/purge-duplicates", gate.RequireFunc(photoAPI.HandlePurgeDuplicates))
 	mux.HandleFunc("/api/photos/", gate.RequireFunc(photoAPI.HandleItem))
 	mux.HandleFunc("/media/photos/", gate.RequireFunc(photoAPI.HandleMedia))
+	mux.HandleFunc("/api/payouts", gate.RequireFunc(payoutAPI.HandleCollection))
+	mux.HandleFunc("/api/payouts/", gate.RequireFunc(payoutAPI.HandleItem))
+	mux.HandleFunc("/api/payout-firms", gate.RequireFunc(payoutAPI.HandleFirms))
+	mux.HandleFunc("/api/payout-firms/", gate.RequireFunc(payoutAPI.HandleFirm))
+	mux.HandleFunc("/media/payouts/", gate.RequireFunc(payoutAPI.HandleMedia))
 	mux.HandleFunc("/version.json", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Content-Type", "application/json")

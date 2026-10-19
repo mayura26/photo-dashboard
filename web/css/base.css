@@ -1,5 +1,5 @@
 /* Custom elements default to inline — force block so absolute/.rail layouts work */
-hq-rail, hq-home, hq-calendar, hq-tasks, hq-shopping, hq-photos, hq-body, hq-ambient {
+hq-rail, hq-home, hq-calendar, hq-tasks, hq-shopping, hq-photos, hq-body, hq-payouts, hq-ambient {
   display: block;
 }
 

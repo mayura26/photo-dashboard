@@ -175,6 +175,53 @@ func TestPhotosSaveLoadRoundTrip(t *testing.T) {
 	}
 }
 
+func TestPayoutsSaveLoadRoundTrip(t *testing.T) {
+	db, err := Open(filepath.Join(t.TempDir(), "hq.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	_, _, ok, err := db.LoadPayouts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("expected no payouts before save")
+	}
+
+	payouts := []map[string]any{
+		{"id": "abc", "date": "2026-10-12", "amount": 1520.4, "currency": "USD", "account": "FTMO-1", "firmId": "f1", "note": "", "image": "abc"},
+	}
+	firms := []map[string]any{
+		{"id": "f1", "name": "FTMO", "prefixes": []string{"FTMO"}, "color": "#111111"},
+	}
+	if err := db.SavePayouts(payouts, firms); err != nil {
+		t.Fatal(err)
+	}
+	gotP, gotF, ok, err := db.LoadPayouts()
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if len(gotP) != 1 || gotP[0]["account"] != "FTMO-1" || gotP[0]["amount"] != 1520.4 {
+		t.Fatalf("payouts: %+v", gotP)
+	}
+	if len(gotF) != 1 || gotF[0]["name"] != "FTMO" {
+		t.Fatalf("firms: %+v", gotF)
+	}
+
+	if err := db.SavePayouts(nil, nil); err != nil {
+		t.Fatal(err)
+	}
+	gotP, gotF, ok, err = db.LoadPayouts()
+	if err != nil || !ok {
+		t.Fatalf("empty reload ok=%v err=%v", ok, err)
+	}
+	if gotP == nil || gotF == nil || len(gotP) != 0 || len(gotF) != 0 {
+		t.Fatalf("expected empty slices, payouts=%v firms=%v", gotP, gotF)
+	}
+}
+
 func TestSaveGarminRejectsInvalid(t *testing.T) {
 	db, err := Open(filepath.Join(t.TempDir(), "hq.db"))
 	if err != nil {

@@ -15,6 +15,7 @@ defineViewHost('hq-tasks', 'tasks');
 defineViewHost('hq-shopping', 'shopping');
 defineViewHost('hq-photos', 'photos');
 defineViewHost('hq-body', 'body');
+defineViewHost('hq-payouts', 'payouts');
 
 export class HqAmbient extends HTMLElement {
   connectedCallback() {

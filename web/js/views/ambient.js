@@ -176,6 +176,25 @@
       '</div>';
   }
 
+  function ambientPayoutCard() {
+    var series = App.payoutMonthSeries(App.payoutMonthKey(App.now()));
+    if (!series) return '';
+    var sum = series.sum;
+    var tone = sum.value > 0 ? ' is-up' : (sum.value < 0 ? ' is-down' : '');
+    return '<div class="amb-pay' + tone + '">' +
+      '<div class="amb-pay-lab">Payouts</div>' +
+      '<div class="amb-pay-total num">' + sum.main + '</div>' +
+      '<div class="amb-pay-plot">' + App.payoutSpark(series) +
+      '<div class="amb-pay-axis"><span>1</span><span>' + series.days + '</span></div></div></div>';
+  }
+
+  function payoutKey() {
+    var series = App.payoutMonthSeries(App.payoutMonthKey(App.now()));
+    if (!series) return '';
+    return [series.days, series.end, series.sum.value, series.sum.primary,
+      series.pts.map(function (p) { return p.v; }).join(',')].join('|');
+  }
+
   function ambientInfo() {
     var n = App.now(), w = App.weatherNow();
     return '<div class="amb-clock"><div class="amb-time num">' + App.fmt.time(n, false) + '</div>' +
@@ -185,7 +204,7 @@
       '<div class="amb-wx-meta"><small>' + w.summary + '</small>' +
       '<span class="amb-wx-day">H ' + w.hi + '° · L ' + w.lo + '° · ' + App.fmtMm(w.rain) + '</span></div></div>' +
       ambientSchedule() +
-      ambientGarmin() +
+      '<div class="amb-meters">' + ambientGarmin() + ambientPayoutCard() + '</div>' +
       '</div>';
   }
 
@@ -193,13 +212,12 @@
     var n = App.now(), tomorrow = App.addDays(n, n.getHours() < 6 ? 0 : 1);
     var first = App.timedOn(tomorrow)[0], w = App.weatherNow();
     return '<div class="nt-time num">' + App.fmt.time(n, false) + '</div>' +
-      '<div class="nt-line">' + App.icon(w.cond, 26) + ' ' + w.temp + '° · ' + (first ? 'First up ' + App.fmt.rel(first.start).toLowerCase() + ': <b>' + App.esc(first.title) + '</b> ' + App.fmt.time(first.start) + ' · ' + App.person(first.people[0]).name : 'Nothing early tomorrow') + '</div>' +
-      '<div class="nt-lock">' + App.icon('lock', 20) + ' House locked · alarm armed</div>';
+      '<div class="nt-line">' + App.icon(w.cond, 26) + ' ' + w.temp + '° · ' + (first ? 'First up ' + App.fmt.rel(first.start).toLowerCase() + ': <b>' + App.esc(first.title) + '</b> ' + App.fmt.time(first.start) + ' · ' + App.person(first.people[0]).name : 'Nothing early tomorrow') + '</div>';
   }
 
   function markEnter(root) {
     if (!root) return;
-    root.querySelectorAll('.amb-task, .amb-g-chip, .amb-sp, .amb-ph').forEach(function (n) {
+    root.querySelectorAll('.amb-task, .amb-g-chip, .amb-sp, .amb-ph, .amb-pay').forEach(function (n) {
       n.classList.add('amb-enter');
     });
   }
@@ -237,7 +255,7 @@
   }
 
   function infoFingerprint() {
-    return weatherKey() + '//' + scheduleKey() + '//' + garminKey();
+    return weatherKey() + '//' + scheduleKey() + '//' + garminKey() + '//' + payoutKey();
   }
 
   function sportsFingerprint() {

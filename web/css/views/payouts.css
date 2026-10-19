@@ -1,0 +1,172 @@
+/* Payouts — monthly totals + all-time firm bars. Fits the 1280×800 frame. */
+.pay {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 320px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
+}
+.pay-head {
+  grid-column: 1 / -1;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 10px;
+}
+.pay-head h1 { font-size: 52px; line-height: .9; }
+.pay-months, .pay-detail, .pay-chart {
+  min-height: 0; overflow: auto;
+  background: var(--card);
+  border-radius: var(--r);
+  padding: 16px 18px;
+}
+.pay-months { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; gap: 6px; }
+.pay-detail { grid-column: 2; grid-row: 2; }
+.pay-chart { grid-column: 3; grid-row: 2; }
+.pay-month {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  width: 100%; text-align: left;
+  padding: 12px 14px; border-radius: 16px;
+  background: transparent;
+}
+.pay-month.is-on { background: var(--ink); color: var(--paper); }
+.pay-month-n { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pay-month-n b {
+  font-size: 18px; font-weight: 800; font-stretch: 75%; letter-spacing: .01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pay-month-n small {
+  font-size: 13px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--mute);
+}
+.pay-month.is-on .pay-month-n small { color: rgba(255, 255, 255, .62); }
+.pay-month .num { font-size: 20px; flex: none; }
+.pay-month .num.is-up { color: #1C7A46; }
+.pay-month .num.is-down { color: var(--alert); }
+.pay-month.is-on .num.is-up { color: #8EE0B0; }
+.pay-month.is-on .num.is-down { color: #FF8A82; }
+
+.pay-hero { padding: 4px 4px 12px; border-bottom: 3px solid var(--ink); margin-bottom: 6px; }
+.pay-hero-num { font-size: 76px; line-height: .82; letter-spacing: -.03em; }
+.pay-hero.is-up .pay-hero-num,
+.pay-hero.is-up .pay-spark-box { color: #1C7A46; }
+.pay-hero.is-down .pay-hero-num,
+.pay-hero.is-down .pay-spark-box { color: var(--alert); }
+.pay-spark-wrap { margin-top: 16px; max-width: 440px; }
+.pay-spark { width: 100%; height: 52px; display: block; overflow: visible; }
+.pay-spark-box { position: relative; display: block; color: inherit; }
+.pay-spark-axis {
+  fill: none; stroke: currentColor; stroke-opacity: .28; stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+.pay-spark-fill { fill: currentColor; opacity: .16; }
+.pay-spark-line {
+  fill: none; stroke: currentColor; stroke-width: 2.25;
+  stroke-linejoin: round; stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.pay-spark-now {
+  position: absolute; width: 7px; height: 7px;
+  margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+.pay-spark-scale {
+  display: flex; justify-content: space-between; margin-top: 3px;
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--mute);
+}
+.pay-hero-extra { margin-top: 8px; font-size: 16px; font-weight: 700; color: var(--mute); }
+.pay-row {
+  display: grid; grid-template-columns: 92px minmax(0, 1fr) auto;
+  gap: 12px; align-items: center;
+  min-height: 68px; border-bottom: 1px solid var(--line);
+}
+.pay-row-d {
+  font-size: 15px; font-weight: 800; font-stretch: 75%;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--mute);
+}
+.pay-row-m { display: flex; flex-direction: column; min-width: 0; }
+.pay-row-m b { font-size: 20px; font-weight: 800; font-stretch: 80%; }
+.pay-row-m i {
+  font-family: var(--serif); font-style: italic; font-size: 18px;
+  color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pay-row-m small {
+  font-size: 14px; color: var(--mute); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.pay-row-a { font-size: 26px; }
+.pay-row-a.is-up { color: #1C7A46; }
+.pay-row-a.is-down { color: var(--alert); }
+.pay-none { padding: 18px 4px; color: var(--mute); font-size: 22px; }
+.pay-empty { padding: 28px 8px 0; }
+.pay-empty h2 { font-size: 48px; line-height: 1; }
+.pay-empty p { margin-top: 12px; font-size: 20px; color: var(--ink-2); max-width: 460px; }
+.pay.is-empty .pay-months { display: none; }
+.pay.is-empty .pay-detail { grid-column: 1 / 3; }
+
+.pay-chart { display: flex; flex-direction: column; gap: 10px; }
+.pay-chart-sub {
+  margin-top: -6px; font-family: var(--serif); font-style: italic;
+  font-size: 20px; color: var(--ink-2);
+}
+.pay-bar {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px;
+  align-items: baseline; margin-bottom: 8px;
+}
+.pay-bar-n {
+  font-size: 15px; font-weight: 800; font-stretch: 75%;
+  letter-spacing: .04em; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pay-bar-track { grid-column: 1 / -1; height: 12px; border-radius: 99px; background: var(--paper-2); overflow: hidden; }
+.pay-bar-track i { display: block; height: 100%; border-radius: 99px; }
+.pay-bar-v { display: flex; align-items: baseline; gap: 8px; }
+.pay-bar-v b { font-size: 18px; }
+.pay-bar-v small { font-size: 13px; font-weight: 700; color: var(--mute); }
+
+/* ---- manage + edit sheets */
+.sheet--payouts { width: 980px; max-height: 740px; }
+.pay-manage .sheet-h { margin-bottom: 8px; }
+.pay-sec-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.pay-add { display: flex; align-items: center; gap: 8px; flex: none; }
+.pay-firm-add, .pay-firm {
+  display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: center;
+}
+.pay-firm { grid-template-columns: 16px 1fr 1fr auto auto; }
+.pay-firms, .pay-admin { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow: auto; }
+.pay-swatch { width: 16px; height: 16px; border-radius: 50%; }
+.pay-field { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.pay-input, .pay-select {
+  width: 100%; height: 48px; border: 0; border-bottom: 2px solid var(--ink);
+  background: transparent; font-size: 22px; font-family: var(--serif); outline: none; padding: 0 2px;
+}
+.pay-select { font-family: var(--sans); font-weight: 700; font-size: 18px; }
+.pay-firm-add .pay-input, .pay-firm .pay-input { height: 44px; font-size: 18px; }
+.pay-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center; background: rgba(0, 0, 0, .06);
+}
+.pay-upload { position: relative; overflow: hidden; cursor: pointer; }
+.pay-upload input {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0;
+}
+.pay-upload-status {
+  padding: 10px 14px; border-radius: 12px; background: var(--paper-2);
+  font-size: 16px; font-weight: 700;
+}
+.pay-upload-status[hidden] { display: none; }
+.pay-admin-row { display: flex; gap: 12px; align-items: center; }
+.pay-admin-thumb, .pay-admin-meta { text-align: left; }
+.pay-admin-thumb {
+  width: 92px; height: 68px; flex: none; border-radius: 12px; overflow: hidden; background: var(--paper-2);
+}
+.pay-admin-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pay-admin-meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.pay-admin-meta b { font-size: 20px; font-weight: 800; }
+.pay-admin-meta span { font-size: 15px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pay-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+.pay-preview {
+  height: 180px; border-radius: 16px; overflow: hidden; background: #1a1917; margin-bottom: 8px;
+}
+.pay-preview img { width: 100%; height: 100%; object-fit: contain; }
+.pay-edit .sheet-actions .btn--ghost { margin-right: auto; }

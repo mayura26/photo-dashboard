@@ -32,7 +32,140 @@
     var m = d.getMonth() + 1, day = d.getDate();
     return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
   };
-  App.isNight = function () { var h = App.now().getHours(); return h >= 22 || h < 6; };
+  App.payoutMonthKey = function (d) {
+    d = d instanceof Date ? d : App.now();
+    var m = d.getMonth() + 1;
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m;
+  };
+  App.payoutMonthAdd = function (key, delta) {
+    var p = String(key || '').split('-');
+    var d = new Date(+p[0], ((+p[1] || 1) - 1) + (delta || 0), 1);
+    return App.payoutMonthKey(d);
+  };
+  App.payoutMonthLabel = function (key) {
+    if (!key) return 'Undated';
+    var p = String(key).split('-');
+    var d = new Date(+p[0], (+p[1] || 1) - 1, 1);
+    if (isNaN(d.getTime())) return String(key);
+    return App.fmt.month(d) + ' ' + d.getFullYear();
+  };
+  App.payoutMoney = function (amount, currency) {
+    if (amount == null || amount === '' || isNaN(Number(amount))) return '—';
+    var n = Number(amount);
+    var cur = String(currency || 'USD').toUpperCase();
+    var whole = Math.abs(n - Math.round(n)) < 0.001;
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: cur,
+        minimumFractionDigits: whole ? 0 : 2,
+        maximumFractionDigits: whole ? 0 : 2
+      }).format(n);
+    } catch (e) {
+      return cur + ' ' + (whole ? String(Math.round(n)) : n.toFixed(2));
+    }
+  };
+  App.payoutSum = function (list) {
+    var by = {};
+    (list || []).forEach(function (p) {
+      if (p.amount == null || p.amount === '' || isNaN(Number(p.amount))) return;
+      var c = String(p.currency || 'USD').toUpperCase();
+      by[c] = (by[c] || 0) + Number(p.amount);
+    });
+    var primary = '';
+    if (Object.prototype.hasOwnProperty.call(by, 'USD')) primary = 'USD';
+    else {
+      var best = -Infinity;
+      Object.keys(by).forEach(function (c) {
+        if (by[c] > best) { best = by[c]; primary = c; }
+      });
+    }
+    var extra = Object.keys(by).filter(function (c) { return c !== primary; })
+      .map(function (c) { return App.payoutMoney(by[c], c); });
+    return {
+      by: by,
+      primary: primary || 'USD',
+      value: primary ? by[primary] : 0,
+      main: primary ? App.payoutMoney(by[primary], primary) : App.payoutMoney(0, 'USD'),
+      extra: extra.join(' · ')
+    };
+  };
+  App.payoutsInMonth = function (key) {
+    return (D.payouts || []).filter(function (p) {
+      var k = String(p.date || '').slice(0, 7);
+      if (k.length < 7) k = '';
+      return k === (key || '');
+    });
+  };
+  App.payoutFirm = function (id) {
+    var list = D.payoutFirms || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  };
+  // Cumulative total through today. The x-axis is the whole month; the line stops at today.
+  App.payoutMonthSeries = function (key) {
+    var parts = String(key || '').split('-');
+    var y = +parts[0], m = +parts[1];
+    if (!y || !m) return null;
+    var now = App.now();
+    var days = new Date(y, m, 0).getDate();
+    var current = key === App.payoutMonthKey(now);
+    var end = current ? Math.min(days, Math.max(1, now.getDate())) : days;
+    var items = App.payoutsInMonth(key);
+    var sum = App.payoutSum(items);
+    var cur = sum.primary;
+    var byDay = {};
+    items.forEach(function (p) {
+      if (p.amount == null || p.amount === '' || isNaN(Number(p.amount))) return;
+      if (String(p.currency || 'USD').toUpperCase() !== cur) return;
+      var day = parseInt(String(p.date || '').slice(8, 10), 10);
+      if (!day || day < 1 || day > days) return;
+      byDay[day] = (byDay[day] || 0) + Number(p.amount);
+    });
+    var cum = 0;
+    var pts = [{ d: 0, v: 0 }];
+    for (var d = 1; d <= end; d++) {
+      if (byDay[d]) cum += byDay[d];
+      pts.push({ d: d, v: cum });
+    }
+    return { days: days, end: end, sum: sum, pts: pts };
+  };
+  App.payoutSpark = function (series) {
+    if (!series || !series.pts || !series.pts.length) return '';
+    var w = 160, h = 36, pad = 3;
+    var vals = series.pts.map(function (p) { return p.v; });
+    var min = Math.min.apply(null, vals.concat([0]));
+    var max = Math.max.apply(null, vals.concat([0]));
+    var flat = max === min;
+    if (flat) max = min + 1;
+    function x(d) { return pad + (d / series.days) * (w - pad * 2); }
+    function y(v) {
+      if (flat) return h - pad;
+      return pad + (1 - (v - min) / (max - min)) * (h - pad * 2);
+    }
+    var last = series.pts[series.pts.length - 1];
+    var line = series.pts.map(function (p, i) {
+      return (i ? 'L' : 'M') + x(p.d).toFixed(1) + ' ' + y(p.v).toFixed(1);
+    }).join('');
+    var zy = y(0);
+    var fill = 'M' + x(0).toFixed(1) + ' ' + zy.toFixed(1) +
+      series.pts.map(function (p) { return 'L' + x(p.d).toFixed(1) + ' ' + y(p.v).toFixed(1); }).join('') +
+      'L' + x(last.d).toFixed(1) + ' ' + zy.toFixed(1) + 'Z';
+    var axis = 'M' + x(0).toFixed(1) + ' ' + zy.toFixed(1) + 'H' + x(series.days).toFixed(1);
+    var left = (x(last.d) / w * 100).toFixed(2);
+    var top = (y(last.v) / h * 100).toFixed(2);
+    return '<span class="pay-spark-box">' +
+      '<svg class="pay-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path class="pay-spark-axis" d="' + axis + '"/>' +
+      '<path class="pay-spark-fill" d="' + fill + '"/>' +
+      '<path class="pay-spark-line" d="' + line + '"/>' +
+      '</svg>' +
+      '<i class="pay-spark-now" style="left:' + left + '%;top:' + top + '%"></i></span>';
+  };
+  App.isNight = function () {
+    var n = App.now();
+    var mins = n.getHours() * 60 + n.getMinutes();
+    return mins >= 22 * 60 + 30 || mins < 6 * 60;
+  };
 
   var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

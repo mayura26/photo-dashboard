@@ -228,7 +228,37 @@
 .h-more { min-height: 32px; margin-top: auto; font-size: 15px; font-weight: 800; font-stretch: 75%; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); text-align: left; padding: 0 10px; }
 
 /* ---- side column */
-.h-side { grid-column: 8 / 13; display: grid; grid-template-rows: 1fr minmax(220px, 38%); gap: 16px; min-height: 0; }
+.h-side { grid-column: 8 / 13; display: grid; grid-template-rows: 1fr auto minmax(196px, 34%); gap: 12px; min-height: 0; }
+.h-pay {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 72px;
+  background: var(--ink); color: var(--paper);
+  border-radius: var(--r); padding: 8px 14px;
+  border: 0; font: inherit; text-align: left; cursor: pointer;
+}
+.h-pay:active { opacity: .92; }
+.h-pay.is-up { box-shadow: inset 3px 0 0 #1C7A46; }
+.h-pay.is-down { box-shadow: inset 3px 0 0 var(--alert); }
+.h-pay .label { color: rgba(255, 255, 255, .62); flex: none; }
+.h-pay-plot { flex: 1; min-width: 72px; }
+.h-pay .pay-spark { height: 28px; }
+.h-pay .pay-spark-now { box-shadow: 0 0 0 2px var(--ink); }
+.h-pay.is-up .pay-spark-box { color: #8EDFB4; }
+.h-pay.is-down .pay-spark-box { color: #F07167; }
+.h-pay-axis {
+  display: flex; justify-content: space-between; margin-top: 1px;
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  color: rgba(255, 255, 255, .42);
+}
+.h-pay-figs { display: flex; gap: 16px; margin-left: auto; min-width: 0; flex: none; }
+.h-pay-figs > span { display: flex; flex-direction: column; align-items: flex-end; min-width: 0; }
+.h-pay-figs b { font-size: 26px; line-height: .9; white-space: nowrap; }
+.h-pay-fig.is-up b { color: #1C7A46; }
+.h-pay-fig.is-down b { color: var(--alert); }
+.h-pay-figs small {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: rgba(255, 255, 255, .62);
+}
 .h-photo { position: relative; border-radius: var(--r); overflow: hidden; background: var(--paper-2); display: block; width: 100%; }
 .h-photo-stage { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
 .h-photo-cap {
