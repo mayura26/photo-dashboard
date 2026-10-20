@@ -2,6 +2,41 @@ package photos
 
 import "testing"
 
+func TestClampFits(t *testing.T) {
+	all := []string{"cover", "pair", "square", "wide"}
+	got := ClampFits(all, "p")
+	want := []string{"pair", "square"}
+	if !sameIDs(got, want) {
+		t.Fatalf("portrait: got %v want %v", got, want)
+	}
+	got = ClampFits([]string{"cover"}, "p")
+	if !sameIDs(got, want) {
+		t.Fatalf("portrait cover-only: got %v want %v", got, want)
+	}
+	got = ClampFits(all, "l")
+	want = []string{"cover", "square", "wide"}
+	if !sameIDs(got, want) {
+		t.Fatalf("landscape: got %v want %v", got, want)
+	}
+	got = ClampFits([]string{"pair"}, "l")
+	want = []string{"cover", "wide"}
+	if !sameIDs(got, want) {
+		t.Fatalf("landscape pair-only: got %v want %v", got, want)
+	}
+}
+
+func sameIDs(got, want []string) bool {
+	if len(got) != len(want) {
+		return false
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func TestParseFits(t *testing.T) {
 	cases := []struct {
 		name string

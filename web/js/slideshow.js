@@ -113,11 +113,18 @@
   };
 
   // Until a vision pass stores fits, orientation stands in for the frame list.
+  // A stored list still cannot put a portrait in a landscape slot.
   function photoFits(p) {
-    if (p && p.fits && p.fits.length) return p.fits;
-    if (p && p.o === 'p') return ['pair', 'square'];
-    if (p && p.o === 'l') return ['cover', 'wide'];
-    return [];
+    if (!p) return [];
+    var fallback = p.o === 'p' ? ['pair', 'square'] : (p.o === 'l' ? ['cover', 'wide'] : []);
+    if (!(p.fits && p.fits.length)) return fallback;
+    var allow = p.o === 'p' ? ['pair', 'square'] : (p.o === 'l' ? ['cover', 'square', 'wide'] : null);
+    if (!allow) return p.fits;
+    var out = [];
+    for (var i = 0; i < allow.length; i++) {
+      if (p.fits.indexOf(allow[i]) >= 0) out.push(allow[i]);
+    }
+    return out.length ? out : fallback;
   }
   function fitsFrame(p, frame) {
     return photoFits(p).indexOf(frame) >= 0;

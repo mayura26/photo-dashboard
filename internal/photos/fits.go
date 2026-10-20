@@ -62,6 +62,70 @@ func ParseFits(raw string) ([]string, bool) {
 	return out, true
 }
 
+// ClampFits drops frames the photo's orientation cannot survive.
+// Portrait keeps pair and square. Landscape keeps cover, wide, and square.
+// An empty result becomes the orientation fallback so a bad reply is not retried.
+func ClampFits(fits []string, orient string) []string {
+	allow := allowedFrames(orient)
+	if allow == nil {
+		return copyKnown(fits)
+	}
+	out := make([]string, 0, len(allow))
+	seen := map[string]bool{}
+	for _, id := range fits {
+		id = strings.ToLower(strings.TrimSpace(id))
+		seen[id] = true
+	}
+	for _, id := range allow {
+		if seen[id] {
+			out = append(out, id)
+		}
+	}
+	if len(out) == 0 {
+		return append([]string(nil), fallbackFrames(orient)...)
+	}
+	return out
+}
+
+func allowedFrames(orient string) []string {
+	switch orient {
+	case "p":
+		return []string{FramePair, FrameSquare}
+	case "l":
+		return []string{FrameCover, FrameSquare, FrameWide}
+	default:
+		return nil
+	}
+}
+
+func fallbackFrames(orient string) []string {
+	switch orient {
+	case "p":
+		return []string{FramePair, FrameSquare}
+	case "l":
+		return []string{FrameCover, FrameWide}
+	default:
+		return nil
+	}
+}
+
+func copyKnown(fits []string) []string {
+	seen := map[string]bool{}
+	for _, id := range fits {
+		id = strings.ToLower(strings.TrimSpace(id))
+		if knownFrame(id) {
+			seen[id] = true
+		}
+	}
+	out := make([]string, 0, len(seen))
+	for _, id := range frameOrder {
+		if seen[id] {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
 // ClassifyFits asks GPT-5.4 which frames this display JPEG survives.
 // ok is false when the key is missing or the reply cannot be used.
 func ClassifyFits(jpeg []byte) ([]string, bool) {
@@ -92,13 +156,13 @@ func completeFits(key string, jpeg []byte) (string, error) {
 					"You decide which photo-frame crops keep this image's subject intact.",
 					"The frame uses object-fit cover, anchored at 50% across and 30% down, so the bottom is cropped before the top.",
 					"Reply with JSON only, no markdown.",
-					`{"fits":["cover","pair","square","wide"]}`,
-					"Include a frame only when the subject stays readable after that crop.",
-					"cover: full stage 16:10 (1280x800). Wide scenes whose subject is not stuck on one edge.",
+					`{"fits":["pair","square"]}`,
+					"Include only the frames where the subject stays readable. Do not list every frame.",
+					"cover: full stage 16:10 (1280x800). Horizontal scenes only. Never use cover for a vertical photo, or when the subject is a standing person.",
 					"pair: tall column about 4:5 (637x800). Standing people and other tall subjects, shown side by side.",
 					"square: near 1:1 (764x794), the left slot of a three-photo frame. Squares, mild portraits, and landscapes with a central subject.",
-					"wide: horizontal about 5:4 (510x397), the right slots of that frame. Landscapes and horizontal scenes. Omit when a person would lose their head or feet.",
-					"A photo may fit several frames. Ids must be from that set.",
+					"wide: horizontal about 5:4 (510x397), the right slots of that frame. Horizontal scenes only. Omit for a vertical photo and when a person would lose their head or feet.",
+					"A vertical photo of a person is pair and maybe square. It must not include cover or wide.",
 				}, " "),
 			},
 			{
@@ -171,6 +235,41 @@ func extractJSONObject(s string) string {
 		return ""
 	}
 	return s[i : j+1]
+}
+
+func photoOrient(p map[string]any) string {
+	o, _ := p["o"].(string)
+	return o
+}
+
+func photoFitsList(p map[string]any) []string {
+	switch v := p["fits"].(type) {
+	case []string:
+		return append([]string(nil), v...)
+	case []any:
+		out := make([]string, 0, len(v))
+		for _, item := range v {
+			s, ok := item.(string)
+			if ok {
+				out = append(out, s)
+			}
+		}
+		return out
+	default:
+		return nil
+	}
+}
+
+func sameFits(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func photoHasFits(p map[string]any) bool {

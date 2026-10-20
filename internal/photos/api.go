@@ -255,16 +255,17 @@ func (a *API) handleDelete(w http.ResponseWriter, r *http.Request, id string) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// BackfillFits classifies stored photos that have no frame list yet.
-// It runs one photo at a time and does not block startup.
+// BackfillFits rewrites frame lists that disagree with orientation, then
+// classifies photos that still have no list. The rewrite does not call the API.
 func (a *API) BackfillFits() {
-	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) == "" {
-		return
-	}
 	go a.backfillFits()
 }
 
 func (a *API) backfillFits() {
+	a.reclampFits()
+	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) == "" {
+		return
+	}
 	pending := 0
 	for _, p := range a.Lib.PhotoList() {
 		if photoHasFits(p) {
@@ -289,9 +290,42 @@ func (a *API) backfillFits() {
 	}
 }
 
+func (a *API) reclampFits() {
+	changed := 0
+	for _, p := range a.Lib.PhotoList() {
+		if !photoHasFits(p) {
+			continue
+		}
+		id := photoID(p)
+		if !ValidID(id) {
+			continue
+		}
+		cur := photoFitsList(p)
+		next := ClampFits(cur, photoOrient(p))
+		if len(next) == 0 || sameFits(cur, next) {
+			continue
+		}
+		if _, found, err := a.Lib.SetPhotoFits(id, next); err != nil {
+			log.Printf("photos: frame fit %s: %v", id, err)
+			continue
+		} else if !found {
+			continue
+		}
+		changed++
+		log.Printf("photos: frame fit %s clamped to %s", id, strings.Join(next, ","))
+	}
+	if changed > 0 && a.Hub != nil {
+		a.Hub.BroadcastSnapshot()
+	}
+}
+
 func (a *API) classifyPhoto(id string, jpeg []byte) {
 	fits, ok := ClassifyFits(jpeg)
 	if !ok {
+		return
+	}
+	fits = ClampFits(fits, a.orientOf(id))
+	if len(fits) == 0 {
 		return
 	}
 	if _, found, err := a.Lib.SetPhotoFits(id, fits); err != nil {
@@ -304,6 +338,15 @@ func (a *API) classifyPhoto(id string, jpeg []byte) {
 	if a.Hub != nil {
 		a.Hub.BroadcastSnapshot()
 	}
+}
+
+func (a *API) orientOf(id string) string {
+	for _, p := range a.Lib.PhotoList() {
+		if photoID(p) == id {
+			return photoOrient(p)
+		}
+	}
+	return ""
 }
 
 func cloneRec(m map[string]any) map[string]any {
