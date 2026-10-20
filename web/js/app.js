@@ -256,16 +256,18 @@
     return e && e.people && e.people.length >= D.people.length;
   };
   App.evColor = function (e) { return App.isFamily(e) ? D.family : App.person(e.people[0]); };
+  // Completed Plan My Day tasks stay in the event list but are not upcoming.
+  App.isCompleted = function (e) { return !!(e && e.status === 'completed'); };
   App.timedOn = function (day, pid) {
     var s = App.dayStart(day), e = App.addDays(s, 1);
     return App.events().filter(function (ev) {
-      return !ev.allDay && ev.start < e && ev.end > s && (!pid || ev.people.indexOf(pid) > -1);
+      return !App.isCompleted(ev) && !ev.allDay && ev.start < e && ev.end > s && (!pid || ev.people.indexOf(pid) > -1);
     }).sort(function (a, b) { return a.start - b.start || b.end - a.end; });
   };
   App.allDayOn = function (day, pid) {
     var s = App.dayStart(day), e = App.addDays(s, 1);
     return App.events().filter(function (ev) {
-      return ev.allDay && ev.start < e && ev.end > s && (!pid || ev.people.indexOf(pid) > -1);
+      return !App.isCompleted(ev) && ev.allDay && ev.start < e && ev.end > s && (!pid || ev.people.indexOf(pid) > -1);
     });
   };
   App.leaveBy = function (e) { return e.travel ? new Date(+e.start - e.travel * 60000) : e.start; };
