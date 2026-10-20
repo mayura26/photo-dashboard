@@ -271,6 +271,25 @@
     return ' is-hot';
   }
 
+  function meterPct(done, total) {
+    if (done == null || !total) return 0;
+    var p = Math.round(done / total * 100);
+    if (p < 0) return 0;
+    if (p > 100) return 100;
+    return p;
+  }
+
+  function healthTile(opts) {
+    var meter = opts.meter == null ? '' :
+      '<div class="h-hm-meter" aria-hidden="true"><i style="width:' + opts.meter + '%"></i></div>';
+    var foot = opts.foot ? '<div class="h-hm-foot">' + opts.foot + '</div>' : '';
+    return '<div class="h-hm h-reveal' + (opts.tone || '') + (opts.meter == null ? '' : ' h-hm--meter') + '" style="--d:' + opts.d + '">' +
+      '<div class="h-hm-head"><span class="h-hm-ico">' + opts.ico + '</span><span>' + opts.label + '</span></div>' +
+      '<b class="h-hm-hero num">' + opts.hero + '</b>' +
+      foot + meter +
+      '</div>';
+  }
+
   function health() {
     var data = D.garmin;
     if (!data) {
@@ -285,42 +304,44 @@
     var goal = act.stepsGoal || 10000;
     var stepsLabel = steps != null ? (Math.round(steps / 1000 * 10) / 10) + 'k' : '—';
     var activeLabel = act.activeMin != null ? act.activeMin + 'm' : '—';
-    var weekLabel = act.weekActiveMin != null
-      ? (act.weekActiveMin + '/' + (act.intensityGoal || 150))
+    var weekGoal = act.intensityGoal || 150;
+    var weekFoot = act.weekActiveMin != null
+      ? '<span><b class="num">' + act.weekActiveMin + '/' + weekGoal + '</b><em>wk</em></span>'
       : '';
     var sleepHero = sleep.score != null ? dash(sleep.score) : fmtDur(sleep.durationMin);
     var sleepSub = sleep.score != null ? fmtDur(sleep.durationMin) : '';
     return '<div class="label label--light">Body · ' + App.esc(data.displayName || 'Garmin') + '</div>' +
       '<div class="h-health-grid">' +
-      '<div class="h-hm h-reveal' + batteryTone(bb.current) + '" style="--d:0">' +
-      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('bolt', 16) + '</span><span>Battery</span></div>' +
-      '  <div class="h-hm-body">' +
-      '    <div class="h-hm-dial">' + ring(bb.current || 0, 100, 52) +
-      '      <b class="num">' + dash(bb.current) + '</b></div>' +
-      '  </div>' +
-      '</div>' +
-      '<div class="h-hm h-reveal" style="--d:1">' +
-      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('moon', 16) + '</span><span>Sleep</span></div>' +
-      '  <div class="h-hm-body">' +
-      '    <div class="h-hm-meta"><b class="num">' + sleepHero + '</b>' +
-      (sleepSub ? '<small>' + sleepSub + '</small>' : '') + '</div>' +
-      '  </div>' +
-      '</div>' +
-      '<div class="h-hm h-reveal' + stressTone(stress.current) + '" style="--d:2">' +
-      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('heart', 16) + '</span><span>Stress</span></div>' +
-      '  <div class="h-hm-body">' +
-      '    <div class="h-hm-meta"><b class="num">' + dash(stress.current) + '</b></div>' +
-      '  </div>' +
-      '</div>' +
-      '<div class="h-hm h-reveal" style="--d:3">' +
-      '  <div class="h-hm-head"><span class="h-hm-ico">' + App.icon('steps', 16) + '</span><span>Steps</span></div>' +
-      '  <div class="h-hm-body">' +
-      '    <div class="h-hm-dial">' + ring(steps || 0, goal, 52) +
-      '      <b class="num">' + stepsLabel + '</b></div>' +
-      '    <div class="h-hm-meta"><b class="num">' + activeLabel + '</b>' +
-      (weekLabel ? '<small>' + weekLabel + '</small>' : '') + '</div>' +
-      '  </div>' +
-      '</div>' +
+      healthTile({
+        d: 0,
+        tone: batteryTone(bb.current),
+        ico: App.icon('bolt', 16),
+        label: 'Battery',
+        hero: dash(bb.current),
+        meter: meterPct(bb.current, 100)
+      }) +
+      healthTile({
+        d: 1,
+        ico: App.icon('moon', 16),
+        label: 'Sleep',
+        hero: sleepHero,
+        foot: sleepSub ? '<span>' + sleepSub + '</span>' : ''
+      }) +
+      healthTile({
+        d: 2,
+        tone: stressTone(stress.current),
+        ico: App.icon('heart', 16),
+        label: 'Stress',
+        hero: dash(stress.current)
+      }) +
+      healthTile({
+        d: 3,
+        ico: App.icon('steps', 16),
+        label: 'Steps',
+        hero: stepsLabel,
+        meter: meterPct(steps, goal),
+        foot: '<span><b class="num">' + activeLabel + '</b><em>active</em></span>' + weekFoot
+      }) +
       '</div>';
   }
 

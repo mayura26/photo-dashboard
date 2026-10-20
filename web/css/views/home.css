@@ -295,18 +295,20 @@
   display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
 }
 .h-hm {
-  display: flex; flex-direction: column; gap: 4px; min-width: 0; min-height: 0;
+  display: flex; flex-direction: column; gap: 0; min-width: 0; min-height: 0;
   background: var(--hm-frost);
   border: 1px solid var(--hm-line);
   border-radius: calc(var(--r) - 6px);
-  padding: 8px 10px 8px;
+  padding: 5px 10px 6px;
+  overflow: hidden;
   --tone: #123048;
 }
+.h-hm--meter { padding-bottom: 0; }
 .h-hm.is-ok { --tone: #0F9F6E; }
 .h-hm.is-mid { --tone: #D4890A; }
 .h-hm.is-hot { --tone: #E25A52; }
 .h-hm-head {
-  display: flex; align-items: center; gap: 5px;
+  display: flex; align-items: center; gap: 5px; flex: none;
   font-size: 10px; font-weight: 800; font-stretch: 80%;
   letter-spacing: .08em; text-transform: uppercase; color: var(--hm-mute);
   line-height: 1;
@@ -316,26 +318,36 @@
   color: #3A8FC4; opacity: .9;
 }
 .h-hm-ico svg { display: block; }
-.h-hm-body {
-  flex: 1; min-height: 0; min-width: 0;
-  display: flex; align-items: center; gap: 8px;
-}
-.h-hm-dial {
-  position: relative; width: 52px; height: 52px; flex: none;
-}
-.h-hm-dial .ring { width: 52px; height: 52px; }
-.h-hm-dial .ring-bg { stroke: rgba(18, 48, 72, .14); fill: none; stroke-width: 5; }
-.h-hm-dial .ring-fg { stroke: var(--tone); fill: none; stroke-width: 5; stroke-linecap: butt; }
-.h-hm-dial b {
-  position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 13px; font-weight: 800; font-stretch: 70%; pointer-events: none;
+.h-hm-hero {
+  flex: none; min-width: 0;
+  margin-top: 2px;
+  font-size: 28px; line-height: .8; letter-spacing: -.03em;
   color: var(--tone);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.h-hm-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.h-hm-meta b {
-  font-size: 26px; font-weight: 800; font-stretch: 70%;
-  line-height: .95; color: var(--tone); font-variant-numeric: tabular-nums;
+.h-hm-foot {
+  display: flex; align-items: baseline; gap: 10px; flex: none;
+  min-width: 0; margin-top: 2px;
+  font-size: 11px; font-weight: 700; line-height: 1;
+  color: var(--hm-mute);
 }
-.h-hm-meta small {
-  font-size: 12px; font-weight: 600; color: var(--hm-mute);
+.h-hm--meter .h-hm-foot { padding-bottom: 4px; }
+.h-hm-foot span { white-space: nowrap; }
+.h-hm-foot b {
+  font-size: 12px; font-weight: 800; font-stretch: 70%;
+  letter-spacing: -.01em; color: var(--tone);
+  font-variant-numeric: tabular-nums;
+}
+.h-hm-foot em {
+  font-style: normal; margin-left: 3px;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--hm-mute);
+}
+.h-hm-meter {
+  height: 3px; flex: none; margin: auto -10px 0;
+  background: rgba(18, 48, 72, .14);
+}
+.h-hm-meter i {
+  display: block; height: 3px; width: 0;
+  background: var(--tone);
 }
