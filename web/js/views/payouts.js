@@ -87,10 +87,34 @@
   }
 
   function payoutMissing(p) {
+    if (!p) return true;
     var noAmount = p.amount == null || p.amount === '' || isNaN(Number(p.amount));
     var noDate = !String(p.date || '').trim();
     var noFirm = !p.firmId || !App.payoutFirm(p.firmId);
     return noAmount || noDate || noFirm;
+  }
+
+  function ensurePayout(body) {
+    if (!body || !body.id) return null;
+    var rec = {
+      id: body.id,
+      date: body.date || '',
+      amount: body.amount,
+      currency: body.currency || '',
+      account: body.account || '',
+      firmId: body.firmId || '',
+      note: body.note || '',
+      image: body.image || body.id
+    };
+    if (!D.payouts) D.payouts = [];
+    for (var i = 0; i < D.payouts.length; i++) {
+      if (D.payouts[i].id === rec.id) {
+        D.payouts[i] = rec;
+        return rec;
+      }
+    }
+    D.payouts.push(rec);
+    return rec;
   }
 
   function toneClass(value) {
@@ -368,13 +392,17 @@
             App.toast('Reading screenshot…', { icon: 'payout', ms: 120000 });
             uploadFile(file).then(function (body) {
               close();
-              var firm = body && body.firmId ? firmName(body.firmId) : 'Unknown';
-              if (body && body.extracted && body.amount != null) {
-                App.toast('Read ' + App.esc(App.payoutMoney(body.amount, body.currency)) + ' · ' + App.esc(firm), { icon: 'payout', ms: 3500 });
-              } else {
+              if (body && body.id) ensurePayout(body);
+              if (body && payoutMissing(body)) {
                 App.toast('Couldn’t read the screenshot — fill it in', { icon: 'payout', ms: 4000 });
+                if (body.id) openEdit(body.id);
+                return;
               }
-              if (body && body.id) openEdit(body.id);
+              var firm = body && body.firmId ? firmName(body.firmId) : 'Unknown';
+              if (body && body.amount != null) {
+                App.toast('Read ' + App.esc(App.payoutMoney(body.amount, body.currency)) + ' · ' + App.esc(firm), { icon: 'payout', ms: 3500 });
+              }
+              openManage();
             }).catch(function (err) {
               busy = false;
               setStatus(err.message);
