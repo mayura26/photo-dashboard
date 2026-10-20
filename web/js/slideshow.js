@@ -51,7 +51,7 @@
   var BUILD = {
     cover: function (ps, o) {
       var p = ps[0];
-      if (p.o === 'p') {
+      if (!fitsFrame(p, 'cover')) {
         return '<div class="slide slide--fit"><img class="fitimg" src="' + src(p) + '" alt="">' + (o.captions ? caption(ps) : '') + '</div>';
       }
       return '<div class="slide slide--cover">' + kb(p) + (o.captions ? caption(ps) : '') + '</div>';
@@ -112,6 +112,17 @@
     return null;
   };
 
+  // Until a vision pass stores fits, orientation stands in for the frame list.
+  function photoFits(p) {
+    if (p && p.fits && p.fits.length) return p.fits;
+    if (p && p.o === 'p') return ['pair', 'square'];
+    if (p && p.o === 'l') return ['cover', 'wide'];
+    return [];
+  }
+  function fitsFrame(p, frame) {
+    return photoFits(p).indexOf(frame) >= 0;
+  }
+
   // YYYY-MM month index for proximity ranking; null if undated.
   function monthIndex(p) {
     var s = (p && (p.date || p.tag)) || '';
@@ -141,12 +152,30 @@
     var first = this.take();
     if (!first) return null;
     var self = this;
-    function sibling(pred) {
-      return self.take(pred) || (D.photos || []).filter(function (x) { return x && x.id !== first.id && pred(x); })[0];
+    function pullFrame(frame, ids) {
+      var i, x;
+      for (i = 0; i < self.queue.length; i++) {
+        x = self.queue[i];
+        if (x && ids.indexOf(x.id) < 0 && fitsFrame(x, frame)) return self.queue.splice(i, 1)[0];
+      }
+      var list = D.photos || [];
+      for (i = 0; i < list.length; i++) {
+        x = list[i];
+        if (x && x.id && ids.indexOf(x.id) < 0 && fitsFrame(x, frame)) {
+          for (var j = 0; j < self.queue.length; j++) {
+            if (self.queue[j] && self.queue[j].id === x.id) { self.queue.splice(j, 1); break; }
+          }
+          return x;
+        }
+      }
+      return null;
+    }
+    function restore(taken) {
+      for (var i = taken.length - 1; i >= 0; i--) if (taken[i]) self.queue.unshift(taken[i]);
     }
     function pairPartner(lead) {
       var cands = (D.photos || []).filter(function (x) {
-        return x && x.id && lead.id && x.id !== lead.id && x.o === 'p';
+        return x && x.id && lead.id && x.id !== lead.id && fitsFrame(x, 'pair');
       });
       if (!cands.length) return null;
       cands.sort(function (a, b) { return pairScore(lead, a) - pairScore(lead, b); });
@@ -156,21 +185,60 @@
       top.forEach(function (x) { want[x.id] = true; });
       return self.take(function (x) { return x && want[x.id]; }) || top[0];
     }
+    // Square wins when a photo fits both collage slots, so a centered landscape can lead.
+    function fillCollage(seed) {
+      var slots = [null, null, null], ids = [], taken = [];
+      function hold(p) { ids.push(p.id); }
+      if (seed && fitsFrame(seed, 'square')) { slots[0] = seed; hold(seed); }
+      else if (seed && fitsFrame(seed, 'wide')) { slots[1] = seed; hold(seed); }
+      else return null;
+      function need(frame) {
+        var p = pullFrame(frame, ids);
+        if (!p) return null;
+        taken.push(p);
+        hold(p);
+        return p;
+      }
+      if (!slots[0]) {
+        var left = need('square');
+        if (!left) { restore(taken); return null; }
+        slots[0] = left;
+      }
+      for (var s = 1; s <= 2; s++) {
+        if (slots[s]) continue;
+        var right = need('wide');
+        if (!right) { restore(taken); return null; }
+        slots[s] = right;
+      }
+      return slots;
+    }
+    function otherFits(frame, sameTag) {
+      return (D.photos || []).some(function (x) {
+        return x && x.id !== first.id && fitsFrame(x, frame) && (!sameTag || (x.tag && x.tag === first.tag));
+      });
+    }
+    var portraitLead = fitsFrame(first, 'pair') && !fitsFrame(first, 'cover');
     if (layout === 'auto') {
-      if (first.o === 'p') layout = (D.photos || []).some(function (x) { return x.id !== first.id && x.o === 'p' && x.tag && x.tag === first.tag; }) ? 'pair' : 'polaroid';
+      if (portraitLead) layout = otherFits('pair', true) ? 'pair' : 'polaroid';
       else layout = n % 5 === 3 ? 'collage' : n % 5 === 4 ? 'polaroid' : 'cover';
     }
     if (layout === 'ambient') {
-      if (first.o === 'p') {
-        layout = (D.photos || []).some(function (x) { return x.id !== first.id && x.o === 'p'; }) ? 'pair' : 'collage';
-      } else {
-        layout = n % 4 === 3 ? 'collage' : 'cover';
-      }
+      if (portraitLead) layout = otherFits('pair', false) ? 'pair' : 'collage';
+      else layout = n % 4 === 3 ? 'collage' : 'cover';
     }
     var ps = [first];
     if (layout === 'pair') {
-      if (first.o !== 'p') { first = sibling(function (x) { return x.o === 'p'; }); ps = [first]; }
-      if (!first) return null;
+      if (!fitsFrame(first, 'pair')) {
+        var lead = pullFrame('pair', [first.id]);
+        if (!lead) {
+          return mode === 'ambient'
+            ? { layout: 'cover', photos: [first] }
+            : { layout: 'polaroid', photos: [first] };
+        }
+        self.queue.unshift(first);
+        first = lead;
+      }
+      ps = [first];
       ps.push(pairPartner(first));
       if (!ps[1]) {
         if (mode === 'ambient') { layout = 'collage'; ps = [first]; }
@@ -178,9 +246,9 @@
       }
     }
     if (layout === 'collage') {
-      ps.push(sibling(function (x) { return x.id !== first.id; }));
-      ps.push(sibling(function (x) { return ps.every(function (p) { return !p || p.id !== x.id; }); }));
-      if (!ps[1] || !ps[2]) return { layout: 'cover', photos: [ps[0]] };
+      var filled = fillCollage(ps[0]);
+      if (!filled) return { layout: 'cover', photos: [ps[0]] };
+      ps = filled;
     }
     return { layout: layout, photos: ps };
   };

@@ -85,6 +85,20 @@ func (m *memLib) SetPhotoHashes(hashes map[string]string) error {
 	return nil
 }
 
+func (m *memLib) SetPhotoFits(id string, fits []string) (map[string]any, bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	cp := append([]string(nil), fits...)
+	for _, p := range m.photos {
+		if p["id"] != id {
+			continue
+		}
+		p["fits"] = cp
+		return cloneRec(p), true, nil
+	}
+	return nil, false, nil
+}
+
 type nopHub struct{}
 
 func (nopHub) BroadcastSnapshot() {}

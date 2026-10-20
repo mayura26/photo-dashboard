@@ -18,6 +18,7 @@ type Library interface {
 	PhotoList() []map[string]any
 	FindPhotoByHash(hash string) (map[string]any, bool)
 	SetPhotoHashes(hashes map[string]string) error
+	SetPhotoFits(id string, fits []string) (map[string]any, bool, error)
 }
 
 // Broadcaster pushes a fresh snapshot after mutations.
@@ -172,6 +173,10 @@ func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	a.Hub.BroadcastSnapshot()
 	writeJSON(w, http.StatusCreated, saved)
+	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) != "" {
+		jpeg := append([]byte(nil), enc.JPEG...)
+		go a.classifyPhoto(id, jpeg)
+	}
 }
 
 func (a *API) purgeDuplicates() (int, error) {
@@ -248,6 +253,57 @@ func (a *API) handleDelete(w http.ResponseWriter, r *http.Request, id string) {
 	}
 	a.Hub.BroadcastSnapshot()
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// BackfillFits classifies stored photos that have no frame list yet.
+// It runs one photo at a time and does not block startup.
+func (a *API) BackfillFits() {
+	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) == "" {
+		return
+	}
+	go a.backfillFits()
+}
+
+func (a *API) backfillFits() {
+	pending := 0
+	for _, p := range a.Lib.PhotoList() {
+		if photoHasFits(p) {
+			continue
+		}
+		id := photoID(p)
+		if !ValidID(id) {
+			continue
+		}
+		raw, err := os.ReadFile(a.Dir.FilePath(id))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				log.Printf("photos: frame fit %s: %v", id, err)
+			}
+			continue
+		}
+		pending++
+		a.classifyPhoto(id, raw)
+	}
+	if pending > 0 {
+		log.Printf("photos: frame fit pass finished (%d photos)", pending)
+	}
+}
+
+func (a *API) classifyPhoto(id string, jpeg []byte) {
+	fits, ok := ClassifyFits(jpeg)
+	if !ok {
+		return
+	}
+	if _, found, err := a.Lib.SetPhotoFits(id, fits); err != nil {
+		log.Printf("photos: frame fit %s: %v", id, err)
+		return
+	} else if !found {
+		return
+	}
+	log.Printf("photos: frame fit %s: %s", id, strings.Join(fits, ","))
+	if a.Hub != nil {
+		a.Hub.BroadcastSnapshot()
+	}
 }
 
 func cloneRec(m map[string]any) map[string]any {

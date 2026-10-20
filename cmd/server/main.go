@@ -82,12 +82,13 @@ func main() {
 	photoAPI := &photos.API{Dir: photoDir, Lib: store, Hub: hub}
 	log.Printf("photos: library at %s", photoDir.Path)
 	if strings.TrimSpace(os.Getenv("OPENAI_API_KEY")) != "" {
-		log.Printf("photos: OPENAI_API_KEY set; GPT-5.4 place fallback enabled")
+		log.Printf("photos: OPENAI_API_KEY set; GPT-5.4 place fallback and frame fit enabled")
 		log.Printf("payouts: OPENAI_API_KEY set; GPT-5.4 screenshot reading enabled")
 	} else {
 		log.Printf("photos: OPENAI_API_KEY unset; place only from GPS EXIF")
 		log.Printf("payouts: OPENAI_API_KEY unset; screenshots save without auto-fill")
 	}
+	photoAPI.BackfillFits()
 
 	payoutDir := payouts.DirFromDBPath(dbPath)
 	if err := payoutDir.Ensure(); err != nil {

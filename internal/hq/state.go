@@ -342,6 +342,28 @@ func (s *Store) SetPhotoHashes(hashes map[string]string) error {
 	return s.savePhotosLocked()
 }
 
+// SetPhotoFits stores the frame ids a photo survives and persists.
+// Missing photos return found=false. fits is copied so the caller can reuse the slice.
+func (s *Store) SetPhotoFits(id string, fits []string) (map[string]any, bool, error) {
+	if id == "" || len(fits) == 0 {
+		return nil, false, nil
+	}
+	cp := append([]string(nil), fits...)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, p := range s.snap.Photos {
+		if p["id"] != id {
+			continue
+		}
+		p["fits"] = cp
+		if err := s.savePhotosLocked(); err != nil {
+			return nil, true, err
+		}
+		return cloneMap(p), true, nil
+	}
+	return nil, false, nil
+}
+
 // UpdatePhoto patches metadata fields on an existing photo.
 func (s *Store) UpdatePhoto(id string, patch map[string]any) (map[string]any, bool, error) {
 	s.mu.Lock()
