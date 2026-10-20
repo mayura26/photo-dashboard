@@ -86,6 +86,13 @@
     return f ? f.name : 'Unknown';
   }
 
+  function payoutMissing(p) {
+    var noAmount = p.amount == null || p.amount === '' || isNaN(Number(p.amount));
+    var noDate = !String(p.date || '').trim();
+    var noFirm = !p.firmId || !App.payoutFirm(p.firmId);
+    return noAmount || noDate || noFirm;
+  }
+
   function toneClass(value) {
     if (value > 0) return ' is-up';
     if (value < 0) return ' is-down';
@@ -296,7 +303,8 @@
 
   function openManage() {
     var list = (D.payouts || []).slice().sort(function (a, b) {
-      return String(b.date || '').localeCompare(String(a.date || '')) || String(b.id).localeCompare(String(a.id));
+      var rank = (payoutMissing(a) ? 0 : 1) - (payoutMissing(b) ? 0 : 1);
+      return rank || String(b.date || '').localeCompare(String(a.date || '')) || String(b.id).localeCompare(String(a.id));
     });
     App.sheet(
       '<div class="sheet-pad pay-manage">' +
