@@ -290,6 +290,64 @@
       '</div>';
   }
 
+  function activeSpark(rows) {
+    var list = (rows || []).slice(-7);
+    var known = list.filter(function (r) { return r && r.activeMin != null; });
+    if (known.length < 2) {
+      return '<div class="h-am-empty serif"><i>No week yet</i></div>';
+    }
+    var w = 160, h = 52, padX = 8, padTop = 5, base = 46;
+    var max = 0;
+    known.forEach(function (r) { if (r.activeMin > max) max = r.activeMin; });
+    if (max < 1) max = 1;
+    var n = list.length;
+    function xAt(i) {
+      if (n < 2) return w / 2;
+      return padX + (i / (n - 1)) * (w - padX * 2);
+    }
+    function yAt(v) {
+      return padTop + (1 - v / max) * (base - padTop);
+    }
+    var coords = [];
+    list.forEach(function (r, i) {
+      if (!r || r.activeMin == null) return;
+      coords.push({ x: xAt(i), y: yAt(r.activeMin) });
+    });
+    var line = coords.map(function (p, i) {
+      return (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+    }).join(' ');
+    var first = coords[0], last = coords[coords.length - 1];
+    var area = line +
+      ' L' + last.x.toFixed(1) + ' ' + base.toFixed(1) +
+      ' L' + first.x.toFixed(1) + ' ' + base.toFixed(1) + ' Z';
+    var days = list.map(function (r, i) {
+      var letter = (r && r.d) ? String(r.d).charAt(0) : '';
+      var left = (xAt(i) / w * 100).toFixed(2);
+      return '<span style="left:' + left + '%">' + App.esc(letter) + '</span>';
+    }).join('');
+    return '<svg class="h-am-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path class="h-am-area" d="' + area + '"/>' +
+      '<path class="h-am-line" d="' + line + '"/>' +
+      '<circle class="h-am-dot" cx="' + last.x.toFixed(1) + '" cy="' + last.y.toFixed(1) + '" r="3.2"/>' +
+      '</svg>' +
+      '<div class="h-am-days" aria-hidden="true">' + days + '</div>';
+  }
+
+  function activeCard(act) {
+    var weekGoal = act.intensityGoal || 150;
+    var week = act.weekActiveMin;
+    var weekText = (week != null ? week : '—') + '/' + weekGoal;
+    var hit = week != null && weekGoal > 0 && week >= weekGoal;
+    var hist = (D.garmin && D.garmin.history && D.garmin.history.activity) || {};
+    return '<div class="h-hm h-hm--active h-reveal' + (hit ? ' is-ok' : '') + '" style="--d:4">' +
+      '<div class="h-hm-head"><span class="h-hm-ico">' + App.icon('clock', 16) + '</span><span>Active</span></div>' +
+      '<b class="h-hm-hero num">' + dash(act.activeMin) + '</b>' +
+      '<div class="h-hm-foot"><span><b class="num">' + weekText + '</b><em>week</em></span></div>' +
+      '<div class="h-hm-meter" aria-hidden="true"><i style="width:' + meterPct(week, weekGoal) + '%"></i></div>' +
+      '<div class="h-am-chart">' + activeSpark(hist.week) + '</div>' +
+      '</div>';
+  }
+
   function health() {
     var data = D.garmin;
     if (!data) {
@@ -303,11 +361,6 @@
     var steps = act.steps;
     var goal = act.stepsGoal || 10000;
     var stepsLabel = steps != null ? (Math.round(steps / 1000 * 10) / 10) + 'k' : '—';
-    var activeLabel = act.activeMin != null ? act.activeMin + 'm' : '—';
-    var weekGoal = act.intensityGoal || 150;
-    var weekFoot = act.weekActiveMin != null
-      ? '<span><b class="num">' + act.weekActiveMin + '/' + weekGoal + '</b><em>wk</em></span>'
-      : '';
     var sleepHero = sleep.score != null ? dash(sleep.score) : fmtDur(sleep.durationMin);
     var sleepSub = sleep.score != null ? fmtDur(sleep.durationMin) : '';
     return '<div class="label label--light">Body · ' + App.esc(data.displayName || 'Garmin') + '</div>' +
@@ -339,9 +392,9 @@
         ico: App.icon('steps', 16),
         label: 'Steps',
         hero: stepsLabel,
-        meter: meterPct(steps, goal),
-        foot: '<span><b class="num">' + activeLabel + '</b><em>active</em></span>' + weekFoot
+        meter: meterPct(steps, goal)
       }) +
+      activeCard(act) +
       '</div>';
   }
 

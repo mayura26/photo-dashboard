@@ -129,7 +129,7 @@
     var goal = act.stepsGoal || 10000;
     var stepsLabel = steps != null ? (Math.round(steps / 1000 * 10) / 10) + 'k' : '—';
     var stepsPct = steps != null && goal ? Math.min(100, Math.round(steps / goal * 100)) : 0;
-    var activeLabel = act.activeMin != null ? act.activeMin + 'm' : '—';
+    var weekLabel = act.weekActiveMin != null ? String(act.weekActiveMin) : '—';
     var weekGoal = act.intensityGoal || 150;
     var weekPct = act.weekActiveMin != null && weekGoal
       ? Math.min(100, Math.round(act.weekActiveMin / weekGoal * 100))
@@ -151,7 +151,7 @@
       '</div>' +
       '<div class="amb-g-chip" style="--d:3">' +
       App.icon('clock', 18) +
-      '<div class="amb-g-meta"><b class="num">' + activeLabel + '</b><small>Active</small>' +
+      '<div class="amb-g-meta"><b class="num">' + weekLabel + '</b><small>Week</small>' +
       '<i class="amb-g-bar"><i style="width:' + weekPct + '%"></i></i></div>' +
       '</div></div>';
   }

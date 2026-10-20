@@ -292,7 +292,7 @@
 }
 .h-health-grid {
   flex: 1; min-height: 0;
-  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px;
 }
 .h-hm {
   display: flex; flex-direction: column; gap: 0; min-width: 0; min-height: 0;
@@ -350,4 +350,48 @@
 .h-hm-meter i {
   display: block; height: 3px; width: 0;
   background: var(--tone);
+}
+
+/* Tall active-minutes column — today, week goal, week spark */
+.h-hm--active {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+.h-hm--active .h-hm-hero { font-size: 36px; margin-top: 4px; }
+.h-hm--active .h-hm-foot { margin-top: 4px; }
+.h-hm--active .h-hm-meter {
+  margin: 6px 0 0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.h-am-chart {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  margin-top: 8px;
+}
+.h-am-spark {
+  flex: 1; width: 100%; min-height: 36px;
+  display: block;
+}
+.h-am-area { fill: var(--tone); opacity: .22; }
+.h-am-line {
+  fill: none; stroke: var(--tone); stroke-width: 2.4;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.h-am-dot { fill: var(--tone); }
+.h-am-days {
+  position: relative; flex: none; height: 11px; margin-top: 3px;
+  font-size: 9px; font-weight: 800; font-stretch: 80%;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--hm-mute); line-height: 1;
+}
+.h-am-days span {
+  position: absolute; top: 0; transform: translateX(-50%);
+}
+.h-am-empty {
+  flex: 1; min-height: 36px;
+  display: grid; place-items: center;
+  border: 1.5px dashed rgba(18, 48, 72, .28);
+  border-radius: 8px;
+  color: var(--hm-mute); font-size: 14px;
 }
