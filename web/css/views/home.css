@@ -351,6 +351,40 @@
   display: block; height: 3px; width: 0;
   background: var(--tone);
 }
+.h-hm--mark { padding-bottom: 0; }
+.h-hm--mark .h-hm-foot { padding-bottom: 4px; }
+.h-hm-stages {
+  display: flex; height: 4px; margin: auto -10px 0;
+  overflow: hidden; background: rgba(18, 48, 72, .1);
+}
+.h-hm-st { display: block; min-width: 2px; flex-basis: 0%; height: 100%; }
+.h-hm-st--deep { background: #1B3A6B; }
+.h-hm-st--light { background: #5B8DEF; }
+.h-hm-st--rem { background: #8B6CC9; }
+.h-hm-st--awake { background: var(--amber); }
+.h-hm-range {
+  position: relative; height: 9px; margin: auto -10px 0;
+}
+.h-hm-range::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: rgba(18, 48, 72, .28);
+  transform: translateY(-50%);
+}
+.h-hm-range > i {
+  position: absolute; top: 1px; width: 2px; height: 7px;
+  background: var(--tone); border-radius: 1px;
+  transform: translateX(-50%);
+}
+.h-hm-spark {
+  display: block; width: calc(100% + 20px); height: 26px;
+  margin: auto -10px 0;
+}
+.h-hm-spark-area { fill: var(--tone); opacity: .18; }
+.h-hm-spark-line {
+  fill: none; stroke: var(--tone); stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.h-hm-spark-dot { fill: var(--tone); }
 
 /* Tall active-minutes column — today, week goal, week spark */
 .h-hm--active {

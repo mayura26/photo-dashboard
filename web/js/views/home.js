@@ -279,14 +279,79 @@
     return p;
   }
 
+  function batteryExtents(bb) {
+    var pts = ((bb && bb.series) || []).filter(function (p) { return p && p.v != null; });
+    if (!pts.length) return null;
+    var lo = pts[0].v, hi = pts[0].v;
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i].v < lo) lo = pts[i].v;
+      if (pts[i].v > hi) hi = pts[i].v;
+    }
+    return {
+      lo: Math.max(0, Math.min(100, lo)),
+      hi: Math.max(0, Math.min(100, hi))
+    };
+  }
+
+  function batteryRange(bb) {
+    var range = batteryExtents(bb);
+    if (!range) return '';
+    var ticks = '<i style="left:' + range.lo + '%"></i>';
+    if (range.hi !== range.lo) ticks += '<i style="left:' + range.hi + '%"></i>';
+    return '<i class="h-hm-range" aria-hidden="true">' + ticks + '</i>';
+  }
+
+  function sleepStages(sleep) {
+    var parts = [
+      { k: 'deep', n: sleep.deepMin },
+      { k: 'light', n: sleep.lightMin },
+      { k: 'rem', n: sleep.remMin },
+      { k: 'awake', n: sleep.awakeMin }
+    ].filter(function (p) { return p.n > 0; });
+    if (!parts.length) return '';
+    return '<i class="h-hm-stages" aria-hidden="true">' + parts.map(function (p) {
+      return '<i class="h-hm-st h-hm-st--' + p.k + '" style="flex:' + p.n + ' 1 0%"></i>';
+    }).join('') + '</i>';
+  }
+
+  function stressSpark(stress) {
+    var pts = ((stress && stress.series) || []).filter(function (p) {
+      return p && p.v != null && p.v >= 0;
+    });
+    if (pts.length < 2) return '';
+    var w = 160, h = 28, padX = 2, padY = 3;
+    function xAt(i) {
+      return padX + (i / (pts.length - 1)) * (w - padX * 2);
+    }
+    function yAt(v) {
+      var c = Math.max(0, Math.min(100, v));
+      return padY + (1 - c / 100) * (h - padY * 2);
+    }
+    var line = pts.map(function (p, i) {
+      return (i ? 'L' : 'M') + xAt(i).toFixed(1) + ' ' + yAt(p.v).toFixed(1);
+    }).join(' ');
+    var firstX = xAt(0), lastX = xAt(pts.length - 1), lastY = yAt(pts[pts.length - 1].v);
+    var area = line +
+      ' L' + lastX.toFixed(1) + ' ' + (h - 1) +
+      ' L' + firstX.toFixed(1) + ' ' + (h - 1) + ' Z';
+    return '<svg class="h-hm-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path class="h-hm-spark-area" d="' + area + '"/>' +
+      '<path class="h-hm-spark-line" d="' + line + '"/>' +
+      '<circle class="h-hm-spark-dot" cx="' + lastX.toFixed(1) + '" cy="' + lastY.toFixed(1) + '" r="2.1"/>' +
+      '</svg>';
+  }
+
   function healthTile(opts) {
     var meter = opts.meter == null ? '' :
       '<div class="h-hm-meter" aria-hidden="true"><i style="width:' + opts.meter + '%"></i></div>';
     var foot = opts.foot ? '<div class="h-hm-foot">' + opts.foot + '</div>' : '';
-    return '<div class="h-hm h-reveal' + (opts.tone || '') + (opts.meter == null ? '' : ' h-hm--meter') + '" style="--d:' + opts.d + '">' +
+    var mark = opts.mark || '';
+    return '<div class="h-hm h-reveal' + (opts.tone || '') +
+      (opts.meter == null ? '' : ' h-hm--meter') +
+      (mark ? ' h-hm--mark' : '') + '" style="--d:' + opts.d + '">' +
       '<div class="h-hm-head"><span class="h-hm-ico">' + opts.ico + '</span><span>' + opts.label + '</span></div>' +
       '<b class="h-hm-hero num">' + opts.hero + '</b>' +
-      foot + meter +
+      foot + meter + mark +
       '</div>';
   }
 
@@ -371,21 +436,23 @@
         ico: App.icon('bolt', 16),
         label: 'Battery',
         hero: dash(bb.current),
-        meter: meterPct(bb.current, 100)
+        mark: batteryRange(bb)
       }) +
       healthTile({
         d: 1,
         ico: App.icon('moon', 16),
         label: 'Sleep',
         hero: sleepHero,
-        foot: sleepSub ? '<span>' + sleepSub + '</span>' : ''
+        foot: sleepSub ? '<span>' + sleepSub + '</span>' : '',
+        mark: sleepStages(sleep)
       }) +
       healthTile({
         d: 2,
         tone: stressTone(stress.current),
         ico: App.icon('heart', 16),
         label: 'Stress',
-        hero: dash(stress.current)
+        hero: dash(stress.current),
+        mark: stressSpark(stress)
       }) +
       healthTile({
         d: 3,
