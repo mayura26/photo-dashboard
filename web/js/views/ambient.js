@@ -30,6 +30,41 @@
     return ' is-hot';
   }
 
+  function batteryExtents(bb) {
+    var pts = ((bb && bb.series) || []).filter(function (p) { return p && p.v != null; });
+    if (!pts.length) return null;
+    var lo = pts[0].v, hi = pts[0].v;
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i].v < lo) lo = pts[i].v;
+      if (pts[i].v > hi) hi = pts[i].v;
+    }
+    return {
+      lo: Math.max(0, Math.min(100, lo)),
+      hi: Math.max(0, Math.min(100, hi))
+    };
+  }
+
+  function batteryRange(bb) {
+    var range = batteryExtents(bb);
+    if (!range) return '';
+    var ticks = '<i style="left:' + range.lo + '%"></i>';
+    if (range.hi !== range.lo) ticks += '<i style="left:' + range.hi + '%"></i>';
+    return '<i class="amb-g-range" aria-hidden="true">' + ticks + '</i>';
+  }
+
+  function sleepStages(sleep) {
+    var parts = [
+      { k: 'deep', n: sleep.deepMin },
+      { k: 'light', n: sleep.lightMin },
+      { k: 'rem', n: sleep.remMin },
+      { k: 'awake', n: sleep.awakeMin }
+    ].filter(function (p) { return p.n > 0; });
+    if (!parts.length) return '';
+    return '<i class="amb-g-stages" aria-hidden="true">' + parts.map(function (p) {
+      return '<i class="amb-g-st amb-g-st--' + p.k + '" style="flex:' + p.n + ' 1 0%"></i>';
+    }).join('') + '</i>';
+  }
+
   function eventSourceLabel(e) {
     if (!e) return 'Calendar';
     if (e.source === 'pmday') return 'Plan My Day';
@@ -138,11 +173,13 @@
     return '<div class="amb-g">' +
       '<div class="amb-g-chip' + batteryTone(bb.current) + '" style="--d:0">' +
       App.icon('bolt', 18) +
-      '<div class="amb-g-meta"><b class="num">' + dash(bb.current) + '</b><small>Battery</small></div>' +
+      '<div class="amb-g-meta"><b class="num">' + dash(bb.current) + '</b><small>Battery</small>' +
+      batteryRange(bb) + '</div>' +
       '</div>' +
       '<div class="amb-g-chip" style="--d:1">' +
       App.icon('moon', 18) +
-      '<div class="amb-g-meta"><b class="num">' + sleepHero + '</b><small>Sleep</small></div>' +
+      '<div class="amb-g-meta"><b class="num">' + sleepHero + '</b><small>Sleep</small>' +
+      sleepStages(sleep) + '</div>' +
       '</div>' +
       '<div class="amb-g-chip" style="--d:2">' +
       App.icon('steps', 18) +
@@ -245,7 +282,10 @@
     var bb = data.bodyBattery || {};
     var sleep = data.sleep || {};
     var act = data.activity || {};
-    return [bb.current, sleep.score, sleep.durationMin, act.steps, act.stepsGoal || 10000,
+    var range = batteryExtents(bb);
+    return [bb.current, range ? range.lo : '', range ? range.hi : '',
+      sleep.score, sleep.durationMin, sleep.deepMin, sleep.lightMin, sleep.remMin, sleep.awakeMin,
+      act.steps, act.stepsGoal || 10000,
       act.activeMin, act.weekActiveMin, act.intensityGoal || 150].join('|');
   }
 

@@ -200,6 +200,30 @@
   display: block; height: 100%; border-radius: inherit;
   background: rgba(255, 255, 255, .85);
 }
+.amb-g-stages {
+  display: flex; width: 64px; height: 4px; margin-top: 5px;
+  border-radius: 999px; overflow: hidden;
+  background: rgba(255, 255, 255, .12);
+}
+.amb-g-st { display: block; min-width: 2px; flex-basis: 0%; height: 100%; }
+.amb-g-st--deep { background: #1B3A6B; }
+.amb-g-st--light { background: #5B8DEF; }
+.amb-g-st--rem { background: #8B6CC9; }
+.amb-g-st--awake { background: var(--amber); }
+.amb-g-range {
+  position: relative; display: block; margin-top: 5px;
+  width: 64px; height: 9px;
+}
+.amb-g-range::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: rgba(255, 255, 255, .32);
+  transform: translateY(-50%);
+}
+.amb-g-range > i {
+  position: absolute; top: 0; width: 2px; height: 100%;
+  background: var(--tone); border-radius: 1px;
+  transform: translateX(-50%);
+}
 
 /* Night (dim red clock) — kept above a minimum readable brightness */
 .night { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 66; background: #000; display: none; place-items: center; cursor: pointer; }
